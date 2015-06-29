@@ -52,6 +52,6 @@
   <ItemGroup>
     <Compile Include="Modules\ModuleKpuProcessor.cs" />
     <Compile Include="Processor\Processor.cs" />
-    <Compile Include="Logging.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
 </Project>
