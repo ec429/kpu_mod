@@ -5,7 +5,7 @@ using UnityEngine;
 namespace KPU.Modules
 {
     [KSPModule("KPU Processor")]
-    public class ModuleKpuProcessor : PartModule
+    public class ModuleKpuProcessor : PartModule, IDisposable
     {
         private Processor.Processor mProcessor = null;
 
@@ -18,7 +18,22 @@ namespace KPU.Modules
         [KSPField()]
         public int imemWords;
 
-        [KSPEvent(name = "EventOpen", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
+        KPU.UI.WatchWindow mWatchWindow;
+
+        [KSPEvent(name = "EventEdit", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
+        public void EventEdit()
+        {
+            if (mProcessor == null)
+            {
+                KPU.Logging.Log("Tried to edit but no mProcessor");
+            }
+            else
+            {
+                KPU.Logging.Log("EventEdit");
+            }
+        }
+
+        [KSPEvent(name = "EventOpen", guiName = "Watch Display", guiActive = true, guiActiveUnfocused = true)]
         public void EventOpen()
         {
             if (mProcessor == null)
@@ -27,7 +42,9 @@ namespace KPU.Modules
             }
             else
             {
-                KPU.Logging.Log("EventOpen");
+                if (mWatchWindow == null)
+                    mWatchWindow = new KPU.UI.WatchWindow(mProcessor);
+                mWatchWindow.Show();
             }
         }
 
@@ -85,6 +102,16 @@ namespace KPU.Modules
                 info.AppendLine("Supports Arithmetic Ops");
             
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
+        }
+
+        public void Dispose()
+        {
+            KPU.Logging.Log("ModuleKpuProcessor: Dispose");
+
+            if (mWatchWindow != null)
+            {
+                mWatchWindow.Hide();
+            }
         }
     }
 }

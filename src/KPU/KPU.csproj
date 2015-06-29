@@ -33,10 +33,12 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -54,5 +56,10 @@
     <Compile Include="Processor\Processor.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="Modules\ModuleLandingSwitch.cs" />
+    <Compile Include="UI\WatchWindow.cs" />
+    <Compile Include="UI\AbstractWindow.cs" />
+    <Compile Include="AddOns\ControlLockAPI.cs" />
+    <Compile Include="AddOns\AddOn.cs" />
+    <Compile Include="KPUCore.cs" />
   </ItemGroup>
 </Project>

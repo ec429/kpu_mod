@@ -45,7 +45,7 @@ namespace KPU.Processor
             case InputType.BOOLEAN:
                 return Bool ? "1" : "0";
             case InputType.DOUBLE:
-                return Double.ToString();
+                return Double.ToString("g4");
             default: // can't happen
                 return typ.ToString();
             }
@@ -65,7 +65,7 @@ namespace KPU.Processor
         public string name { get { return "batteries"; } }
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(ElectricChargeFillLevel); } }
+        public InputValue value { get { return new InputValue(ElectricChargeFillLevel * 100.0f); } }
         private Vessel parentVessel = null;
 
         public Batteries (Vessel v)
@@ -119,7 +119,8 @@ namespace KPU.Processor
         {
             get
             {
-                return new InputValue(parentVessel.situation == Vessel.Situations.LANDED);
+                Vessel.Situations situation = parentVessel.situation;
+                return new InputValue(situation == Vessel.Situations.LANDED || situation == Vessel.Situations.PRELAUNCH);
             }
         }
         private Vessel parentVessel = null;
@@ -130,7 +131,7 @@ namespace KPU.Processor
         }
     }
 
-    public class Processor : IDisposable
+    public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
         int imemWords;
@@ -154,9 +155,10 @@ namespace KPU.Processor
             imemWords = module.imemWords;
             instructions = new List<Instruction>();
             inputs.Add(new Batteries(parentVessel));
+            inputs.Add(new Gear(parentVessel));
         }
 
-        private Dictionary<string, InputValue> inputValues;
+        public Dictionary<string, InputValue> inputValues;
 
         public void OnUpdate ()
         {
@@ -190,16 +192,6 @@ namespace KPU.Processor
             ConfigNode Proc = node.GetNode("Processor");
 
             // TODO read instructions list from Proc
-        }
-
-        public void Dispose()
-        {
-            KPU.Logging.Log("Processor: Dispose");
-
-            /*if (mWindow != null)
-            {
-                mWindow.Hide();
-            }*/
         }
     }
 }
