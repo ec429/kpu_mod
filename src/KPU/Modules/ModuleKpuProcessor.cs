@@ -15,6 +15,8 @@ namespace KPU.Modules
         public bool hasLogicOps;
         [KSPField()]
         public bool hasArithOps;
+        [KSPField()]
+        public int imemWords;
 
         [KSPEvent(name = "EventOpen", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
         public void EventOpen()
@@ -31,7 +33,7 @@ namespace KPU.Modules
 
         public override void OnStart(StartState state)
         {
-            mProcessor = new Processor.Processor(part, hasLevelTrigger, hasLogicOps, hasArithOps);
+            mProcessor = new Processor.Processor(part, this);
         }
 
         public override void OnSave(ConfigNode node)
@@ -42,7 +44,7 @@ namespace KPU.Modules
                 if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)
                 {
                     if (mProcessor == null)
-                        mProcessor = new Processor.Processor(part, hasLevelTrigger, hasLogicOps, hasArithOps);
+                        mProcessor = new Processor.Processor(part, this);
                     mProcessor.Save(node);
                 }
 
@@ -58,7 +60,7 @@ namespace KPU.Modules
                 if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)
                 {
                     if (mProcessor == null)
-                        mProcessor = new Processor.Processor(part, hasLevelTrigger, hasLogicOps, hasArithOps);
+                        mProcessor = new Processor.Processor(part, this);
                     mProcessor.Load(node);
                 }
             }

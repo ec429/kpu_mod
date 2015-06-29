@@ -14,6 +14,8 @@ namespace KPU.Processor
             mText = text;
             KPU.Logging.Log("Instruction: Parser not written yet!");
         }
+
+        int imemWords { get { return 0; } }
     }
 
     public interface IInputData
@@ -69,6 +71,7 @@ namespace KPU.Processor
     public class Processor : IDisposable
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
+        int imemWords;
         public List<Instruction> instructions;
 
         private Part mPart;
@@ -80,12 +83,13 @@ namespace KPU.Processor
 
         private List<IInputData> inputs = new List<IInputData>();
 
-        public Processor (Part part, bool level, bool logic, bool arith)
+        public Processor (Part part, Modules.ModuleKpuProcessor module)
         {
             mPart = part;
-            hasLevelTrigger = level;
-            hasLogicOps = logic;
-            hasArithOps = arith;
+            hasLevelTrigger = module.hasLevelTrigger;
+            hasLogicOps = module.hasLogicOps;
+            hasArithOps = module.hasArithOps;
+            imemWords = module.imemWords;
             instructions = new List<Instruction>();
             inputs.Add(new Batteries(parentVessel));
         }
