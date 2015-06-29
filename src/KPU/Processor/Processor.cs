@@ -126,17 +126,9 @@ namespace KPU.Processor
             // TODO read instructions list from Proc
         }
 
-        // After switching the vessel we must close our window.
-        public void OnVesselChange(Vessel v)
-        {
-            Dispose();
-        }
-
         public void Dispose()
         {
             KPU.Logging.Log("Processor: Dispose");
-
-            GameEvents.onVesselChange.Remove(OnVesselChange);
 
             /*if (mWindow != null)
             {
