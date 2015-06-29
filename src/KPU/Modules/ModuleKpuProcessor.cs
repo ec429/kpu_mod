@@ -51,6 +51,7 @@ namespace KPU.Modules
         public override void OnStart(StartState state)
         {
             mProcessor = new Processor.Processor(part, this);
+            GameEvents.onVesselChange.Add(OnVesselChange);
         }
 
         public override void OnSave(ConfigNode node)
@@ -89,6 +90,14 @@ namespace KPU.Modules
             if (mProcessor != null) mProcessor.OnUpdate();
         }
 
+        public void OnVesselChange(Vessel v)
+        {
+            if (mWatchWindow != null)
+            {
+                mWatchWindow.Hide();
+            }
+        }
+
         public override string GetInfo()
         {
             var info = new StringBuilder();
@@ -107,6 +116,8 @@ namespace KPU.Modules
         public void Dispose()
         {
             KPU.Logging.Log("ModuleKpuProcessor: Dispose");
+
+            GameEvents.onVesselChange.Remove(OnVesselChange);
 
             if (mWatchWindow != null)
             {
