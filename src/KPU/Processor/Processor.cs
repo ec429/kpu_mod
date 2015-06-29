@@ -37,6 +37,19 @@ namespace KPU.Processor
             typ = InputType.BOOLEAN;
             Bool = value;
         }
+
+        public override string ToString()
+        {
+            switch(typ)
+            {
+            case InputType.BOOLEAN:
+                return Bool ? "1" : "0";
+            case InputType.DOUBLE:
+                return Double.ToString();
+            default: // can't happen
+                return typ.ToString();
+            }
+        }
     }
 
     public interface IInputData
