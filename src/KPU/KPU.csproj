@@ -53,5 +53,6 @@
     <Compile Include="Modules\ModuleKpuProcessor.cs" />
     <Compile Include="Processor\Processor.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="Modules\ModuleLandingSwitch.cs" />
   </ItemGroup>
 </Project>

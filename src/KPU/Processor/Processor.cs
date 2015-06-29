@@ -18,18 +18,41 @@ namespace KPU.Processor
         int imemWords { get { return 0; } }
     }
 
+    public enum InputType { BOOLEAN, DOUBLE };
+
+    public class InputValue
+    {
+        public InputType typ;
+        public bool Bool;
+        public double Double;
+
+        public InputValue(double value)
+        {
+            typ = InputType.DOUBLE;
+            Double = value;
+        }
+
+        public InputValue(bool value)
+        {
+            typ = InputType.BOOLEAN;
+            Bool = value;
+        }
+    }
+
     public interface IInputData
     {
         string name { get; }
         bool available { get; }
-        double value { get; }
+        InputType typ { get; }
+        InputValue value { get; }
     }
 
     public class Batteries : IInputData
     {
         public string name { get { return "batteries"; } }
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
-        public double value { get { return ElectricChargeFillLevel; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public InputValue value { get { return new InputValue(ElectricChargeFillLevel); } }
         private Vessel parentVessel = null;
 
         public Batteries (Vessel v)
@@ -68,6 +91,32 @@ namespace KPU.Processor
 
     }
 
+    public class Gear : IInputData
+    {
+        public string name { get { return "gear"; } }
+        public bool available
+        {
+            get
+            {
+                return parentVessel.Parts.Any(p => p.Modules.Contains("ModuleLandingSwitch"));
+            }
+        }
+        public InputType typ { get { return InputType.BOOLEAN; } }
+        public InputValue value
+        {
+            get
+            {
+                return new InputValue(parentVessel.situation == Vessel.Situations.LANDED);
+            }
+        }
+        private Vessel parentVessel = null;
+
+        public Gear (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
     public class Processor : IDisposable
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -94,11 +143,11 @@ namespace KPU.Processor
             inputs.Add(new Batteries(parentVessel));
         }
 
-        private Dictionary<string, double> inputValues;
+        private Dictionary<string, InputValue> inputValues;
 
         public void OnUpdate ()
         {
-            inputValues = new Dictionary<string, double>();
+            inputValues = new Dictionary<string, InputValue>();
             foreach (IInputData i in inputs)
             {
                 if (i.available)
