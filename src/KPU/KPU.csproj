@@ -55,11 +55,11 @@
     <Compile Include="Modules\ModuleKpuProcessor.cs" />
     <Compile Include="Processor\Processor.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Modules\ModuleLandingSwitch.cs" />
     <Compile Include="UI\WatchWindow.cs" />
     <Compile Include="UI\AbstractWindow.cs" />
     <Compile Include="AddOns\ControlLockAPI.cs" />
     <Compile Include="AddOns\AddOn.cs" />
     <Compile Include="KPUCore.cs" />
+    <Compile Include="Modules\ModuleKpuSensor.cs" />
   </ItemGroup>
 </Project>

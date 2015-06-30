@@ -104,16 +104,31 @@ namespace KPU.Processor
 
     }
 
-    public class Gear : IInputData
+    public class SensorDriven
     {
-        public string name { get { return "gear"; } }
+        public virtual string name { get { return "abstract"; } }
+        public Vessel parentVessel;
         public bool available
         {
             get
             {
-                return parentVessel.Parts.Any(p => p.Modules.Contains("ModuleLandingSwitch"));
+                return parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name)));
             }
         }
+        public double res { get {
+            double rv = Double.PositiveInfinity;
+            foreach (Part p in parentVessel.Parts)
+                foreach(KPU.Modules.ModuleKpuSensor m in p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>())
+                    if (m.sensorType.Equals(name))
+                        if (m.sensorRes < rv)
+                            rv = m.sensorRes;
+            return rv;
+            }}
+    }
+
+    public class Gear : SensorDriven, IInputData
+    {
+        public override string name { get { return "gear"; } }
         public InputType typ { get { return InputType.BOOLEAN; } }
         public InputValue value
         {
@@ -123,9 +138,28 @@ namespace KPU.Processor
                 return new InputValue(situation == Vessel.Situations.LANDED || situation == Vessel.Situations.PRELAUNCH);
             }
         }
-        private Vessel parentVessel = null;
 
         public Gear (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
+    public class SrfHeight : SensorDriven, IInputData
+    {
+        public override string name { get { return "srfHeight"; } }
+        public InputType typ { get { return InputType.DOUBLE; } }
+        public InputValue value
+        {
+            get
+            {
+                if (!available) return new InputValue(Double.PositiveInfinity);
+                double h = parentVessel.altitude - parentVessel.terrainAltitude;
+                return new InputValue(Math.Round(h / res) * res);
+            }
+        }
+
+        public SrfHeight (Vessel v)
         {
             parentVessel = v;
         }
@@ -156,6 +190,7 @@ namespace KPU.Processor
             instructions = new List<Instruction>();
             inputs.Add(new Batteries(parentVessel));
             inputs.Add(new Gear(parentVessel));
+            inputs.Add(new SrfHeight(parentVessel));
         }
 
         public Dictionary<string, InputValue> inputValues;
