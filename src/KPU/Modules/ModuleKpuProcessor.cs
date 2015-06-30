@@ -18,6 +18,9 @@ namespace KPU.Modules
         [KSPField()]
         public int imemWords;
 
+        [KSPField()]
+        public bool isRunning = true;
+
         KPU.UI.WatchWindow mWatchWindow;
 
         [KSPEvent(name = "EventEdit", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
