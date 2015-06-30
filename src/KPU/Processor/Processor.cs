@@ -14,7 +14,7 @@ namespace KPU.Processor
             {
                 mErrText = errText;
             }
-            public string ToString()
+            public override string ToString()
             {
                 return mErrText;
             }
@@ -22,31 +22,29 @@ namespace KPU.Processor
         public string mText;
 
         private bool lastValue = false;
-        private bool edgeTriggered;
 
         /*
 Tokens:
     keywords: ON DO IF THEN AND OR
-    operators: < <= == >= > != + - * / . !
+    operators: < <= == >= > != + - * / ! . , ; @
     literals: [0-9]+
     identifiers: [a-zA-Z_]+
-Syntax:
-    program ::= stmt ; program?
+        Syntax:
     stmt    ::= on-stmt | if-stmt | act-list
     on-stmt ::= ON expr DO action-list
     if-stmt ::= IF expr THEN action-list
-    act-list::= action (, action-list)?
+    act-list::= (; action-list)? action
     expr    ::= un-op expr | bin-op expr expr | dot-expr | literal
     un-op   ::= !
     bin-op  ::= log-op | comp-op | arith-op
     log-op  ::= AND | OR
     comp-op ::= < | <= | == | >= | > | !=
     arith-op::= + | - | * | /
-    dot-expr::= (dot-expr .)? identifier # we're keeping infix dot-expr, that's not too hard to do
-    action  ::= dot-expr expr-lst?
-    expr-lst::= expr (, expr-lst)?
+    dot-expr::= (. dot-expr)? identifier
+    action  ::= dot-expr | @ dot-expr expr-lst?
+    expr-lst::= (, expr-lst)? expr
         */
-        private enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_DOT, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
+        public enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_DOT, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
         {
             Logging.Log("Attempting to tokenise " + text);
@@ -62,7 +60,7 @@ Syntax:
                 {"!=", Tokens.TOK_COMP_OP},
                 {"[+\\-*/]", Tokens.TOK_ARITH_OP},
                 {"!", Tokens.TOK_UN_OP},
-                {"\\.", Tokens.TOK_DOT},
+                {"[.,;@]", Tokens.TOK_DOT},
                 {"[0-9]+", Tokens.TOK_LITERAL},
                 {"[a-z][a-zA-Z_]*", Tokens.TOK_IDENT},
                 {"\\s", Tokens.TOK_WHITESPACE},
@@ -94,47 +92,160 @@ Syntax:
                 string matchedText = MaxMatches.First().Value;
                 Tokens matchedToken = MaxMatches.First().Key;
                 if (matchedToken != Tokens.TOK_WHITESPACE)
+                {
                     result.Add(new KeyValuePair<string, Tokens>(matchedText, matchedToken));
+                    Logging.Log(string.Format("Accepted token {0} as {1:G}", matchedText, matchedToken));
+                }
                 if (matchedText.Length < 1)
                 {
                     throw new ParseError(string.Format("Match {0} is too short", matchedText));
                 }
                 index += matchedText.Length;
-                Logging.Log(string.Format("Accepted token {0} as {1:G}", matchedText, matchedToken));
             }
             Logging.Log("Tokenisation complete!");
             return result;
         }
 
+        public class ASTNode
+        {
+            public KeyValuePair<string, Tokens> mToken;
+            public List<ASTNode> mChildren;
+            public ASTNode(KeyValuePair<string, Tokens> token)
+            {
+                mToken = token;
+                mChildren = new List<ASTNode>();
+            }
+            public void Add(ASTNode child)
+            {
+                mChildren.Add(child);
+            }
+            public override string ToString()
+            {
+                string s = "";
+                foreach (ASTNode n in mChildren)
+                    s += " " + n.ToString();
+                return string.Format("({0}:{1}{2})", mToken.Value.ToString(), mToken.Key, s);
+            }
+        }
+
+        public ASTNode mAST;
+        private ASTNode LexRecursive(IEnumerator<KeyValuePair<string, Tokens>> tokens)
+        {
+            if (!tokens.MoveNext())
+                throw new ParseError("Out of tokens");
+            KeyValuePair<string, Tokens> token = tokens.Current;
+            ASTNode n = new ASTNode(token);
+            switch(token.Value)
+            {
+            case Tokens.TOK_KEYWORD:
+                if (token.Key.Equals("ON"))
+                {
+                    ASTNode expr = LexRecursive(tokens);
+                    if (expr.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("ON expr was bad: " + expr.ToString());
+                    n.Add(expr);
+                    ASTNode actn = LexRecursive(tokens);
+                    if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("DO"))
+                        throw new ParseError("ON DO was bad: " + actn.ToString());
+                    n.Add(actn);
+                    break;
+                }
+                if (token.Key.Equals("IF"))
+                {
+                    ASTNode expr = LexRecursive(tokens);
+                    if (expr.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("IF expr was bad: " + expr.ToString());
+                    n.Add(expr);
+                    ASTNode actn = LexRecursive(tokens);
+                    if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("THEN"))
+                        throw new ParseError("IF THEN was bad: " + actn.ToString());
+                    n.Add(actn);
+                    break;
+                }
+                if (token.Key.Equals("DO"))
+                {
+                    ASTNode actn = LexRecursive(tokens);
+                    if (actn.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("DO actn was bad: " + actn.ToString());
+                    n.Add(actn);
+                    break;
+                }
+                if (token.Key.Equals("THEN"))
+                {
+                    ASTNode actn = LexRecursive(tokens);
+                    if (actn.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("THEN actn was bad: " + actn.ToString());
+                    n.Add(actn);
+                    break;
+                }
+                throw new ParseError(token.Key); // can't happen
+            case Tokens.TOK_LOG_OP:
+            case Tokens.TOK_ARITH_OP:
+            case Tokens.TOK_COMP_OP:
+            case Tokens.TOK_DOT:
+                if (token.Key.Equals("."))
+                {
+                    ASTNode sup = LexRecursive(tokens);
+                    if (sup.mToken.Value != Tokens.TOK_IDENT)
+                        throw new ParseError(token.Key + " sup expr was bad: " + sup.ToString());
+                    n.Add(sup);
+                    ASTNode sub = LexRecursive(tokens);
+                    if (sub.mToken.Value != Tokens.TOK_IDENT)
+                        throw new ParseError(token.Key + " sub expr was bad: " + sub.ToString());
+                    n.Add(sub);
+                    break;
+                }
+                ASTNode left = LexRecursive(tokens);
+                if (left.mToken.Value == Tokens.TOK_KEYWORD ||
+                    (token.Key.Equals("@") &&
+                     left.mToken.Value != Tokens.TOK_IDENT &&
+                     !left.mToken.Key.Equals(".")
+                    ))
+                    throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
+                n.Add(left);
+                ASTNode right = LexRecursive(tokens);
+                if (right.mToken.Value == Tokens.TOK_KEYWORD)
+                    throw new ParseError(token.Key + " right expr was bad: " + right.ToString());
+                n.Add(right);
+                break;
+            case Tokens.TOK_UN_OP:
+                ASTNode child = LexRecursive(tokens);
+                if (child.mToken.Value == Tokens.TOK_KEYWORD)
+                    throw new ParseError(token.Key + " child expr was bad: " + child.ToString());
+                n.Add(child);
+                break;
+            case Tokens.TOK_IDENT:
+            case Tokens.TOK_LITERAL:
+                break;
+            default:
+                throw new ParseError(token.Value.ToString() + ": " + token.Key); // can't happen
+            }
+            return n;
+        }
+
+        private ASTNode Lex(List<KeyValuePair<string, Tokens>> tokens)
+        {
+            IEnumerator<KeyValuePair<string, Tokens>> iTokens = tokens.GetEnumerator();
+            ASTNode n = LexRecursive(iTokens);
+            if (iTokens.MoveNext())
+                throw new ParseError("Leftover token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
+            return n;
+        }
+
         public Instruction (string text)
         {
             mText = text;
-            KPU.Logging.Log("Instruction: Parser not written yet!");
             List<KeyValuePair<string, Tokens>> tokens = Tokenise(text);
+            mImemWords = tokens.Count;
+            Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
+            mAST = Lex(tokens);
+            Logging.Log(mAST.ToString());
         }
 
-        public int imemWords { get { return 0; } }
+        private int mImemWords = 0;
+        public int imemWords { get { return mImemWords; } }
 
-        private bool eval(Processor p)
-        {
-            return false;
-        }
-
-        public bool checkTrigger(Processor p)
-        {
-            if (edgeTriggered)
-            {
-                bool oldValue = lastValue, newValue = eval(p);
-                lastValue = newValue;
-                return newValue && !oldValue;
-            }
-            else
-            {
-                return eval(p);
-            }
-        }
-
-        public void exec(Processor p)
+        public void eval(Processor p)
         {
         }
     }
@@ -336,12 +447,12 @@ Syntax:
             inputs.Add(new SrfSpeed(parentVessel));
 
             // Short program (autolander) for testing
-            //AddInstruction("ON < altitude 10000 DO orient.hold srfRetrograde, engine.activate");
-            AddInstruction("ON < srfSpeed / srfHeight 100 DO throttle.set 0");
-            AddInstruction("ON < srfHeight 250 DO gear.extend");
-            AddInstruction("ON AND gear.landingSensor < srfHeight 50 DO engine.deactivate, orient.hold srfCustom 90 90 90");
-            AddInstruction("IF > srfSpeed / srfHeight 16 THEN throttle.incr 25");
-            AddInstruction("IF < srfSpeed / srfHeight 20 THEN throttle.decr 25");
+            //AddInstruction("ON < altitude 10000 DO ; @. orient hold srfRetrograde . engine activate");
+            AddInstruction("ON < srfSpeed / srfHeight 100 DO @.throttle set 0");
+            AddInstruction("ON < srfHeight 250 DO .gear extend");
+            AddInstruction("ON AND gear < srfHeight 50 DO ; .engine deactivate @.orient hold ,,, srfCustom 90 90 90");
+            AddInstruction("IF > srfSpeed / srfHeight 16 THEN @.throttle incr 25");
+            AddInstruction("IF < srfSpeed / srfHeight 20 THEN @.throttle decr 25");
         }
 
         public bool AddInstruction(string text)
@@ -380,10 +491,7 @@ Syntax:
             {
                 foreach (Instruction i in instructions)
                 {
-                    if (i.checkTrigger(this))
-                    {
-                        i.exec(this);
-                    }
+                    i.eval(this);
                 }
             }
         }
