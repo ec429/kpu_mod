@@ -420,7 +420,7 @@ Tokens:
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
-        int imemWords;
+        public int imemWords;
         public List<Instruction> instructions;
 
         private Part mPart;

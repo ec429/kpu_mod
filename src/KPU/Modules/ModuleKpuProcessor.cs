@@ -20,6 +20,8 @@ namespace KPU.Modules
 
         [KSPField()]
         public bool isRunning = true;
+        [KSPField(guiName = "IMEM free")]
+        public int GUI_imemWords;
 
         KPU.UI.WatchWindow mWatchWindow;
 
@@ -90,7 +92,17 @@ namespace KPU.Modules
 
         public override void OnUpdate()
         {
-            if (mProcessor != null) mProcessor.OnUpdate();
+            if (mProcessor != null)
+            {
+                mProcessor.OnUpdate();
+                GUI_imemWords = mProcessor.imemWords;
+                Fields["GUI_imemWords"].guiActive = true;
+            }
+            else
+            {
+                GUI_imemWords = -1;
+                Fields["GUI_imemWords"].guiActive = false;
+            }
         }
 
         public void OnVesselChange(Vessel v)
