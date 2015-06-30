@@ -7,10 +7,10 @@ namespace KPU.Processor
 {
     public class Instruction
     {
-        public class ParseError : System.Exception
+        public class ErrorMessage : System.Exception
         {
             public string mErrText;
-            public ParseError(string errText)
+            public ErrorMessage(string errText)
             {
                 mErrText = errText;
             }
@@ -19,35 +19,29 @@ namespace KPU.Processor
                 return mErrText;
             }
         }
+        public class ParseError : ErrorMessage
+        {
+            public ParseError(string errText)
+               : base(errText)
+            {
+}
+        }
+        public class EvalError : ErrorMessage
+        {
+            public EvalError(string errText)
+               : base(errText)
+            {
+            }
+        }
         public string mText;
 
+        public bool skip = false;
         private bool lastValue = false;
 
-        /*
-Tokens:
-    keywords: ON DO IF THEN AND OR
-    operators: < <= == >= > != + - * / ! . , ; @
-    literals: [0-9]+
-    identifiers: [a-zA-Z_]+
-        Syntax:
-    stmt    ::= on-stmt | if-stmt | act-list
-    on-stmt ::= ON expr DO action-list
-    if-stmt ::= IF expr THEN action-list
-    act-list::= (; action-list)? action
-    expr    ::= un-op expr | bin-op expr expr | dot-expr | literal
-    un-op   ::= !
-    bin-op  ::= log-op | comp-op | arith-op
-    log-op  ::= AND | OR
-    comp-op ::= < | <= | == | >= | > | !=
-    arith-op::= + | - | * | /
-    dot-expr::= (. dot-expr)? identifier
-    action  ::= dot-expr | @ dot-expr expr-lst?
-    expr-lst::= (, expr-lst)? expr
-        */
-        public enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_DOT, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
+        public enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
         {
-            Logging.Log("Attempting to tokenise " + text);
+            //Logging.Log("Attempting to tokenise " + text);
             List<KeyValuePair<string, Tokens>> result = new List<KeyValuePair<string, Tokens>>();
             Dictionary<string, Tokens> TokenDict = new Dictionary<string, Tokens>() {
                 {"ON", Tokens.TOK_KEYWORD},
@@ -56,13 +50,14 @@ Tokens:
                 {"THEN", Tokens.TOK_KEYWORD},
                 {"AND", Tokens.TOK_LOG_OP},
                 {"OR", Tokens.TOK_LOG_OP},
-                {"[<=>]=?", Tokens.TOK_COMP_OP},
-                {"!=", Tokens.TOK_COMP_OP},
+                {"[<>]", Tokens.TOK_COMP_OP},
                 {"[+\\-*/]", Tokens.TOK_ARITH_OP},
                 {"!", Tokens.TOK_UN_OP},
-                {"[.,;@]", Tokens.TOK_DOT},
-                {"[0-9]+", Tokens.TOK_LITERAL},
-                {"[a-z][a-zA-Z_]*", Tokens.TOK_IDENT},
+                {"@", Tokens.TOK_AT},
+                {",", Tokens.TOK_COMMA},
+                {";", Tokens.TOK_SEMI},
+                {"[0-9]+(\\.[0-9]+)?", Tokens.TOK_LITERAL},
+                {"[a-z][a-zA-Z_.]*", Tokens.TOK_IDENT},
                 {"\\s", Tokens.TOK_WHITESPACE},
             };
             int index = 0;
@@ -94,7 +89,7 @@ Tokens:
                 if (matchedToken != Tokens.TOK_WHITESPACE)
                 {
                     result.Add(new KeyValuePair<string, Tokens>(matchedText, matchedToken));
-                    Logging.Log(string.Format("Accepted token {0} as {1:G}", matchedText, matchedToken));
+                    //Logging.Log(string.Format("Accepted token {0} as {1:G}", matchedText, matchedToken));
                 }
                 if (matchedText.Length < 1)
                 {
@@ -102,7 +97,7 @@ Tokens:
                 }
                 index += matchedText.Length;
             }
-            Logging.Log("Tokenisation complete!");
+            //Logging.Log("Tokenisation complete!");
             return result;
         }
 
@@ -135,16 +130,17 @@ Tokens:
                 throw new ParseError("Out of tokens");
             KeyValuePair<string, Tokens> token = tokens.Current;
             ASTNode n = new ASTNode(token);
+            ASTNode left, right, child, cond, actn;
             switch(token.Value)
             {
             case Tokens.TOK_KEYWORD:
                 if (token.Key.Equals("ON"))
                 {
-                    ASTNode expr = LexRecursive(tokens);
-                    if (expr.mToken.Value == Tokens.TOK_KEYWORD)
-                        throw new ParseError("ON expr was bad: " + expr.ToString());
-                    n.Add(expr);
-                    ASTNode actn = LexRecursive(tokens);
+                    cond = LexRecursive(tokens);
+                    if (cond.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("ON cond was bad: " + cond.ToString());
+                    n.Add(cond);
+                    actn = LexRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("DO"))
                         throw new ParseError("ON DO was bad: " + actn.ToString());
                     n.Add(actn);
@@ -152,11 +148,11 @@ Tokens:
                 }
                 if (token.Key.Equals("IF"))
                 {
-                    ASTNode expr = LexRecursive(tokens);
-                    if (expr.mToken.Value == Tokens.TOK_KEYWORD)
-                        throw new ParseError("IF expr was bad: " + expr.ToString());
-                    n.Add(expr);
-                    ASTNode actn = LexRecursive(tokens);
+                    cond = LexRecursive(tokens);
+                    if (cond.mToken.Value == Tokens.TOK_KEYWORD)
+                        throw new ParseError("IF cond was bad: " + cond.ToString());
+                    n.Add(cond);
+                    actn = LexRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("THEN"))
                         throw new ParseError("IF THEN was bad: " + actn.ToString());
                     n.Add(actn);
@@ -164,16 +160,18 @@ Tokens:
                 }
                 if (token.Key.Equals("DO"))
                 {
-                    ASTNode actn = LexRecursive(tokens);
-                    if (actn.mToken.Value == Tokens.TOK_KEYWORD)
+                    actn = LexRecursive(tokens);
+                    if (actn.mToken.Value != Tokens.TOK_SEMI &&
+                        actn.mToken.Value != Tokens.TOK_AT)
                         throw new ParseError("DO actn was bad: " + actn.ToString());
                     n.Add(actn);
                     break;
                 }
                 if (token.Key.Equals("THEN"))
                 {
-                    ASTNode actn = LexRecursive(tokens);
-                    if (actn.mToken.Value == Tokens.TOK_KEYWORD)
+                    actn = LexRecursive(tokens);
+                    if (actn.mToken.Value != Tokens.TOK_SEMI &&
+                        actn.mToken.Value != Tokens.TOK_AT)
                         throw new ParseError("THEN actn was bad: " + actn.ToString());
                     n.Add(actn);
                     break;
@@ -182,40 +180,72 @@ Tokens:
             case Tokens.TOK_LOG_OP:
             case Tokens.TOK_ARITH_OP:
             case Tokens.TOK_COMP_OP:
-            case Tokens.TOK_DOT:
-                if (token.Key.Equals("."))
-                {
-                    ASTNode sup = LexRecursive(tokens);
-                    if (sup.mToken.Value != Tokens.TOK_IDENT)
-                        throw new ParseError(token.Key + " sup expr was bad: " + sup.ToString());
-                    n.Add(sup);
-                    ASTNode sub = LexRecursive(tokens);
-                    if (sub.mToken.Value != Tokens.TOK_IDENT)
-                        throw new ParseError(token.Key + " sub expr was bad: " + sub.ToString());
-                    n.Add(sub);
-                    break;
-                }
-                ASTNode left = LexRecursive(tokens);
+                left = LexRecursive(tokens);
                 if (left.mToken.Value == Tokens.TOK_KEYWORD ||
-                    (token.Key.Equals("@") &&
-                     left.mToken.Value != Tokens.TOK_IDENT &&
-                     !left.mToken.Key.Equals(".")
-                    ))
+                    left.mToken.Value == Tokens.TOK_AT ||
+                    left.mToken.Value == Tokens.TOK_COMMA ||
+                    left.mToken.Value == Tokens.TOK_SEMI)
                     throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
                 n.Add(left);
-                ASTNode right = LexRecursive(tokens);
-                if (right.mToken.Value == Tokens.TOK_KEYWORD)
+                right = LexRecursive(tokens);
+                if (right.mToken.Value == Tokens.TOK_KEYWORD ||
+                    right.mToken.Value == Tokens.TOK_AT ||
+                    right.mToken.Value == Tokens.TOK_COMMA ||
+                    right.mToken.Value == Tokens.TOK_SEMI)
                     throw new ParseError(token.Key + " right expr was bad: " + right.ToString());
                 n.Add(right);
                 break;
             case Tokens.TOK_UN_OP:
-                ASTNode child = LexRecursive(tokens);
-                if (child.mToken.Value == Tokens.TOK_KEYWORD)
+                child = LexRecursive(tokens);
+                if (child.mToken.Value == Tokens.TOK_KEYWORD ||
+                    child.mToken.Value == Tokens.TOK_AT ||
+                    child.mToken.Value == Tokens.TOK_COMMA ||
+                    child.mToken.Value == Tokens.TOK_SEMI)
                     throw new ParseError(token.Key + " child expr was bad: " + child.ToString());
                 n.Add(child);
                 break;
             case Tokens.TOK_IDENT:
             case Tokens.TOK_LITERAL:
+                break;
+            case Tokens.TOK_AT:
+                left = LexRecursive(tokens);
+                if (left.mToken.Value != Tokens.TOK_IDENT)
+                    throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
+                n.Add(left);
+                right = LexRecursive(tokens);
+                if (right.mToken.Value == Tokens.TOK_KEYWORD ||
+                    right.mToken.Value == Tokens.TOK_AT ||
+                    right.mToken.Value == Tokens.TOK_SEMI)
+                    throw new ParseError(token.Key + " right expr was bad: " + right.ToString());
+                n.Add(right);
+                break;
+            case Tokens.TOK_COMMA:
+                left = LexRecursive(tokens);
+                if (left.mToken.Value == Tokens.TOK_KEYWORD ||
+                    left.mToken.Value == Tokens.TOK_AT ||
+                    left.mToken.Value == Tokens.TOK_SEMI)
+                    throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
+                n.Add(left);
+                right = LexRecursive(tokens);
+                if (right.mToken.Value == Tokens.TOK_KEYWORD ||
+                    right.mToken.Value == Tokens.TOK_AT ||
+                    right.mToken.Value == Tokens.TOK_SEMI ||
+                    right.mToken.Value == Tokens.TOK_COMMA)
+                    throw new ParseError(token.Key + " right expr was bad: " + right.ToString());
+                n.Add(right);
+                break;
+            case Tokens.TOK_SEMI:
+                left = LexRecursive(tokens);
+                if (left.mToken.Value != Tokens.TOK_IDENT &&
+                    left.mToken.Value != Tokens.TOK_AT &&
+                    left.mToken.Value != Tokens.TOK_SEMI)
+                    throw new ParseError("; left expr was bad: " + left.ToString());
+                n.Add(left);
+                right = LexRecursive(tokens);
+                if (right.mToken.Value != Tokens.TOK_IDENT &&
+                    right.mToken.Value != Tokens.TOK_AT)
+                    throw new ParseError("; right expr was bad: " + right.ToString());
+                n.Add(right);
                 break;
             default:
                 throw new ParseError(token.Value.ToString() + ": " + token.Key); // can't happen
@@ -229,6 +259,9 @@ Tokens:
             ASTNode n = LexRecursive(iTokens);
             if (iTokens.MoveNext())
                 throw new ParseError("Leftover token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
+            if (n.mToken.Value != Tokens.TOK_KEYWORD ||
+                (n.mToken.Key != "ON" && n.mToken.Key != "IF"))
+                throw new ParseError("Bad root token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
             return n;
         }
 
@@ -245,8 +278,206 @@ Tokens:
         private int mImemWords = 0;
         public int imemWords { get { return mImemWords; } }
 
+        public enum Type { BOOLEAN, DOUBLE, NAME, TUPLE, VOID };
+
+        public class Value
+        {
+            public Type typ;
+            private bool mBool = false;
+            private double mDouble = 0f;
+            private string mName = null;
+            private List<Value> mTuple = new List<Value>(2);
+            public bool b { get { return mBool; }}
+            public double d { get { return mDouble; }}
+            public string n { get { return mName; }}
+            public List<Value> t { get { return mTuple; }}
+            public Value(bool b) { typ = Type.BOOLEAN; mBool = b; }
+            public Value(double d) { typ = Type.DOUBLE; mDouble = d; }
+            public Value(string n) { typ = Type.NAME; mName = n; }
+            public Value(Value car, Value cdr) { typ = Type.TUPLE; mTuple[0] = car; mTuple[1] = cdr; }
+            public Value() { typ = Type.VOID; }
+            public List<Value> l { get {
+                if (typ == Type.TUPLE)
+                    return new List<Value>(t[0].l.Concat(t[1].l));
+                return new List<Value>() {this};
+            }}
+            public override string ToString()
+            {
+                switch(typ)
+                {
+                case Type.BOOLEAN:
+                    return mBool ? "True" : "False";
+                case Type.DOUBLE:
+                    return mDouble.ToString("g4");
+                case Type.NAME:
+                    return "[" + mName + "]";
+                case Type.TUPLE:
+                    string s = "(";
+                    foreach (Value v in mTuple)
+                    {
+                        s += v.ToString();
+                        s += ",";
+                    }
+                    s.TrimEnd(',');
+                    s += ")";
+                    return s;
+                case Type.VOID:
+                    return "void";
+                default:
+                    return "{" + typ.ToString() + "}";
+                }
+            }
+        }
+
+        public void assertType(ASTNode n, string s, Type t, Value v)
+        {
+            if (v.typ != t)
+                throw new EvalError(n.mToken.Key + ": expected " + t.ToString() + ", " + s + " is " + v.typ.ToString() + " " + v.ToString());
+        }
+
+        public Value exec(string name, Value arglist, Processor p)
+        {
+            List<Value> args = arglist.l;
+            string s = "exec " + name + ":";
+            foreach (Value arg in args)
+                s += " " + arg.ToString();
+            Logging.Log(s);
+            return new Value();
+        }
+
+        public Value evalRecursive(ASTNode n, Processor p)
+        {
+            Value left, right;
+            switch(n.mToken.Value)
+            {
+            case Tokens.TOK_ARITH_OP: // + - * /
+                left = evalRecursive(n.mChildren[0], p);
+                right = evalRecursive(n.mChildren[1], p);
+                assertType(n, "left", Type.DOUBLE, left);
+                assertType(n, "right", Type.DOUBLE, right);
+                if (n.mToken.Key.Equals("+"))
+                    return new Value(left.d + right.d);
+                else if (n.mToken.Key.Equals("-"))
+                    return new Value(left.d - right.d);
+                else if (n.mToken.Key.Equals("*"))
+                    return new Value(left.d * right.d);
+                else if (n.mToken.Key.Equals("/"))
+                    return new Value(left.d / right.d);
+                else // can't happen
+                    throw new EvalError(n.mToken.Key);
+            case Tokens.TOK_AT:
+                left = evalRecursive(n.mChildren[0], p);
+                right = evalRecursive(n.mChildren[1], p);
+                assertType(n, "left", Type.NAME, left);
+                return exec(left.n, right, p);
+            case Tokens.TOK_COMMA:
+                left = evalRecursive(n.mChildren[0], p);
+                right = evalRecursive(n.mChildren[1], p);
+                return new Value(left, right);
+            case Tokens.TOK_COMP_OP: // < >
+                left = evalRecursive(n.mChildren[0], p);
+                right = evalRecursive(n.mChildren[1], p);
+                assertType(n, "left", Type.DOUBLE, left);
+                assertType(n, "right", Type.DOUBLE, right);
+                if (n.mToken.Key.Equals("<"))
+                    return new Value(left.d < right.d);
+                else if (n.mToken.Key.Equals(">"))
+                    return new Value(left.d > right.d);
+                else // can't happen
+                    throw new EvalError(n.mToken.Key);
+            case Tokens.TOK_IDENT:
+                if (n.mToken.Key.Equals("true"))
+                    return new Value(true);
+                if (n.mToken.Key.Equals("false"))
+                    return new Value(false);
+                if (p.inputValues.ContainsKey(n.mToken.Key))
+                {
+                    InputValue i = p.inputValues[n.mToken.Key];
+                    if (i.typ == InputType.BOOLEAN)
+                        return new Value(i.Bool);
+                    if (i.typ == InputType.DOUBLE)
+                        return new Value(i.Double);
+                    return new Value();
+                }
+                return new Value(n.mToken.Key);
+            case Tokens.TOK_KEYWORD: // ON DO IF THEN
+                if (n.mToken.Key.Equals("ON"))
+                {
+                    Value cond = evalRecursive(n.mChildren[0], p);
+                    assertType(n, "cond", Type.BOOLEAN, cond);
+                    if (cond.b && !lastValue)
+                    {
+                        Logging.Log("edge fired! " + mText);
+                        evalRecursive(n.mChildren[1], p);
+                    }
+                    lastValue = cond.b;
+                    return new Value();
+                }
+                if (n.mToken.Key.Equals("IF"))
+                {
+                    Value cond = evalRecursive(n.mChildren[0], p);
+                    assertType(n, "cond", Type.BOOLEAN, cond);
+                    if (cond.b)
+                    {
+                        evalRecursive(n.mChildren[1], p);
+                    }
+                    return new Value();
+                }
+                if (n.mToken.Key.Equals("DO"))
+                    return evalRecursive(n.mChildren[0], p);
+                if (n.mToken.Key.Equals("THEN"))
+                    return evalRecursive(n.mChildren[0], p);
+                // can't happen
+                throw new EvalError(n.mToken.Key);
+            case Tokens.TOK_LITERAL:
+                try
+                {
+                    return new Value(Double.Parse(n.mToken.Key));
+                }
+                catch (Exception) // can't happen?
+                {
+                    throw new EvalError(n.mToken.Key);
+                }
+            case Tokens.TOK_LOG_OP: // AND OR
+                left = evalRecursive(n.mChildren[0], p);
+                right = evalRecursive(n.mChildren[1], p);
+                assertType(n, "left", Type.BOOLEAN, left);
+                assertType(n, "right", Type.BOOLEAN, right);
+                if (n.mToken.Key.Equals("AND"))
+                    return new Value(left.b && right.b);
+                else if (n.mToken.Key.Equals("OR"))
+                    return new Value(left.b || right.b);
+                else // can't happen
+                    throw new EvalError(n.mToken.Key);
+            case Tokens.TOK_SEMI:
+                evalRecursive(n.mChildren[0], p);
+                evalRecursive(n.mChildren[1], p);
+                return new Value();
+            case Tokens.TOK_UN_OP: // !
+                if (!n.mToken.Key.Equals("!")) // can't happen
+                    throw new EvalError(n.mToken.Key);
+                left = evalRecursive(n.mChildren[0], p);
+                assertType(n, "child", Type.BOOLEAN, left);
+                return new Value(!left.b);
+            default: // can't happen
+                throw new EvalError(n.mToken.Value.ToString());
+            }
+        }
+
         public void eval(Processor p)
         {
+            if (!skip)
+            {
+                try
+                {
+                    evalRecursive(mAST, p);
+                }
+                catch (Instruction.EvalError exc)
+                {
+                    Logging.Log(exc.ToString());
+                    skip = true;
+                }
+            }
         }
     }
 
@@ -447,12 +678,12 @@ Tokens:
             inputs.Add(new SrfSpeed(parentVessel));
 
             // Short program (autolander) for testing
-            //AddInstruction("ON < altitude 10000 DO ; @. orient hold srfRetrograde . engine activate");
-            AddInstruction("ON < srfSpeed / srfHeight 100 DO @.throttle set 0");
-            AddInstruction("ON < srfHeight 250 DO .gear extend");
-            AddInstruction("ON AND gear < srfHeight 50 DO ; .engine deactivate @.orient hold ,,, srfCustom 90 90 90");
-            AddInstruction("IF > srfSpeed / srfHeight 16 THEN @.throttle incr 25");
-            AddInstruction("IF < srfSpeed / srfHeight 20 THEN @.throttle decr 25");
+            //AddInstruction("ON < altitude 10000 DO ; @orient.hold srfRetrograde @engine.activate true");
+            AddInstruction("ON < srfSpeed / srfHeight 100 DO @throttle.set 0");
+            AddInstruction("ON < srfHeight 250 DO @gear.extend true");
+            AddInstruction("ON AND gear < srfHeight 50 DO ; @engine.activate false @orient.hold ,,, srfCustom 90 90 90");
+            //AddInstruction("IF > srfSpeed / srfHeight 16 THEN @throttle.incr 25");
+            //AddInstruction("IF < srfSpeed / srfHeight 20 THEN @throttle.decr 25");
         }
 
         public bool AddInstruction(string text)
