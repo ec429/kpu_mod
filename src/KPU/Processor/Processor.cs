@@ -286,7 +286,7 @@ namespace KPU.Processor
             private bool mBool = false;
             private double mDouble = 0f;
             private string mName = null;
-            private List<Value> mTuple = new List<Value>(2);
+            private List<Value> mTuple = null;
             public bool b { get { return mBool; }}
             public double d { get { return mDouble; }}
             public string n { get { return mName; }}
@@ -294,7 +294,7 @@ namespace KPU.Processor
             public Value(bool b) { typ = Type.BOOLEAN; mBool = b; }
             public Value(double d) { typ = Type.DOUBLE; mDouble = d; }
             public Value(string n) { typ = Type.NAME; mName = n; }
-            public Value(Value car, Value cdr) { typ = Type.TUPLE; mTuple[0] = car; mTuple[1] = cdr; }
+            public Value(Value car, Value cdr) { typ = Type.TUPLE; mTuple = new List<Value>(2){car, cdr}; }
             public Value() { typ = Type.VOID; }
             public List<Value> l { get {
                 if (typ == Type.TUPLE)
@@ -408,7 +408,14 @@ namespace KPU.Processor
                     if (cond.b && !lastValue)
                     {
                         Logging.Log("edge fired! " + mText);
-                        evalRecursive(n.mChildren[1], p);
+                        try
+                        {
+                            evalRecursive(n.mChildren[1], p);
+                        }
+                        catch(Exception ex)
+                        {
+                            Logging.Log(ex.ToString());
+                        }
                     }
                     lastValue = cond.b;
                     return new Value();
@@ -655,7 +662,7 @@ namespace KPU.Processor
         public List<Instruction> instructions;
 
         private Part mPart;
-        public bool isRunning = true;
+        public bool isRunning;
 
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
@@ -671,6 +678,7 @@ namespace KPU.Processor
             hasLogicOps = module.hasLogicOps;
             hasArithOps = module.hasArithOps;
             imemWords = module.imemWords;
+            isRunning = module.isRunning;
             instructions = new List<Instruction>();
             inputs.Add(new Batteries(parentVessel));
             inputs.Add(new Gear(parentVessel));

@@ -19,9 +19,24 @@ namespace KPU.Modules
         public int imemWords;
 
         [KSPField()]
-        public bool isRunning = true;
+        public bool isRunning = false;
         [KSPField(guiName = "IMEM free")]
         public int GUI_imemWords;
+
+        private void setRunning()
+        {
+            if (mProcessor != null)
+                mProcessor.isRunning = isRunning;
+            Events["EventToggle"].guiName = isRunning ? "Halt Program" : "Run Program";
+            Events["EventToggle"].guiActive = true;
+        }
+
+        [KSPEvent(name = "EventToggle", guiName = "Toggle Program", guiActive = false)]
+        public void EventToggle()
+        {
+            isRunning = !isRunning;
+            setRunning();
+        }
 
         KPU.UI.WatchWindow mWatchWindow;
 
@@ -57,6 +72,7 @@ namespace KPU.Modules
         {
             mProcessor = new Processor.Processor(part, this);
             GameEvents.onVesselChange.Add(OnVesselChange);
+            setRunning();
         }
 
         public override void OnSave(ConfigNode node)
