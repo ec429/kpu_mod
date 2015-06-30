@@ -165,6 +165,26 @@ namespace KPU.Processor
         }
     }
 
+    public class SrfSpeed : SensorDriven, IInputData
+    {
+        public override string name { get { return "srfSpeed"; } }
+        public InputType typ { get { return InputType.DOUBLE; } }
+        public InputValue value
+        {
+            get
+            {
+                if (!available) return new InputValue(Double.PositiveInfinity);
+                double s = parentVessel.GetSrfVelocity().magnitude;
+                return new InputValue(Math.Round(s / res) * res);
+            }
+        }
+
+        public SrfSpeed (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -191,6 +211,7 @@ namespace KPU.Processor
             inputs.Add(new Batteries(parentVessel));
             inputs.Add(new Gear(parentVessel));
             inputs.Add(new SrfHeight(parentVessel));
+            inputs.Add(new SrfSpeed(parentVessel));
         }
 
         public Dictionary<string, InputValue> inputValues;
