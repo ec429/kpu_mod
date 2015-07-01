@@ -454,6 +454,8 @@ namespace KPU.Processor
                     if (cond.b && !lastValue)
                     {
                         Logging.Log("edge fired! " + mText);
+                        if (TimeWarp.CurrentRateIndex > 0)
+                            TimeWarp.SetRate(0, true); // force 1x speed
                         try
                         {
                             evalRecursive(n.mChildren[1], p);
@@ -733,7 +735,8 @@ namespace KPU.Processor
         string name { get; }
         Instruction.Type typ { get; }
         Instruction.Value value { get; }
-        void Invoke(FlightCtrlState fcs);
+        void Invoke(FlightCtrlState fcs, Processor p);
+        void clean();
         void setValue(Instruction.Value value);
         void slewValue(Instruction.Value rate);
     }
@@ -746,10 +749,16 @@ namespace KPU.Processor
         private double mSlewRate = 0;
         public Instruction.Value value { get { return new Instruction.Value(mValue); } }
 
-        public void Invoke(FlightCtrlState fcs)
+        public void Invoke(FlightCtrlState fcs, Processor p)
         {
             setTo(mValue + mSlewRate * TimeWarp.deltaTime);
             fcs.mainThrottle = (float)mValue / 100.0f;
+            mSlewRate = 0;
+        }
+
+        public void clean()
+        {
+            mValue = 0;
             mSlewRate = 0;
         }
 
@@ -775,6 +784,72 @@ namespace KPU.Processor
         }
     }
 
+    public class Orient : IOutputData
+    {
+        public string name { get { return "orient"; } }
+        public Instruction.Type typ {get { return Instruction.Type.NAME; } }
+        private string mValue = "none";
+        public Instruction.Value value { get { return new Instruction.Value(mValue); } }
+
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+            if (!mValue.Equals("none"))
+                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+        }
+
+        public void clean()
+        {
+            mValue = "none";
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.NAME)
+            {
+                mValue = value.n;
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+        }
+    }
+
+    public class GearOutput : IOutputData
+    {
+        public string name { get { return "gear"; } }
+        public Instruction.Type typ {get { return Instruction.Type.BOOLEAN; } }
+        private bool mValue = false;
+        private bool mChange = false;
+        public Instruction.Value value { get { return new Instruction.Value(mValue); } }
+
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+            if (mChange)
+                p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Gear, mValue);
+            mChange = false;
+        }
+
+        public void clean()
+        {
+            mValue = false;
+            mChange = false;
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.BOOLEAN)
+            {
+                mValue = value.b;
+                mChange = true;
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -782,7 +857,18 @@ namespace KPU.Processor
         public List<Instruction> instructions;
 
         private Part mPart;
-        public bool isRunning;
+        private bool mIsRunning;
+        public bool isRunning
+        {
+            get { return mIsRunning; }
+            set {
+                mIsRunning = value;
+                foreach (IOutputData o in outputs.Values)
+                {
+                    o.clean();
+                }
+            }
+        }
 
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
@@ -810,15 +896,18 @@ namespace KPU.Processor
             inputs.Add(new SrfSpeed(parentVessel));
             inputs.Add(new SrfVerticalSpeed(parentVessel));
             addOutput(new Throttle());
+            addOutput(new Orient());
+            addOutput(new GearOutput());
+
+            initPIDParameters();
 
             // Short program (autolander) for testing
-            //AddInstruction("ON < altitude 10000 DO ; @orient.set srfRetrograde @engine.set true");
+            AddInstruction("ON < srfHeight 10000 DO @orient.set srfRetrograde");
             AddInstruction("ON < srfHeight 250 DO @gear.set true");
-            AddInstruction("ON AND gear < srfHeight 50 DO ; @engine.set false @orient.set ,,, srfCustom 90 90 90");
-            AddInstruction("ON < srfVerticalSpeed - -4 / srfHeight 5 DO @throttle.set 100");
-            AddInstruction("ON < srfHeight 20 DO @orient.set ,,, srfCustom 90 90 90");
-            AddInstruction("ON > srfVerticalSpeed - -1 / srfHeight 6 DO @throttle.set 0");
-            AddInstruction("ON AND > srfHeight 2000 > srfSpeed / srfHeight 50 DO @throttle.set 100");
+            AddInstruction("ON AND < srfHeight 8000 > - / srfSpeed 3 srfVerticalSpeed + / srfHeight 10 10 DO @throttle.set 100");
+            AddInstruction("ON AND < srfHeight 8000 < - / srfSpeed 3 srfVerticalSpeed + / srfHeight 12 6 DO @throttle.set 0");
+            AddInstruction("ON < srfHeight 20 DO @orient.set orbVertical");
+            AddInstruction("IF AND gear < srfHeight 50 THEN ; @throttle.set 0 @orient.set none");
         }
 
         public bool AddInstruction(string text)
@@ -864,14 +953,61 @@ namespace KPU.Processor
 
         public void OnFlyByWire (FlightCtrlState fcs)
         {
-            OnUpdate(); // ensure outputs are up-to-date
             if (isRunning)
             {
+                OnUpdate(); // ensure outputs are up-to-date
                 foreach (IOutputData o in outputs.Values)
                 {
-                    o.Invoke(fcs);
+                    o.Invoke(fcs, this);
                 }
             }
+        }
+
+        public void OnFixedUpdate()
+        {
+            updatePIDParameters();
+        }
+
+        public PIDController pid { get; private set; }
+        public Vector3d lastAct { get; set; }
+        public double Tf = 0.3;
+        public double TfMin = 0.1;
+        public double TfMax = 0.5;
+        public double kpFactor = 3;
+        public double kiFactor = 6;
+        public double kdFactor = 0.5;
+
+        public void initPIDParameters()
+        {
+            pid = new PIDController(0, 0, 0, 1, -1);
+            pid.Kd = kdFactor / Tf;
+            pid.Kp = pid.Kd / (kpFactor * Math.Sqrt(2) * Tf);
+            pid.Ki = pid.Kp / (kiFactor * Math.Sqrt(2) * Tf);
+            pid.intAccum = Vector3.ClampMagnitude(pid.intAccum, 5);
+            lastAct = Vector3d.zero;
+        }
+
+        // Calculations of Tf are not safe during FlightComputer constructor
+        // Probably because the ship is only half-initialized...
+        public void updatePIDParameters()
+        {
+            if (parentVessel != null)
+            {
+                Vector3d torque = SteeringHelper.GetTorque(parentVessel,
+                    parentVessel.ctrlState != null ? parentVessel.ctrlState.mainThrottle : 0.0f);
+                var CoM = parentVessel.findWorldCenterOfMass();
+                var MoI = parentVessel.findLocalMOI(CoM);
+
+                Vector3d ratio = new Vector3d(
+                                 torque.x != 0 ? MoI.x / torque.x : 0,
+                                 torque.y != 0 ? MoI.y / torque.y : 0,
+                                 torque.z != 0 ? MoI.z / torque.z : 0
+                             );
+
+                Tf = Mathf.Clamp((float)ratio.magnitude / 20f, 2 * TimeWarp.fixedDeltaTime, 1f);
+                Tf = Mathf.Clamp((float)Tf, (float)TfMin, (float)TfMax);
+            }
+            initPIDParameters();
         }
 
         public void Save (ConfigNode node)
@@ -880,6 +1016,9 @@ namespace KPU.Processor
                 node.RemoveNode("Processor");
             
             ConfigNode Proc = new ConfigNode("Processor");
+
+            if (pid != null)
+                pid.Save(Proc);
 
             // TODO store instructions list in Proc
 
@@ -892,6 +1031,9 @@ namespace KPU.Processor
                 return;
             
             ConfigNode Proc = node.GetNode("Processor");
+
+            if (pid != null)
+                pid.Load(Proc);
 
             // TODO read instructions list from Proc
         }

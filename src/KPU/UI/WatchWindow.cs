@@ -10,7 +10,7 @@ namespace KPU.UI
         private GUIStyle mKeyStyle, mValueStyle, mHeadingStyle;
 
         public WatchWindow (KPU.Processor.Processor processor)
-            : base(Guid.NewGuid(), "KPU Watch", new Rect(100, 100, 200, 320), WindowAlign.Floating)
+            : base(Guid.NewGuid(), "KPU Watch", new Rect(100, 100, 240, 320), WindowAlign.Floating)
         {
             mProcessor = processor;
             mKeyStyle = new GUIStyle(HighLogic.Skin.label)
@@ -21,12 +21,12 @@ namespace KPU.UI
             };
             mValueStyle = new GUIStyle(HighLogic.Skin.label)
             {
-                fixedWidth = 72,
+                fixedWidth = 100,
                 fontSize = 11,
             };
             mHeadingStyle = new GUIStyle(HighLogic.Skin.label)
             {
-                fixedWidth = 170,
+                fixedWidth = 200,
                 fontStyle = FontStyle.Bold,
                 fontSize = 14,
             };
@@ -36,7 +36,7 @@ namespace KPU.UI
         {
             GUILayout.BeginVertical();
             {
-                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(180), GUILayout.Height(310));
+                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(220), GUILayout.Height(310));
                 if (mProcessor == null)
                 {
                     GUILayout.Label("I have no Processor!?", mKeyStyle);

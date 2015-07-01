@@ -78,6 +78,7 @@ namespace KPU.Modules
         public override void OnSave(ConfigNode node)
         {
             base.OnSave(node);
+            node.AddValue("isRunning", isRunning);
             try
             {
                 if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)
@@ -94,6 +95,12 @@ namespace KPU.Modules
         public override void OnLoad(ConfigNode node)
         {
             base.OnLoad(node);
+
+            string sIsRunning = node.GetValue("isRunning");
+            if (sIsRunning != null)
+                bool.TryParse(sIsRunning, out isRunning);
+            setRunning();
+
             try
             {
                 if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)

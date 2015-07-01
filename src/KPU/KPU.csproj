@@ -61,5 +61,7 @@
     <Compile Include="AddOns\AddOn.cs" />
     <Compile Include="KPUCore.cs" />
     <Compile Include="Modules\ModuleKpuSensor.cs" />
+    <Compile Include="Processor\FlightCore.cs" />
+    <Compile Include="Processor\PIDController.cs" />
   </ItemGroup>
 </Project>
