@@ -43,7 +43,7 @@ namespace KPU.Processor
         public string mText;
 
         public bool skip = false;
-        private bool lastValue = false;
+        public bool lastValue = false;
 
         public enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
@@ -277,9 +277,9 @@ namespace KPU.Processor
             mText = text;
             List<KeyValuePair<string, Tokens>> tokens = Tokenise(text);
             mImemWords = tokens.Count;
-            Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
+            //Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
             mAST = Lex(tokens);
-            Logging.Log(mAST.ToString());
+            //Logging.Log(mAST.ToString());
         }
 
         private int mImemWords = 0;
@@ -627,6 +627,50 @@ namespace KPU.Processor
 
     }
 
+    public class VesselTMR : IInputData
+    {
+        public string name { get { return "vesselTmr"; } }
+        public bool available { get { return TotalMass > 0.1f; }}
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public InputValue value { get { return new InputValue(TMR); } }
+        private Vessel parentVessel = null;
+
+        public VesselTMR (Vessel v)
+        {
+            parentVessel = v;
+        }
+
+        private double TotalThrust
+        {
+            get { return FlightCore.GetTotalThrust(parentVessel); }
+        }
+
+        private double TotalMass
+        {
+            get { return parentVessel.GetTotalMass(); }
+        }
+
+        private double TMR
+        {
+            get { return TotalMass > 0.1f ? TotalThrust / TotalMass : Double.PositiveInfinity; }
+        }
+
+    }
+
+    public class LocalG : IInputData // TODO this should be sensorDriven on Gravioli Detector
+    {
+        public string name { get { return "localGravity"; } }
+        public bool available { get { return true; }}
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
+        private Vessel parentVessel = null;
+
+        public LocalG (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
     public class SensorDriven
     {
         public virtual string name { get { return "abstract"; } }
@@ -895,22 +939,30 @@ namespace KPU.Processor
             inputs.Add(new SrfHeight(parentVessel));
             inputs.Add(new SrfSpeed(parentVessel));
             inputs.Add(new SrfVerticalSpeed(parentVessel));
+            inputs.Add(new VesselTMR(parentVessel));
+            inputs.Add(new LocalG(parentVessel));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new GearOutput());
 
             initPIDParameters();
+        }
 
-            // Short program (autolander) for testing
-            AddInstruction("ON < srfHeight 10000 DO @orient.set srfRetrograde");
-            AddInstruction("ON < srfHeight 250 DO @gear.set true");
-            AddInstruction("ON AND < srfHeight 8000 > - / srfSpeed 3 srfVerticalSpeed + / srfHeight 10 10 DO @throttle.set 100");
-            AddInstruction("ON AND < srfHeight 8000 < - / srfSpeed 3 srfVerticalSpeed + / srfHeight 12 6 DO @throttle.set 0");
-            AddInstruction("ON < srfHeight 20 DO @orient.set orbVertical");
-            AddInstruction("IF AND gear < srfHeight 50 THEN ; @throttle.set 0 @orient.set none");
+        public void ClearInstructions()
+        {
+            foreach (Instruction i in instructions)
+            {
+                imemWords += i.imemWords;
+            }
+            instructions.Clear();
         }
 
         public bool AddInstruction(string text)
+        {
+            return AddInstruction(text, false, false);
+        }
+
+        public bool AddInstruction(string text, bool lastValue, bool skip)
         {
             Instruction i;
             try
@@ -926,7 +978,7 @@ namespace KPU.Processor
                 return false;
             instructions.Add(i);
             imemWords -= i.imemWords;
-            Logging.Log("Added instruction: " + i.mText);
+            //Logging.Log("Added instruction: " + i.mText);
             return true;
         }
 
@@ -987,7 +1039,7 @@ namespace KPU.Processor
             lastAct = Vector3d.zero;
         }
 
-        // Calculations of Tf are not safe during FlightComputer constructor
+        // Calculations of Tf are not safe during Processor constructor
         // Probably because the ship is only half-initialized...
         public void updatePIDParameters()
         {
@@ -1007,7 +1059,6 @@ namespace KPU.Processor
                 Tf = Mathf.Clamp((float)ratio.magnitude / 20f, 2 * TimeWarp.fixedDeltaTime, 1f);
                 Tf = Mathf.Clamp((float)Tf, (float)TfMin, (float)TfMax);
             }
-            initPIDParameters();
         }
 
         public void Save (ConfigNode node)
@@ -1020,7 +1071,17 @@ namespace KPU.Processor
             if (pid != null)
                 pid.Save(Proc);
 
-            // TODO store instructions list in Proc
+            ConfigNode InstList = new ConfigNode("Instructions");
+            foreach (Instruction i in instructions)
+            {
+                ConfigNode Inst = new ConfigNode("Instruction");
+                Inst.AddValue("code", i.mText);
+                Inst.AddValue("lastValue", i.lastValue);
+                Inst.AddValue("skip", i.skip);
+                InstList.AddNode(Inst);
+            }
+
+            Proc.AddNode(InstList);
 
             node.AddNode(Proc);
         }
@@ -1035,7 +1096,22 @@ namespace KPU.Processor
             if (pid != null)
                 pid.Load(Proc);
 
-            // TODO read instructions list from Proc
+            ConfigNode InstList = Proc.GetNode("Instructions");
+            if (InstList != null)
+            {
+                ClearInstructions();
+                foreach (ConfigNode Inst in InstList.GetNodes("Instruction"))
+                {
+                    string code = Inst.GetValue("code");
+                    if (code != null)
+                    {
+                        bool lastValue = false, skip = false;
+                        bool.TryParse(Inst.GetValue("lastValue"), out lastValue);
+                        bool.TryParse(Inst.GetValue("skip"), out skip);
+                        AddInstruction(code, lastValue, skip);
+                    }
+                }
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ namespace KPU.AddOns
         /// <summary>Binding flags for invoking the methods</summary>
         private BindingFlags bFlags = BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static;
 
-        /// <summary>Assemlby loaded?</summary>
+        /// <summary>Assembly loaded?</summary>
         public bool assemblyLoaded { get { return this.loaded; } }
 
 

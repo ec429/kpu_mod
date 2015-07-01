@@ -196,8 +196,8 @@ namespace KPU.UI
                 InputLockManager.SetControlLock(ControlTypes.ALL_SHIP_CONTROLS, "KPULockControlForWindows");
                 InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS, "KPULockControlCamForWindows");
 
-                /*if (!RTCore.Instance.ctrlLockAddon.IsLockSet())
-                    RTCore.Instance.ctrlLockAddon.SetFullLock("KPU");*/
+                if (!KPUCore.Instance.ctrlLockAddon.IsLockSet())
+                    KPUCore.Instance.ctrlLockAddon.SetFullLock("KPU");
             }
         }
 
@@ -213,8 +213,8 @@ namespace KPU.UI
                 InputLockManager.RemoveControlLock("KPULockControlForWindows");
                 InputLockManager.RemoveControlLock("KPULockControlCamForWindows");
 
-                /*if (RTCore.Instance.ctrlLockAddon.IsLockSet("KPU"))
-                    RTCore.Instance.ctrlLockAddon.UnsetFullLock("KPU");*/
+                if (KPUCore.Instance.ctrlLockAddon.IsLockSet("KPU"))
+                    KPUCore.Instance.ctrlLockAddon.UnsetFullLock("KPU");
             }
         }
 

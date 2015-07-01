@@ -70,7 +70,6 @@ namespace KPU.Modules
 
         public override void OnStart(StartState state)
         {
-            mProcessor = new Processor.Processor(part, this);
             GameEvents.onVesselChange.Add(OnVesselChange);
             setRunning();
         }
@@ -87,9 +86,8 @@ namespace KPU.Modules
                         mProcessor = new Processor.Processor(part, this);
                     mProcessor.Save(node);
                 }
-
             }
-            catch (Exception e) { print(e); }
+            catch (Exception e) { Logging.Log(e.ToString()); }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -110,7 +108,7 @@ namespace KPU.Modules
                     mProcessor.Load(node);
                 }
             }
-            catch (Exception e) { print(e); };
+            catch (Exception e) { Logging.Log(e.ToString()); };
         }
 
         public override void OnUpdate()
@@ -142,6 +140,9 @@ namespace KPU.Modules
             // only handle onFixedUpdate if the ship is unpacked
             if (vessel.packed)
                 return;
+
+            if (mProcessor != null)
+                mProcessor.OnFixedUpdate();
 
             // Re-attach periodically
             vessel.OnFlyByWire -= OnFlyByWirePost;

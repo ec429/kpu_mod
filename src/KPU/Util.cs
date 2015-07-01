@@ -8,8 +8,14 @@ namespace KPU
         {
             UnityEngine.Debug.Log("KPU: " + message);
             #if DEBUG
-            var msg = new ScreenMessage("KPU: debug: " + message, 4f, ScreenMessageStyle.UPPER_LEFT);
-            ScreenMessages.PostScreenMessage(msg);
+            try
+            {
+                var msg = new ScreenMessage("KPU: debug: " + message, 4f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(msg);
+            }
+            catch (Exception)
+            {
+            }
             #endif
         }
     }
