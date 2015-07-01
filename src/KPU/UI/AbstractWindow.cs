@@ -173,8 +173,8 @@ namespace KPU.UI
                     backupPosition = Position;
                 }
 
-                // Set ship control lock if one rt input is in focus
-                if (GUI.GetNameOfFocusedControl().StartsWith("rt_"))
+                // Set ship control lock if one kpu input is in focus
+                if (GUI.GetNameOfFocusedControl().StartsWith("kpu_"))
                 {
                     setWindowCtrlLock();
                 }

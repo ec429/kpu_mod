@@ -121,6 +121,26 @@ namespace KPU.Modules
             }
         }
 
+        public void OnFlyByWirePost(FlightCtrlState fcs)
+        {
+            if (mProcessor != null)
+                mProcessor.OnFlyByWire(fcs);
+        }
+
+        public override void OnFixedUpdate()
+        {
+            if (vessel == null)
+                return;
+
+            // only handle onFixedUpdate if the ship is unpacked
+            if (vessel.packed)
+                return;
+
+            // Re-attach periodically
+            vessel.OnFlyByWire -= OnFlyByWirePost;
+            vessel.OnFlyByWire = vessel.OnFlyByWire + OnFlyByWirePost;
+        }
+
         public void OnVesselChange(Vessel v)
         {
             if (mWatchWindow != null)

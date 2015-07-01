@@ -7,21 +7,28 @@ namespace KPU.UI
     {
         KPU.Processor.Processor mProcessor;
         private Vector2 mScrollPosition;
-        private GUIStyle mKeyStyle, mValueStyle;
+        private GUIStyle mKeyStyle, mValueStyle, mHeadingStyle;
 
         public WatchWindow (KPU.Processor.Processor processor)
-            : base(Guid.NewGuid(), "KPU Watch", new Rect(100, 100, 160, 320), WindowAlign.Floating)
+            : base(Guid.NewGuid(), "KPU Watch", new Rect(100, 100, 200, 320), WindowAlign.Floating)
         {
             mProcessor = processor;
             mKeyStyle = new GUIStyle(HighLogic.Skin.label)
             {
-                fixedWidth = 67,
+                fixedWidth = 100,
                 fontStyle = FontStyle.Bold,
                 fontSize = 11,
             };
-            mValueStyle = new GUIStyle(mKeyStyle)
+            mValueStyle = new GUIStyle(HighLogic.Skin.label)
             {
-                fontStyle = FontStyle.Normal,
+                fixedWidth = 72,
+                fontSize = 11,
+            };
+            mHeadingStyle = new GUIStyle(HighLogic.Skin.label)
+            {
+                fixedWidth = 170,
+                fontStyle = FontStyle.Bold,
+                fontSize = 14,
             };
         }
 
@@ -29,13 +36,35 @@ namespace KPU.UI
         {
             GUILayout.BeginVertical();
             {
-                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(150), GUILayout.Height(310));
-                foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.InputValue> item in mProcessor.inputValues)
+                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(180), GUILayout.Height(310));
+                if (mProcessor == null)
                 {
-                    GUILayout.BeginHorizontal();
-                    GUILayout.Label(item.Key, mKeyStyle);
-                    GUILayout.Label(item.Value.ToString(), mValueStyle);
-                    GUILayout.EndHorizontal();
+                    GUILayout.Label("I have no Processor!?", mKeyStyle);
+                }
+                else
+                {
+                    GUILayout.Label("Input Values", mHeadingStyle);
+                    if (mProcessor.inputValues != null)
+                    {
+                        foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.InputValue> item in mProcessor.inputValues)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(item.Key, mKeyStyle);
+                            GUILayout.Label(item.Value.ToString(), mValueStyle);
+                            GUILayout.EndHorizontal();
+                        }
+                    }
+                    GUILayout.Label("Output Values", mHeadingStyle);
+                    if (mProcessor.outputs != null)
+                    {
+                        foreach (Processor.IOutputData output in mProcessor.outputs.Values)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(output.name, mKeyStyle);
+                            GUILayout.Label(output.value.ToString(), mValueStyle);
+                            GUILayout.EndHorizontal();
+                        }
+                    }
                 }
                 GUILayout.EndScrollView();
             }

@@ -33,6 +33,13 @@ namespace KPU.Processor
             {
             }
         }
+        public class ExecError : ErrorMessage
+        {
+            public ExecError(string errText)
+               : base(errText)
+            {
+            }
+        }
         public string mText;
 
         public bool skip = false;
@@ -56,7 +63,7 @@ namespace KPU.Processor
                 {"@", Tokens.TOK_AT},
                 {",", Tokens.TOK_COMMA},
                 {";", Tokens.TOK_SEMI},
-                {"[0-9]+(\\.[0-9]+)?", Tokens.TOK_LITERAL},
+                {"-?[0-9]+(\\.[0-9]+)?", Tokens.TOK_LITERAL},
                 {"[a-z][a-zA-Z_.]*", Tokens.TOK_IDENT},
                 {"\\s", Tokens.TOK_WHITESPACE},
             };
@@ -331,18 +338,57 @@ namespace KPU.Processor
 
         public void assertType(ASTNode n, string s, Type t, Value v)
         {
+            assertType(n.mToken.Key, s, t, v);
+        }
+
+        public void assertType(string n, string s, Type t, Value v)
+        {
             if (v.typ != t)
-                throw new EvalError(n.mToken.Key + ": expected " + t.ToString() + ", " + s + " is " + v.typ.ToString() + " " + v.ToString());
+                throw new EvalError(n + ": expected " + t.ToString() + ", " + s + " is " + v.typ.ToString() + " " + v.ToString());
         }
 
         public Value exec(string name, Value arglist, Processor p)
         {
             List<Value> args = arglist.l;
-            string s = "exec " + name + ":";
+            var match = System.Text.RegularExpressions.Regex.Match(name, "^(.+)\\.([^.]+)");
+            string error;
+            if (match.Success)
+            {
+                string mainName = match.Groups[1].Value;
+                string method = match.Groups[2].Value;
+                if (p.outputs.ContainsKey(mainName))
+                {
+                    IOutputData output = p.outputs[mainName];
+                    if (method.Equals("set"))
+                    {
+                        output.setValue(arglist);
+                        return new Value();
+                    }
+                    if (method.Equals("incr") && arglist.typ == Type.DOUBLE)
+                    {
+                        output.slewValue(arglist);
+                        return new Value();
+                    }
+                    if (method.Equals("decr") && arglist.typ == Type.DOUBLE)
+                    {
+                        output.slewValue(new Value(-arglist.d));
+                        return new Value();
+                    }
+                    error = "no such method";
+                }
+                else
+                {
+                    error = "no such output";
+                }
+            }
+            else
+            {
+                error = "method expected";
+            }
+            string s = error + ": " + name + ":";
             foreach (Value arg in args)
                 s += " " + arg.ToString();
-            Logging.Log(s);
-            return new Value();
+            throw new ExecError(s);
         }
 
         public Value evalRecursive(ASTNode n, Processor p)
@@ -481,7 +527,12 @@ namespace KPU.Processor
                 }
                 catch (Instruction.EvalError exc)
                 {
-                    Logging.Log(exc.ToString());
+                    Logging.Log("EvalError: " + exc.ToString());
+                    skip = true;
+                }
+                catch (Instruction.ExecError exc)
+                {
+                    Logging.Log("ExecError: " + exc.ToString());
                     skip = true;
                 }
             }
@@ -655,6 +706,75 @@ namespace KPU.Processor
         }
     }
 
+    public class SrfVerticalSpeed : SensorDriven, IInputData
+    {
+        public override string name { get { return "srfVerticalSpeed"; } }
+        public InputType typ { get { return InputType.DOUBLE; } }
+        public InputValue value
+        {
+            get
+            {
+                if (!available) return new InputValue(Double.PositiveInfinity);
+                Vector3 v = parentVessel.GetSrfVelocity();
+                Vector3 up = Vector3.Normalize(parentVessel.CoM - parentVessel.mainBody.position);
+                double vs = Vector3.Dot(v, up);
+                return new InputValue(Math.Round(vs / res) * res);
+            }
+        }
+
+        public SrfVerticalSpeed (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
+    public interface IOutputData
+    {
+        string name { get; }
+        Instruction.Type typ { get; }
+        Instruction.Value value { get; }
+        void Invoke(FlightCtrlState fcs);
+        void setValue(Instruction.Value value);
+        void slewValue(Instruction.Value rate);
+    }
+
+    public class Throttle : IOutputData
+    {
+        public string name { get { return "throttle"; } }
+        public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        private double mValue = 0;
+        private double mSlewRate = 0;
+        public Instruction.Value value { get { return new Instruction.Value(mValue); } }
+
+        public void Invoke(FlightCtrlState fcs)
+        {
+            setTo(mValue + mSlewRate * TimeWarp.deltaTime);
+            fcs.mainThrottle = (float)mValue / 100.0f;
+            mSlewRate = 0;
+        }
+
+        private void setTo(double value)
+        {
+            mValue = Math.Min(Math.Max(value, 0), 100.0f);
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.DOUBLE)
+            {
+                setTo(value.d);
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+            if (rate.typ == Instruction.Type.DOUBLE)
+            {
+                mSlewRate += rate.d;
+            }
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -667,9 +787,13 @@ namespace KPU.Processor
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
-        //private ProcessorWindow mWindow;
-
         private List<IInputData> inputs = new List<IInputData>();
+        public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
+
+        private void addOutput(IOutputData o)
+        {
+            outputs[o.name] = o;
+        }
 
         public Processor (Part part, Modules.ModuleKpuProcessor module)
         {
@@ -684,14 +808,17 @@ namespace KPU.Processor
             inputs.Add(new Gear(parentVessel));
             inputs.Add(new SrfHeight(parentVessel));
             inputs.Add(new SrfSpeed(parentVessel));
+            inputs.Add(new SrfVerticalSpeed(parentVessel));
+            addOutput(new Throttle());
 
             // Short program (autolander) for testing
-            //AddInstruction("ON < altitude 10000 DO ; @orient.hold srfRetrograde @engine.activate true");
-            AddInstruction("ON < srfSpeed / srfHeight 100 DO @throttle.set 0");
-            AddInstruction("ON < srfHeight 250 DO @gear.extend true");
-            AddInstruction("ON AND gear < srfHeight 50 DO ; @engine.activate false @orient.hold ,,, srfCustom 90 90 90");
-            //AddInstruction("IF > srfSpeed / srfHeight 16 THEN @throttle.incr 25");
-            //AddInstruction("IF < srfSpeed / srfHeight 20 THEN @throttle.decr 25");
+            //AddInstruction("ON < altitude 10000 DO ; @orient.set srfRetrograde @engine.set true");
+            AddInstruction("ON < srfHeight 250 DO @gear.set true");
+            AddInstruction("ON AND gear < srfHeight 50 DO ; @engine.set false @orient.set ,,, srfCustom 90 90 90");
+            AddInstruction("ON < srfVerticalSpeed - -4 / srfHeight 5 DO @throttle.set 100");
+            AddInstruction("ON < srfHeight 20 DO @orient.set ,,, srfCustom 90 90 90");
+            AddInstruction("ON > srfVerticalSpeed - -1 / srfHeight 6 DO @throttle.set 0");
+            AddInstruction("ON AND > srfHeight 2000 > srfSpeed / srfHeight 50 DO @throttle.set 100");
         }
 
         public bool AddInstruction(string text)
@@ -731,6 +858,18 @@ namespace KPU.Processor
                 foreach (Instruction i in instructions)
                 {
                     i.eval(this);
+                }
+            }
+        }
+
+        public void OnFlyByWire (FlightCtrlState fcs)
+        {
+            OnUpdate(); // ensure outputs are up-to-date
+            if (isRunning)
+            {
+                foreach (IOutputData o in outputs.Values)
+                {
+                    o.Invoke(fcs);
                 }
             }
         }
