@@ -291,6 +291,8 @@ namespace KPU.Processor
         public override string ToString ()
         {
             StringBuilder sb = new StringBuilder();
+            if (skip)
+                sb.Append("# skip: "); 
             foreach (ASTNode n in mAST.flat)
             {
                 sb.Append(n.mToken.Key);
