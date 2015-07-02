@@ -453,7 +453,7 @@ namespace KPU.Processor
                     assertType(n, "cond", Type.BOOLEAN, cond);
                     if (cond.b && !lastValue)
                     {
-                        Logging.Log("edge fired! " + mText);
+                        //Logging.Log("edge fired! " + mText);
                         if (TimeWarp.CurrentRateIndex > 0)
                             TimeWarp.SetRate(0, true); // force 1x speed
                         try
@@ -630,7 +630,7 @@ namespace KPU.Processor
     public class VesselTMR : IInputData
     {
         public string name { get { return "vesselTmr"; } }
-        public bool available { get { return TotalMass > 0.1f; }}
+        public bool available { get { return parentVessel != null && TotalMass > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(TMR); } }
         private Vessel parentVessel = null;
@@ -652,23 +652,9 @@ namespace KPU.Processor
 
         private double TMR
         {
-            get { return TotalMass > 0.1f ? TotalThrust / TotalMass : Double.PositiveInfinity; }
+            get { return parentVessel != null && TotalMass > 0.1f ? TotalThrust / TotalMass : Double.PositiveInfinity; }
         }
 
-    }
-
-    public class LocalG : IInputData // TODO this should be sensorDriven on Gravioli Detector
-    {
-        public string name { get { return "localGravity"; } }
-        public bool available { get { return true; }}
-        public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
-        private Vessel parentVessel = null;
-
-        public LocalG (Vessel v)
-        {
-            parentVessel = v;
-        }
     }
 
     public class SensorDriven
@@ -679,7 +665,7 @@ namespace KPU.Processor
         {
             get
             {
-                return parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name)));
+                return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name)));
             }
         }
         public double res { get {
@@ -769,6 +755,18 @@ namespace KPU.Processor
         }
 
         public SrfVerticalSpeed (Vessel v)
+        {
+            parentVessel = v;
+        }
+    }
+
+    public class LocalG : SensorDriven, IInputData
+    {
+        public override string name { get { return "localGravity"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
+
+        public LocalG (Vessel v)
         {
             parentVessel = v;
         }
@@ -989,9 +987,18 @@ namespace KPU.Processor
             inputValues = new Dictionary<string, InputValue>();
             foreach (IInputData i in inputs)
             {
-                if (i.available)
+                try
                 {
-                    inputValues.Add(i.name, i.value);
+                    if (i.available)
+                    {
+                        inputValues.Add(i.name, i.value);
+                    }
+                }
+                catch (Exception exc)
+                {
+                    Logging.Log("Problem in input " + i.name);
+                    Logging.Log(exc.ToString());
+                    Logging.Log(exc.StackTrace);
                 }
             }
             if (isRunning)

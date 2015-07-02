@@ -38,6 +38,7 @@ namespace KPU.Modules
             setRunning();
         }
 
+        KPU.UI.CodeWindow mCodeWindow;
         KPU.UI.WatchWindow mWatchWindow;
 
         [KSPEvent(name = "EventEdit", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
@@ -45,11 +46,62 @@ namespace KPU.Modules
         {
             if (mProcessor == null)
             {
-                KPU.Logging.Log("Tried to edit but no mProcessor");
+                Logging.Log("Tried to edit but no mProcessor");
             }
             else
             {
-                KPU.Logging.Log("EventEdit");
+                if (mCodeWindow == null)
+                    mCodeWindow = new KPU.UI.CodeWindow(mProcessor);
+                mCodeWindow.Show();
+            }
+        }
+
+        [KSPEvent(name = "EventUpload", guiName = "Upload Program", guiActive = true, guiActiveUnfocused = true)]
+        public void EventUpload()
+        {
+            if (mProcessor == null)
+            {
+                Logging.Log("Tried to upload but no mProcessor");
+            }
+            else if (mCodeWindow == null)
+            {
+                Logging.Log("No editor active");
+            }
+            else if (mCodeWindow.mLoaded)
+            {
+                Logging.Log("Already loaded");
+            }
+            else if (!mCodeWindow.mCompiled)
+            {
+                Logging.Log("Code not compiled");
+            }
+            else if (mProcessor.isRunning)
+            {
+                Logging.Log("Halt the current program first");
+            }
+            else
+            {
+                mProcessor.ClearInstructions();
+                bool ok = true;
+                foreach (KPU.Processor.Instruction i in mCodeWindow.instructions)
+                {
+                    if (!mProcessor.AddInstruction(i.mText))
+                    {
+                        Logging.Log("Insufficient IMEM for " + i.mText);
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok)
+                {
+                    Logging.Log("Program uploaded successfully");
+                    mCodeWindow.mLoaded = true;
+                }
+                else
+                {
+                    Logging.Log("IMEM has been cleared");
+                    mProcessor.ClearInstructions();
+                }
             }
         }
 
@@ -155,6 +207,10 @@ namespace KPU.Modules
             {
                 mWatchWindow.Hide();
             }
+            if (mCodeWindow != null)
+            {
+                mCodeWindow.Hide();
+            }
         }
 
         public override string GetInfo()
@@ -181,6 +237,11 @@ namespace KPU.Modules
             if (mWatchWindow != null)
             {
                 mWatchWindow.Hide();
+            }
+
+            if (mCodeWindow != null)
+            {
+                mCodeWindow.Hide();
             }
         }
     }
