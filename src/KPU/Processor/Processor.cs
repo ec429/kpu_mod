@@ -307,7 +307,10 @@ namespace KPU.Processor
         {
             mText = text;
             List<KeyValuePair<string, Tokens>> tokens = Tokenise(text);
-            mImemWords = tokens.Count;
+            if (tokens[0].Value == Tokens.TOK_COMMENT)
+                mImemWords = 0;
+            else
+                mImemWords = tokens.Count;
             //Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
             mAST = Lex(tokens);
             //Logging.Log(mAST.ToString());
@@ -621,11 +624,13 @@ namespace KPU.Processor
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(ElectricChargeFillLevel * 100.0f); } }
-        private Vessel parentVessel = null;
+        private Processor mProc = null;
 
-        public Batteries (Vessel v)
+        private Vessel parentVessel { get { return mProc.parentVessel; } }
+
+        public Batteries (Processor p)
         {
-            parentVessel = v;
+            mProc = p;
         }
 
         private IEnumerable<PartResource> ElectricChargeResources
@@ -665,11 +670,13 @@ namespace KPU.Processor
         public bool available { get { return parentVessel != null && TotalMass > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(TMR); } }
-        private Vessel parentVessel = null;
+        private Processor mProc = null;
 
-        public VesselTMR (Vessel v)
+        private Vessel parentVessel { get { return mProc.parentVessel; } }
+
+        public VesselTMR (Processor p)
         {
-            parentVessel = v;
+            mProc = p;
         }
 
         private double TotalThrust
@@ -692,7 +699,12 @@ namespace KPU.Processor
     public class SensorDriven
     {
         public virtual string name { get { return "abstract"; } }
-        public Vessel parentVessel;
+        private Processor mProc = null;
+        public Vessel parentVessel { get { return mProc.parentVessel; } }
+        public SensorDriven (Processor p)
+        {
+            mProc = p;
+        }
         public bool available
         {
             get
@@ -724,9 +736,8 @@ namespace KPU.Processor
             }
         }
 
-        public Gear (Vessel v)
+        public Gear (Processor p) : base(p)
         {
-            parentVessel = v;
         }
     }
 
@@ -744,9 +755,8 @@ namespace KPU.Processor
             }
         }
 
-        public SrfHeight (Vessel v)
+        public SrfHeight (Processor p) : base(p)
         {
-            parentVessel = v;
         }
     }
 
@@ -764,9 +774,8 @@ namespace KPU.Processor
             }
         }
 
-        public SrfSpeed (Vessel v)
+        public SrfSpeed (Processor p) : base(p)
         {
-            parentVessel = v;
         }
     }
 
@@ -786,9 +795,8 @@ namespace KPU.Processor
             }
         }
 
-        public SrfVerticalSpeed (Vessel v)
+        public SrfVerticalSpeed (Processor p) : base(p)
         {
-            parentVessel = v;
         }
     }
 
@@ -798,9 +806,8 @@ namespace KPU.Processor
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
 
-        public LocalG (Vessel v)
+        public LocalG (Processor p) : base(p)
         {
-            parentVessel = v;
         }
     }
 
@@ -964,13 +971,13 @@ namespace KPU.Processor
             imemWords = module.imemWords;
             isRunning = module.isRunning;
             instructions = new List<Instruction>();
-            inputs.Add(new Batteries(parentVessel));
-            inputs.Add(new Gear(parentVessel));
-            inputs.Add(new SrfHeight(parentVessel));
-            inputs.Add(new SrfSpeed(parentVessel));
-            inputs.Add(new SrfVerticalSpeed(parentVessel));
-            inputs.Add(new VesselTMR(parentVessel));
-            inputs.Add(new LocalG(parentVessel));
+            inputs.Add(new Batteries(this));
+            inputs.Add(new Gear(this));
+            inputs.Add(new SrfHeight(this));
+            inputs.Add(new SrfSpeed(this));
+            inputs.Add(new SrfVerticalSpeed(this));
+            inputs.Add(new VesselTMR(this));
+            inputs.Add(new LocalG(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new GearOutput());
