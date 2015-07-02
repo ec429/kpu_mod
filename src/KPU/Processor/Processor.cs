@@ -713,14 +713,14 @@ namespace KPU.Processor
         {
             get
             {
-                return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name)));
+                return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name) && m.hasPower));
             }
         }
         public double res { get {
             double rv = Double.PositiveInfinity;
             foreach (Part p in parentVessel.Parts)
                 foreach(KPU.Modules.ModuleKpuSensor m in p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>())
-                    if (m.sensorType.Equals(name))
+                    if (m.sensorType.Equals(name) && m.hasPower)
                         if (m.sensorRes < rv)
                             rv = m.sensorRes;
             return rv;
@@ -942,6 +942,7 @@ namespace KPU.Processor
         public List<Instruction> instructions;
 
         private Part mPart;
+        public bool hasPower = false;
         private bool mIsRunning;
         public bool isRunning
         {
@@ -1065,7 +1066,7 @@ namespace KPU.Processor
                     Logging.Log(exc.StackTrace);
                 }
             }
-            if (isRunning)
+            if (hasPower && isRunning)
             {
                 foreach (Instruction i in instructions)
                 {
@@ -1076,7 +1077,7 @@ namespace KPU.Processor
 
         public void OnFlyByWire (FlightCtrlState fcs)
         {
-            if (isRunning)
+            if (hasPower && isRunning)
             {
                 OnUpdate(); // ensure outputs are up-to-date
                 foreach (IOutputData o in outputs.Values)

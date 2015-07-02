@@ -39,7 +39,11 @@ namespace KPU.UI
                 mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(220), GUILayout.Height(310));
                 if (mProcessor == null)
                 {
-                    GUILayout.Label("I have no Processor!?", mKeyStyle);
+                    GUILayout.Label("I have no Processor!?", mHeadingStyle);
+                }
+                else if(!mProcessor.hasPower)
+                {
+                    GUILayout.Label("--NO POWER--", mHeadingStyle);
                 }
                 else
                 {

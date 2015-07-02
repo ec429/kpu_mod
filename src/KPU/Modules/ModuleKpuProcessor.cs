@@ -18,6 +18,11 @@ namespace KPU.Modules
         [KSPField()]
         public int imemWords;
 
+        [KSPField]
+        public float electricRate;
+        [KSPField(guiName = "Energy usage")]
+        public float electricUsage;
+
         [KSPField()]
         public bool isRunning = false;
         [KSPField(guiName = "IMEM free")]
@@ -198,6 +203,10 @@ namespace KPU.Modules
             // Re-attach periodically
             vessel.OnFlyByWire -= OnFlyByWirePost;
             vessel.OnFlyByWire = vessel.OnFlyByWire + OnFlyByWirePost;
+
+            float resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
+            electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
         }
 
         public void OnVesselChange(Vessel v)
