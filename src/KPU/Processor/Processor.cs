@@ -312,6 +312,9 @@ namespace KPU.Processor
             else
                 mImemWords = tokens.Count;
             //Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
+            requiresLevelTrigger = tokens.Any(kvp => kvp.Value == Tokens.TOK_KEYWORD && kvp.Key == "IF");
+            requiresLogicOps = tokens.Any(kvp => kvp.Value == Tokens.TOK_LOG_OP);
+            requiresArithOps = tokens.Any(kvp => kvp.Value == Tokens.TOK_ARITH_OP);
             mAST = Lex(tokens);
             //Logging.Log(mAST.ToString());
             mText = ToString();
@@ -319,6 +322,7 @@ namespace KPU.Processor
 
         private int mImemWords = 0;
         public int imemWords { get { return mImemWords; } }
+        public bool requiresLevelTrigger = false, requiresLogicOps = false, requiresArithOps = false;
 
         public enum Type { BOOLEAN, DOUBLE, NAME, TUPLE, VOID };
 
@@ -1012,7 +1016,28 @@ namespace KPU.Processor
                 return false;
             }
             if (i.imemWords > imemWords)
+            {
+                Logging.Log("Insufficient IMEM for " + i.mText);
                 return false;
+            }
+            if (i.requiresLevelTrigger && !hasLevelTrigger)
+            {
+                Logging.Log("Processor does not support level triggers");
+                Logging.Log("  " + i.mText);
+                return false;
+            }
+            if (i.requiresLogicOps && !hasLogicOps)
+            {
+                Logging.Log("Processor does not support logical operators");
+                Logging.Log("  " + i.mText);
+                return false;
+            }
+            if (i.requiresArithOps && !hasArithOps)
+            {
+                Logging.Log("Processor does not support arithmetic operators");
+                Logging.Log("  " + i.mText);
+                return false;
+            }
             instructions.Add(i);
             imemWords -= i.imemWords;
             //Logging.Log("Added instruction: " + i.mText);

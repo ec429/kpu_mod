@@ -87,7 +87,6 @@ namespace KPU.Modules
                 {
                     if (!mProcessor.AddInstruction(i.mText))
                     {
-                        Logging.Log("Insufficient IMEM for " + i.mText);
                         ok = false;
                         break;
                     }
@@ -99,8 +98,8 @@ namespace KPU.Modules
                 }
                 else
                 {
-                    Logging.Log("IMEM has been cleared");
                     mProcessor.ClearInstructions();
+                    Logging.Log("IMEM has been cleared");
                 }
             }
         }
