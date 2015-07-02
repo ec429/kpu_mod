@@ -14,7 +14,7 @@ namespace KPU.UI
         private GUIStyle mHeadingStyle, mBtnStyle, mGreyBtnStyle;
 
         public CodeWindow (KPU.Processor.Processor processor)
-            : base(Guid.NewGuid(), "KPU Code", new Rect(100, 100, 520, 320), WindowAlign.Floating)
+            : base(Guid.NewGuid(), "KPU Code", new Rect(100, 100, 515, 320), WindowAlign.Floating)
         {
             mProcessor = processor;
             mHeadingStyle = new GUIStyle(HighLogic.Skin.label)
@@ -82,7 +82,7 @@ namespace KPU.UI
         {
             GUILayout.BeginVertical();
             {
-                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(500), GUILayout.Height(240));
+                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(495), GUILayout.Height(240));
                 if (mProcessor == null)
                 {
                     GUILayout.Label("I have no Processor!?", mHeadingStyle);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -45,12 +46,13 @@ namespace KPU.Processor
         public bool skip = false;
         public bool lastValue = false;
 
-        public enum Tokens { TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
+        public enum Tokens { TOK_COMMENT, TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
         {
             //Logging.Log("Attempting to tokenise " + text);
             List<KeyValuePair<string, Tokens>> result = new List<KeyValuePair<string, Tokens>>();
             Dictionary<string, Tokens> TokenDict = new Dictionary<string, Tokens>() {
+                {"#.*", Tokens.TOK_COMMENT},
                 {"ON", Tokens.TOK_KEYWORD},
                 {"DO", Tokens.TOK_KEYWORD},
                 {"IF", Tokens.TOK_KEYWORD},
@@ -128,6 +130,17 @@ namespace KPU.Processor
                     s += " " + n.ToString();
                 return string.Format("({0}:{1}{2})", mToken.Value.ToString(), mToken.Key, s);
             }
+            public List<ASTNode> flat
+            {
+                get
+                {
+                    List<ASTNode> ret = new List<ASTNode>();
+                    ret.Add(this);
+                    foreach (ASTNode n in mChildren)
+                        ret.AddRange(n.flat);
+                    return ret;
+                }
+            }
         }
 
         public ASTNode mAST;
@@ -140,6 +153,8 @@ namespace KPU.Processor
             ASTNode left, right, child, cond, actn;
             switch(token.Value)
             {
+            case Tokens.TOK_COMMENT:
+                break;
             case Tokens.TOK_KEYWORD:
                 if (token.Key.Equals("ON"))
                 {
@@ -266,10 +281,26 @@ namespace KPU.Processor
             ASTNode n = LexRecursive(iTokens);
             if (iTokens.MoveNext())
                 throw new ParseError("Leftover token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
-            if (n.mToken.Value != Tokens.TOK_KEYWORD ||
-                (n.mToken.Key != "ON" && n.mToken.Key != "IF"))
+            if ((n.mToken.Value != Tokens.TOK_KEYWORD ||
+                 (n.mToken.Key != "ON" && n.mToken.Key != "IF")) &&
+                n.mToken.Value != Tokens.TOK_COMMENT)
                 throw new ParseError("Bad root token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
             return n;
+        }
+
+        public override string ToString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (ASTNode n in mAST.flat)
+            {
+                sb.Append(n.mToken.Key);
+                if (n.mToken.Value != Tokens.TOK_UN_OP &&
+                    n.mToken.Value != Tokens.TOK_AT)
+                {
+                    sb.Append(" ");
+                }
+            }
+            return sb.ToString().TrimEnd(' ');
         }
 
         public Instruction (string text)
@@ -280,6 +311,7 @@ namespace KPU.Processor
             //Logging.Log(string.Format("imemWords = {0:D}", mImemWords));
             mAST = Lex(tokens);
             //Logging.Log(mAST.ToString());
+            mText = ToString();
         }
 
         private int mImemWords = 0;
