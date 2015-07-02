@@ -52,9 +52,12 @@ namespace KPU.UI
                     {
                         foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.InputValue> item in mProcessor.inputValues)
                         {
+                            string unit = "";
+                            if (mProcessor.inputs.ContainsKey(item.Key))
+                                unit = mProcessor.inputs[item.Key].unit;
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(item.Key, mKeyStyle);
-                            GUILayout.Label(item.Value.ToString(), mValueStyle);
+                            GUILayout.Label(item.Value.ToString() + unit, mValueStyle);
                             GUILayout.EndHorizontal();
                         }
                     }

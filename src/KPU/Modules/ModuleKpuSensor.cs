@@ -13,9 +13,9 @@ namespace KPU.Modules
         [KSPField()]
         public double sensorRes;
         [KSPField()]
-        public float electricRate;
-        [KSPField(guiName = "Energy usage")]
-        public float electricUsage;
+        public string sensorUnit = "";
+        [KSPField()]
+        public double electricRate;
 
         public bool hasPower;
 
@@ -28,8 +28,8 @@ namespace KPU.Modules
             if (vessel.packed)
                 return;
 
-            float resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
-            electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            double resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
+            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest, ResourceFlowMode.ALL_VESSEL);
             hasPower = electricUsage >= resourceRequest * 0.9;
         }
 
@@ -40,7 +40,7 @@ namespace KPU.Modules
             info.Append("Sensor: ");
             info.AppendLine(sensorType);
             if (sensorRes > 0)
-                info.AppendFormat("Resolution: {0:G}", sensorRes).AppendLine();
+                info.AppendFormat("Resolution: {0:G}{1}", sensorRes, sensorUnit).AppendLine();
             info.AppendFormat("Energy usage: {0:G} charge/s", electricRate).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());

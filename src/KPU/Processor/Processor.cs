@@ -617,6 +617,7 @@ namespace KPU.Processor
     public interface IInputData
     {
         string name { get; }
+        string unit { get; }
         bool available { get; }
         InputType typ { get; }
         InputValue value { get; }
@@ -625,6 +626,7 @@ namespace KPU.Processor
     public class Batteries : IInputData
     {
         public string name { get { return "batteries"; } }
+        public string unit { get { return "%"; } }
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(ElectricChargeFillLevel * 100.0f); } }
@@ -671,6 +673,7 @@ namespace KPU.Processor
     public class VesselTMR : IInputData
     {
         public string name { get { return "vesselTmr"; } }
+        public string unit { get { return "m/s²"; } }
         public bool available { get { return parentVessel != null && TotalMass > 0.1f; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(TMR); } }
@@ -703,6 +706,7 @@ namespace KPU.Processor
     public class SensorDriven
     {
         public virtual string name { get { return "abstract"; } }
+        public virtual string unit { get { return ""; } }
         private Processor mProc = null;
         public Vessel parentVessel { get { return mProc.parentVessel; } }
         public SensorDriven (Processor p)
@@ -748,6 +752,7 @@ namespace KPU.Processor
     public class SrfHeight : SensorDriven, IInputData
     {
         public override string name { get { return "srfHeight"; } }
+        public override string unit { get { return "m"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
         public InputValue value
         {
@@ -767,6 +772,7 @@ namespace KPU.Processor
     public class SrfSpeed : SensorDriven, IInputData
     {
         public override string name { get { return "srfSpeed"; } }
+        public override string unit { get { return "m/s"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
         public InputValue value
         {
@@ -786,6 +792,7 @@ namespace KPU.Processor
     public class SrfVerticalSpeed : SensorDriven, IInputData
     {
         public override string name { get { return "srfVerticalSpeed"; } }
+        public override string unit { get { return "m/s"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
         public InputValue value
         {
@@ -807,6 +814,7 @@ namespace KPU.Processor
     public class LocalG : SensorDriven, IInputData
     {
         public override string name { get { return "localGravity"; } }
+        public override string unit { get { return "m/s²"; } }
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
 
@@ -959,12 +967,17 @@ namespace KPU.Processor
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
-        private List<IInputData> inputs = new List<IInputData>();
+        public Dictionary<string, IInputData> inputs = new Dictionary<string, IInputData>();
         public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
 
         private void addOutput(IOutputData o)
         {
             outputs[o.name] = o;
+        }
+
+        private void AddInput(IInputData i)
+        {
+            inputs.Add(i.name, i);
         }
 
         public Processor (Part part, Modules.ModuleKpuProcessor module)
@@ -976,13 +989,13 @@ namespace KPU.Processor
             imemWords = module.imemWords;
             isRunning = module.isRunning;
             instructions = new List<Instruction>();
-            inputs.Add(new Batteries(this));
-            inputs.Add(new Gear(this));
-            inputs.Add(new SrfHeight(this));
-            inputs.Add(new SrfSpeed(this));
-            inputs.Add(new SrfVerticalSpeed(this));
-            inputs.Add(new VesselTMR(this));
-            inputs.Add(new LocalG(this));
+            AddInput(new Batteries(this));
+            AddInput(new Gear(this));
+            AddInput(new SrfHeight(this));
+            AddInput(new SrfSpeed(this));
+            AddInput(new SrfVerticalSpeed(this));
+            AddInput(new VesselTMR(this));
+            AddInput(new LocalG(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new GearOutput());
@@ -1050,7 +1063,7 @@ namespace KPU.Processor
         public void OnUpdate ()
         {
             inputValues = new Dictionary<string, InputValue>();
-            foreach (IInputData i in inputs)
+            foreach (IInputData i in inputs.Values)
             {
                 try
                 {
