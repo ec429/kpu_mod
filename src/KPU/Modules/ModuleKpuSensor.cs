@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace KPU.Modules
 {
@@ -30,6 +31,19 @@ namespace KPU.Modules
             float resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
             electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
             hasPower = electricUsage >= resourceRequest * 0.9;
+        }
+
+        public override string GetInfo()
+        {
+            var info = new StringBuilder();
+
+            info.Append("Sensor: ");
+            info.AppendLine(sensorType);
+            if (sensorRes > 0)
+                info.AppendFormat("Resolution: {0:G}", sensorRes).AppendLine();
+            info.AppendFormat("Energy usage: {0:G} charge/s", electricRate).AppendLine();
+
+            return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }
     }
 }

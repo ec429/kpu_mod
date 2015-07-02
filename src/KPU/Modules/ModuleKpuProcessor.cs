@@ -232,7 +232,8 @@ namespace KPU.Modules
                 info.AppendLine("Supports Logical Ops");
             if (hasArithOps)
                 info.AppendLine("Supports Arithmetic Ops");
-            
+            info.AppendFormat("Energy usage: {0:G} charge/s", electricRate).AppendLine();
+
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }
 
