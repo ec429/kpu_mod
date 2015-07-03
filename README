@@ -1,0 +1,186 @@
+Kerbal Processing Unit
+======================
+
+KPU is a mod for the game Kerbal Space Program by Squad.
+It allows you to load up your space probes with programs to allow them to
+ operate autonomously.
+
+KPU is currently in alpha test; not all features have been implemented.  The
+ parts in the mod at present do not have new models; instead they are using
+ copies of existing part models (the KER units for the two Kelliot processors,
+ and the stock Seismic Accelerometer for the FS-RA radioaltimeter).  KPU's
+ developer is actively looking for someone to create the models.
+
+KPU is developed by Edward Cree, who goes by the handle 'soundnfury' on IRC
+ and 'ec429' elsewhere; his website is at http://jttlov.no-ip.org.  During
+ the day he works on a Linux kernel device driver (in C) and a test automation
+ system (in Python); before writing KPU he'd never used C#.
+
+Because KPU contains some code based heavily on similar code in the RemoteTech
+ mod (notably the attitude controller and AbstractWindow), it may be
+ considered a derived work of that mod.  Consequently, it is licensed under
+ the GNU General Public License, version 2.
+
+
+What's the point?
+-----------------
+
+When using the excellent RemoteTech mod, trying to land on a distant planet or
+ moon can be infuriatingly difficult because of the speed-of-light delay.  If
+ the target has an atmosphere, fragile parts like solar panels and antennas
+ must be retracted for the descent, but have to be programmed to re-open after
+ landing or the probe will remain uncontactable.  Doing this with RemoteTech's
+ time delay system requires guessing how long the descent will take, typically
+ with plenty of trial, error, and quickloading to try again.  Meanwhile,
+ targets without an atmosphere are even harder as the probe has to be slowed
+ down with retrograde thrust, which must be judged just right so that it runs
+ out of speed and height at the same time.
+In the real world, space probes have enough processing power on board to run
+ at least some of their tasks semiautonomously.  Landings are often handled in
+ this manner, since the control delay makes landing a planetary probe by hand
+ unfeasible.  Other tasks, such as science data gathering or craft thermal
+ control, are also likely to be at least partially automated, especially for a
+ long-distance probe like New Horizons, whose speed-of-light delay at Pluto
+ will be 4½ hours each way!
+Kerbal Space Program makes some concessions towards automation, notably probe
+ core SAS and the parachute deployment parameters; RemoteTech goes further by
+ allowing automatic execution of maneuver nodes, as well as queuing up
+ commands for execution at a specific time.  However, as mentioned above, this
+ is frequently insufficient to support missions that realistically should be
+ possible, especially late in the Tech Tree.  The "Automation" tech node is
+ even described in-game as "letting an experimental AI handle every aspect of
+ a mission", but gives the player nothing more than a probe core shaped for a
+ Mk2 space-plane fuselage.
+The alternative to KPU is an autopilot mod, like MechJeb, which is capable of
+ landing a probe automatically.  But this takes much of the challenge out of
+ the mission, because the mod does everything for you.  In KPU, you must write
+ the autopilot program yourself - and add the necessary sensors to your vessel
+ to provide the inputs the program needs.
+
+
+What parts does this mod add?
+-----------------------------
+
+The major part category added is the Processor, which runs the program.  The
+ Processor also stores the program, and has only a limited amount of IMEM
+ (instruction memory) for this task.  Each token in the language takes up one
+ word of IMEM (except for comments and whitespace).
+There are four Processor parts planned, though only two have been implemented
+ so far.  The Kelliot 4040 is a simple edge-triggered processor that can only
+ handle simple conditions, and only has 16 words of IMEM.  The Kelliot 8080
+ (not implemented) adds logical operators (AND, OR) allowing more complex
+ programs, along with 64 words of IMEM.  The Kelliot KE-7 supports the full
+ language including arithmetic operators and level-triggered actions, and
+ stores up to 256 words of IMEM, but requires a lot of ElectricCharge (1.5
+ charge/s) to operate.  The Kerbolics LISP-M (not implemented) is far more
+ efficient, needing just 0.25 charge/s, with a colossal 65,536 words of IMEM.
+The other type of part in this mod is the Sensor.  A program isn't much use
+ without inputs to drive it, and KPU has plenty of inputs.
+Most of the sensors have to do with letting the probe work out its position,
+ velocity and orientation.  There are several combinations of sensors which
+ will allow this, but most of them haven't been implemented yet.  In
+ particular, orientation is currently "for free", whereas the plan is to have
+ several sensor choices, some of which give more information than others.  For
+ example, the FS-RA Doppler radioaltimeter, which also measures srfHeight,
+ srfSpeed and srfVerticalSpeed, will allow orienting to Surface Prograde or
+ Retrograde as well as Vertical, whereas star trackers / stellar compasses
+ will allow arbitrary orientation (though some will not be able to determine
+ roll, as they work by tracking a single star).  Planetary Infrared sensors
+ will tell a probe where the planet (or moon) being orbited is, thus giving
+ orbHeight and Vertical orientation, while an Inertial Platform will need to
+ be recalibrated periodically by position updates from Mission Control (so an
+ out-of-contact probe will gradually experience drift and lose accuracy).  The
+ Kerbin Navigation System (KNS) will give position information to probes close
+ enough to Kerbin to triangulate radio signals from around the globe; it will
+ function up to 300km altitude.  The later LORAN sensor will do the same out
+ to 3Mm - notably, this is sufficient for keostationary orbit.
+ Of these sensors, only the FS-RA radioaltimeter has been implemented.
+There are also sensors for localGravity (using the stock Gravioli Detector)
+ and gear landing sensors which detect when the vessel has touched down
+ (currently only supported for stock landing legs and wheeled landing gear,
+ not rover wheels).  Inputs measuring the charge level of batteries and the
+ thrust-to-mass ratio of the vehicle are also available and need no special
+ sensors.
+
+
+How do I program my probe?
+--------------------------
+
+The Processor's right-click menu contains four actions: Run Program, Edit
+ Program, Upload Program and Watch Display.  The last of these will open a
+ window showing the current values of the Processor's inputs and outputs.
+To program a probe, you must first enter the program in the KPU Code window,
+ brought up by the Edit Program action.  When this is done, clicking the
+ "Compile!" button will parse the program and prepare it for uploading; also,
+ a message will be generated telling you how many words of IMEM the program
+ requires.  Then, the Upload Program action will send the prepared program to
+ the probe, and finally the Run Program action will start execution of the
+ program.  If you get part-way through this process and want to back out, the
+ "Undo" button in the KPU Code window will give the last program successfully
+ compiled, while the "Revert" button will give the program last uploaded to
+ the probe.
+The program is written in a language using Forward Polish Notation, also known
+ as Prefix Notation, which avoids parentheses and operator precedence (as well
+ as being easy to parse ;).  In this system, operators come before the values
+ they act on, and since each operator takes a defined number of values, trees
+ of operators can readily be constructed.  For example, the expression
+ "* + 2 3 4", read as 'the product of (the sum of 2 and 3) and 4', is
+ equivalent to "(2 + 3) * 4" in the more conventional infix notation.
+Statements in the language, one to a line, take one of the forms
+  ON condition DO action-list
+  IF condition THEN action-list
+ where _condition_ must be a boolean-valued expression.  Lists of actions are
+ formed by the ; operator, which takes two action operands and performs both.
+An action generally takes the form
+  @identifier.method expression
+ where _method_ will usually be "set", though numeric outputs also take "incr"
+ or "decr" to smoothly slew the value.  _expression_ can be a list constructed
+ with the , operator, which combines its two operands rather like a LISP cons.
+ _identifier_ should be the name of one of the available outputs.  Strictly
+ speaking, the whole phrase 'identifier.method' is considered by the language
+ definition to be a single identifier.
+The full syntax of the language in Backus-Naur form is as follows:
+	stmt    ::= ( on-stmt | if-stmt | comment ) \n
+	comment ::= #.*
+	on-stmt ::= ON expr DO act-list
+	if-stmt ::= IF expr THEN act-list
+	act-list::= (; act-list)? action
+	expr    ::= un-op expr | bin-op expr expr | ident | literal
+	un-op	::= !
+	bin-op  ::= log-op | comp-op | arith-op
+	log-op  ::= AND | OR
+	comp-op ::= < | >
+	arith-op::= + | - | * | /
+	ident   ::= [a-z][a-zA-Z_.]*
+	literal ::= -?[0-9]+(\.[0-9]+)?
+	action  ::= @ ident expr-lst?
+    expr-lst::= (, expr-lst)? expr
+Some more things to note: whitespace (except for newlines) is ignored and may
+ be omitted where doing so does not introduce syntactic ambiguity; when the
+ program is compiled its source will also be normalised to include a single
+ space after every token except '@' and '!'.  Note in particular the need for
+ whitespace when an ident is followed by a token beginning with a letter, and
+ when the '-' operator is followed by a literal which does not already begin
+ with a minus sign.
+Here are some simple examples of the language:
+	ON < batteries 10 DO @antennas.set false
+	ON > batteries 90 DO @antennas.set true
+ This will cause the probe to go into hibernation when its ElectricCharge
+ reserves fall below 10%, by shutting down its antennas, and wake back up when
+ the batteries reach 90% charge.  (However, the 'antennas' output hasn't been
+ implemented yet).
+	ON < srfHeight 10000 DO @orient.set srfRetrograde
+	IF <srfHeight 8000DO@throttle.set * -1000 / srfVerticalSpeed + srfHeight 40
+	ON < srfHeight 250 DO @gear.set true
+ Rudimentary (and untested) lander code, will probably only cope with vertical
+ descents.  Constants will need tuning for the vessel's thrust-to-mass ratio
+ and the gravity of the target body.
+
+
+Where do I report bugs?
+-----------------------
+
+Open an issue on the project's GitHub page,
+	https://github.com/ec429/kpu_mod/issues
+Sometimes the developer will be on IRC as soundnfury in the #kspmodders
+ channel on irc.esper.net.
