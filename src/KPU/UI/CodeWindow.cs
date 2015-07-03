@@ -101,7 +101,7 @@ namespace KPU.UI
                 GUILayout.EndScrollView();
                 GUILayout.BeginHorizontal();
                 {
-                        if (GUILayout.Button("Compile!", mCompiled ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button("Compile!", mCompiled ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
                     {
                         mCompiled = compile();
                         if (!mCompiled)
@@ -113,11 +113,11 @@ namespace KPU.UI
                             decompile();
                         }
                     }
-                        if (GUILayout.Button("Undo", mCompiled ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button("Undo", mCompiled ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
                     {
                         decompile();
                     }
-                        if (GUILayout.Button("Revert", mLoaded ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button("Revert", mLoaded ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
                     {
                         revert();
                     }
