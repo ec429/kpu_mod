@@ -144,7 +144,7 @@ namespace KPU.Processor
         }
 
         public ASTNode mAST;
-        private ASTNode LexRecursive(IEnumerator<KeyValuePair<string, Tokens>> tokens)
+        private ASTNode AssembleRecursive(IEnumerator<KeyValuePair<string, Tokens>> tokens)
         {
             if (!tokens.MoveNext())
                 throw new ParseError("Out of tokens");
@@ -158,11 +158,11 @@ namespace KPU.Processor
             case Tokens.TOK_KEYWORD:
                 if (token.Key.Equals("ON"))
                 {
-                    cond = LexRecursive(tokens);
+                    cond = AssembleRecursive(tokens);
                     if (cond.mToken.Value == Tokens.TOK_KEYWORD)
                         throw new ParseError("ON cond was bad: " + cond.ToString());
                     n.Add(cond);
-                    actn = LexRecursive(tokens);
+                    actn = AssembleRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("DO"))
                         throw new ParseError("ON DO was bad: " + actn.ToString());
                     n.Add(actn);
@@ -170,11 +170,11 @@ namespace KPU.Processor
                 }
                 if (token.Key.Equals("IF"))
                 {
-                    cond = LexRecursive(tokens);
+                    cond = AssembleRecursive(tokens);
                     if (cond.mToken.Value == Tokens.TOK_KEYWORD)
                         throw new ParseError("IF cond was bad: " + cond.ToString());
                     n.Add(cond);
-                    actn = LexRecursive(tokens);
+                    actn = AssembleRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("THEN"))
                         throw new ParseError("IF THEN was bad: " + actn.ToString());
                     n.Add(actn);
@@ -182,7 +182,7 @@ namespace KPU.Processor
                 }
                 if (token.Key.Equals("DO"))
                 {
-                    actn = LexRecursive(tokens);
+                    actn = AssembleRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_SEMI &&
                         actn.mToken.Value != Tokens.TOK_AT)
                         throw new ParseError("DO actn was bad: " + actn.ToString());
@@ -191,7 +191,7 @@ namespace KPU.Processor
                 }
                 if (token.Key.Equals("THEN"))
                 {
-                    actn = LexRecursive(tokens);
+                    actn = AssembleRecursive(tokens);
                     if (actn.mToken.Value != Tokens.TOK_SEMI &&
                         actn.mToken.Value != Tokens.TOK_AT)
                         throw new ParseError("THEN actn was bad: " + actn.ToString());
@@ -202,14 +202,14 @@ namespace KPU.Processor
             case Tokens.TOK_LOG_OP:
             case Tokens.TOK_ARITH_OP:
             case Tokens.TOK_COMP_OP:
-                left = LexRecursive(tokens);
+                left = AssembleRecursive(tokens);
                 if (left.mToken.Value == Tokens.TOK_KEYWORD ||
                     left.mToken.Value == Tokens.TOK_AT ||
                     left.mToken.Value == Tokens.TOK_COMMA ||
                     left.mToken.Value == Tokens.TOK_SEMI)
                     throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
                 n.Add(left);
-                right = LexRecursive(tokens);
+                right = AssembleRecursive(tokens);
                 if (right.mToken.Value == Tokens.TOK_KEYWORD ||
                     right.mToken.Value == Tokens.TOK_AT ||
                     right.mToken.Value == Tokens.TOK_COMMA ||
@@ -218,7 +218,7 @@ namespace KPU.Processor
                 n.Add(right);
                 break;
             case Tokens.TOK_UN_OP:
-                child = LexRecursive(tokens);
+                child = AssembleRecursive(tokens);
                 if (child.mToken.Value == Tokens.TOK_KEYWORD ||
                     child.mToken.Value == Tokens.TOK_AT ||
                     child.mToken.Value == Tokens.TOK_COMMA ||
@@ -230,11 +230,11 @@ namespace KPU.Processor
             case Tokens.TOK_LITERAL:
                 break;
             case Tokens.TOK_AT:
-                left = LexRecursive(tokens);
+                left = AssembleRecursive(tokens);
                 if (left.mToken.Value != Tokens.TOK_IDENT)
                     throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
                 n.Add(left);
-                right = LexRecursive(tokens);
+                right = AssembleRecursive(tokens);
                 if (right.mToken.Value == Tokens.TOK_KEYWORD ||
                     right.mToken.Value == Tokens.TOK_AT ||
                     right.mToken.Value == Tokens.TOK_SEMI)
@@ -242,13 +242,13 @@ namespace KPU.Processor
                 n.Add(right);
                 break;
             case Tokens.TOK_COMMA:
-                left = LexRecursive(tokens);
+                left = AssembleRecursive(tokens);
                 if (left.mToken.Value == Tokens.TOK_KEYWORD ||
                     left.mToken.Value == Tokens.TOK_AT ||
                     left.mToken.Value == Tokens.TOK_SEMI)
                     throw new ParseError(token.Key + " left expr was bad: " + left.ToString());
                 n.Add(left);
-                right = LexRecursive(tokens);
+                right = AssembleRecursive(tokens);
                 if (right.mToken.Value == Tokens.TOK_KEYWORD ||
                     right.mToken.Value == Tokens.TOK_AT ||
                     right.mToken.Value == Tokens.TOK_SEMI ||
@@ -257,13 +257,13 @@ namespace KPU.Processor
                 n.Add(right);
                 break;
             case Tokens.TOK_SEMI:
-                left = LexRecursive(tokens);
+                left = AssembleRecursive(tokens);
                 if (left.mToken.Value != Tokens.TOK_IDENT &&
                     left.mToken.Value != Tokens.TOK_AT &&
                     left.mToken.Value != Tokens.TOK_SEMI)
                     throw new ParseError("; left expr was bad: " + left.ToString());
                 n.Add(left);
-                right = LexRecursive(tokens);
+                right = AssembleRecursive(tokens);
                 if (right.mToken.Value != Tokens.TOK_IDENT &&
                     right.mToken.Value != Tokens.TOK_AT)
                     throw new ParseError("; right expr was bad: " + right.ToString());
@@ -275,10 +275,10 @@ namespace KPU.Processor
             return n;
         }
 
-        private ASTNode Lex(List<KeyValuePair<string, Tokens>> tokens)
+        private ASTNode Assemble(List<KeyValuePair<string, Tokens>> tokens)
         {
             IEnumerator<KeyValuePair<string, Tokens>> iTokens = tokens.GetEnumerator();
-            ASTNode n = LexRecursive(iTokens);
+            ASTNode n = AssembleRecursive(iTokens);
             if (iTokens.MoveNext())
                 throw new ParseError("Leftover token " + iTokens.Current.Value.ToString() + ": " + iTokens.Current.Key);
             if ((n.mToken.Value != Tokens.TOK_KEYWORD ||
@@ -317,7 +317,7 @@ namespace KPU.Processor
             requiresLevelTrigger = tokens.Any(kvp => kvp.Value == Tokens.TOK_KEYWORD && kvp.Key == "IF");
             requiresLogicOps = tokens.Any(kvp => kvp.Value == Tokens.TOK_LOG_OP);
             requiresArithOps = tokens.Any(kvp => kvp.Value == Tokens.TOK_ARITH_OP);
-            mAST = Lex(tokens);
+            mAST = Assemble(tokens);
             //Logging.Log(mAST.ToString());
             mText = ToString();
         }
