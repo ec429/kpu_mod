@@ -47,7 +47,7 @@ namespace KPU.UI
             foreach (KPU.Processor.Instruction i in instructions)
             {
                 if (mText.Length > 0) mText += "\n";
-                mText += i.mText;
+                mText += i.ToString();
             }
             mCompiled = true;
         }

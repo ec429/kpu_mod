@@ -175,6 +175,12 @@ Here are some simple examples of the language:
  Rudimentary (and untested) lander code, will probably only cope with vertical
  descents.  Constants will need tuning for the vessel's thrust-to-mass ratio
  and the gravity of the target body.
+Supported values for @orient.set are:
+ srfRetrograde
+ orbRetrograde
+ srfVertical (currently the same as orbVertical, but it might be changed to
+              mean "terrain normal")
+ orbVertical (points away from centre of planet/moon)
 
 
 Where do I report bugs?

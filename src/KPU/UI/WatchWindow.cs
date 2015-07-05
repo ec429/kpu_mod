@@ -21,7 +21,7 @@ namespace KPU.UI
             };
             mValueStyle = new GUIStyle(HighLogic.Skin.label)
             {
-                fixedWidth = 100,
+                fixedWidth = 96,
                 fontSize = 11,
             };
             mHeadingStyle = new GUIStyle(HighLogic.Skin.label)
@@ -36,7 +36,7 @@ namespace KPU.UI
         {
             GUILayout.BeginVertical();
             {
-                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(220), GUILayout.Height(310));
+                mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.Width(224), GUILayout.Height(310));
                 if (mProcessor == null)
                 {
                     GUILayout.Label("I have no Processor!?", mHeadingStyle);

@@ -20,6 +20,10 @@ namespace KPU.Processor
                 frame = ReferenceFrame.Surface;
                 attitude = RelativeAttitude.Retrograde;
                 break;
+            case "orbRetrograde":
+                frame = ReferenceFrame.Orbit;
+                attitude = RelativeAttitude.Retrograde;
+                break;
             case "srfVertical":
                 frame = ReferenceFrame.Surface;
                 attitude = RelativeAttitude.Vertical;

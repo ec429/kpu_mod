@@ -15,7 +15,7 @@ namespace KPU.Modules
         [KSPField()]
         public string sensorUnit = "";
         [KSPField()]
-        public double electricRate;
+        public double electricRate = 0;
         [KSPField()]
         public double maxAltitude = 0;
         [KSPField()]
@@ -24,22 +24,17 @@ namespace KPU.Modules
         [KSPField(guiName = "Status", guiActive = true)]
         public string GUI_status = "Inactive";
 
-        public bool hasPower;
         public bool isWorking;
 
-        public override void OnFixedUpdate()
+        public void FixedUpdate()
         {
             if (vessel == null)
                 return;
 
-            // only handle onFixedUpdate if the ship is unpacked
-            if (vessel.packed)
-                return;
-
             Fields["GUI_status"].guiName = sensorType;
             double resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
-            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest, ResourceFlowMode.ALL_VESSEL);
-            hasPower = electricUsage >= resourceRequest * 0.9;
+            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            bool hasPower = electricUsage >= resourceRequest * 0.9;
             isWorking = false;
             if (hasPower)
             {
@@ -78,7 +73,8 @@ namespace KPU.Modules
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody != null)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
-            info.AppendFormat("Energy usage: {0:G} charge/s", electricRate).AppendLine();
+            if (electricRate > 0)
+                info.AppendFormat("Energy req.: {0:F} charge/s", electricRate).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

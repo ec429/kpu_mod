@@ -18,7 +18,7 @@ namespace KPU.Modules
         [KSPField()]
         public int imemWords;
 
-        [KSPField]
+        [KSPField()]
         public double electricRate;
 
         [KSPField()]
@@ -186,12 +186,15 @@ namespace KPU.Modules
                 mProcessor.OnFlyByWire(fcs);
         }
 
-        public override void OnFixedUpdate()
+        public void FixedUpdate()
         {
             if (vessel == null)
                 return;
 
-            // only handle onFixedUpdate if the ship is unpacked
+            double resourceRequest = electricRate * TimeWarp.fixedDeltaTime * (isRunning ? 1.0f : 0.1f);
+            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
+
             if (vessel.packed)
                 return;
 
@@ -201,10 +204,6 @@ namespace KPU.Modules
             // Re-attach periodically
             vessel.OnFlyByWire -= OnFlyByWirePost;
             vessel.OnFlyByWire = vessel.OnFlyByWire + OnFlyByWirePost;
-
-            double resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
-            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest, ResourceFlowMode.ALL_VESSEL);
-            mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
         }
 
         public void OnVesselChange(Vessel v)

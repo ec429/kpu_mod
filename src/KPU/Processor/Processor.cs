@@ -555,6 +555,8 @@ namespace KPU.Processor
                 left = evalRecursive(n.mChildren[0], p);
                 assertType(n, "child", Type.BOOLEAN, left);
                 return new Value(!left.b);
+            case Tokens.TOK_COMMENT:
+                return new Value();
             default: // can't happen
                 throw new EvalError(n.mToken.Value.ToString());
             }
@@ -609,7 +611,7 @@ namespace KPU.Processor
             case InputType.BOOLEAN:
                 return Bool ? "1" : "0";
             case InputType.DOUBLE:
-                return Double.ToString("g4");
+                return Double.ToString("g");
             default: // can't happen
                 return typ.ToString();
             }
@@ -633,7 +635,7 @@ namespace KPU.Processor
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
         public bool useSI { get { return false; }}
         public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(ElectricChargeFillLevel * 100.0f); } }
+        public InputValue value { get { return new InputValue(Math.Round(ElectricChargeFillLevel * 10000.0f) / 100.0f); } }
         private Processor mProc = null;
 
         private Vessel parentVessel { get { return mProc.parentVessel; } }
