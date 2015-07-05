@@ -8,8 +8,9 @@ It allows you to load up your space probes with programs to allow them to
 KPU is currently in alpha test; not all features have been implemented.  The
  parts in the mod at present do not have new models; instead they are using
  copies of existing part models (the KER units for the two Kelliot processors,
- and the stock Seismic Accelerometer for the FS-RA radioaltimeter).  KPU's
- developer is actively looking for someone to create the models.
+ the stock Seismic Accelerometer for the FS-RA radioaltimeter, and the
+ Reflectron DP-10 from RemoteTech for the KNS and LORAN position sensors).
+ KPU's developer is actively looking for someone to create the part models.
 
 KPU is developed by Edward Cree, who goes by the handle 'soundnfury' on IRC
  and 'ec429' elsewhere; his website is at http://jttlov.no-ip.org.  During
@@ -72,7 +73,7 @@ There are four Processor parts planned, though only two have been implemented
  programs, along with 64 words of IMEM.  The Kelliot KE-7 supports the full
  language including arithmetic operators and level-triggered actions, and
  stores up to 256 words of IMEM, but requires a lot of ElectricCharge (1.5
- charge/s) to operate.  The Kerbolics LISP-M (not implemented) is far more
+ charge/s) to operate.  The Kerbolics LITHP-M (not implemented) is far more
  efficient, needing just 0.25 charge/s, with a colossal 65,536 words of IMEM.
 The other type of part in this mod is the Sensor.  A program isn't much use
  without inputs to drive it, and KPU has plenty of inputs.
@@ -94,7 +95,8 @@ Most of the sensors have to do with letting the probe work out its position,
  enough to Kerbin to triangulate radio signals from around the globe; it will
  function up to 300km altitude.  The later LORAN sensor will do the same out
  to 3Mm - notably, this is sufficient for keostationary orbit.
- Of these sensors, only the FS-RA radioaltimeter has been implemented.
+ Of these sensors, only the FS-RA radioaltimeter and the KNS / LORAN position
+ systems have been implemented.
 There are also sensors for localGravity (using the stock Gravioli Detector)
  and gear landing sensors which detect when the vessel has touched down
  (currently only supported for stock landing legs and wheeled landing gear,
