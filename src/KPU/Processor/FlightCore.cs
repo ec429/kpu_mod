@@ -5,13 +5,14 @@ using UnityEngine;
 // Shamelessly copied from RemoteTech.FlightComputer
 namespace KPU.Processor
 {
-    public enum ReferenceFrame { Orbit, Surface, Maneuver };
-    public enum RelativeAttitude { Prograde, Retrograde, Vertical };
+    public enum ReferenceFrame { Orbit, Surface, Maneuver, North };
+    public enum RelativeAttitude { Prograde, Retrograde, Vertical, CustomHP, CustomHPR };
 
     public class FlightAttitude
     {
         public ReferenceFrame frame;
         public RelativeAttitude attitude;
+        public double Hdg, Pitch, Roll;
         public FlightAttitude (string desc)
         {
             switch(desc)
@@ -42,6 +43,21 @@ namespace KPU.Processor
                 attitude = RelativeAttitude.Vertical;
                 break;
             };
+        }
+        public FlightAttitude(double hdg, double pitch)
+        {
+            frame = ReferenceFrame.North;
+            attitude = RelativeAttitude.CustomHP;
+            Hdg = hdg;
+            Pitch = pitch;
+        }
+        public FlightAttitude(double hdg, double pitch, double roll)
+        {
+            frame = ReferenceFrame.North;
+            attitude = RelativeAttitude.CustomHPR; // this doesn't seem to have a working roll reference
+            Hdg = hdg;
+            Pitch = pitch;
+            Roll = roll;
         }
     }
 
@@ -81,6 +97,10 @@ namespace KPU.Processor
                         up = (v.mainBody.position - v.CoM);
                     }
                     break;
+                case ReferenceFrame.North:
+                    up = (v.mainBody.position - v.CoM);
+                    forward = Vector3.ProjectOnPlane(v.mainBody.position + v.mainBody.transform.up * (float)v.mainBody.Radius - v.CoM, up);
+                    break;
             }
             Vector3.OrthoNormalize(ref forward, ref up);
             Quaternion rotationReference = Quaternion.LookRotation(forward, up);
@@ -109,6 +129,19 @@ namespace KPU.Processor
                         break;
                     }
                     rotationReference = Quaternion.LookRotation(forward, up);
+                break;
+                case RelativeAttitude.CustomHP:
+                    Quaternion hp = Quaternion.Euler(new Vector3d(Double.IsNaN(fa.Pitch) ? 0 : fa.Pitch,
+                                                                  Double.IsNaN(fa.Hdg) ? 0 : -fa.Hdg,
+                                                                  0));
+                    rotationReference = rotationReference * hp;
+                    ignoreRoll = true;
+                    break;
+                case RelativeAttitude.CustomHPR:
+                    Quaternion hpr = Quaternion.Euler(new Vector3d(Double.IsNaN(fa.Pitch) ? 0 : fa.Pitch,
+                                                                   Double.IsNaN(fa.Hdg) ? 0 : -fa.Hdg,
+                                                                   Double.IsNaN(fa.Roll) ? 0 : 180 - fa.Roll));
+                    rotationReference = rotationReference * hpr;
                     break;
             }
             HoldOrientation(fcs, p, rotationReference, ignoreRoll);

@@ -181,6 +181,7 @@ Supported values for @orient.set are:
  orbRetrograde
  srfVertical (points normal to terrain)
  orbVertical (points away from centre of planet/moon)
+ , hdg pitch (holds the given heading and pitch)
 
 
 Where do I report bugs?

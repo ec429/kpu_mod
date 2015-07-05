@@ -1026,11 +1026,16 @@ namespace KPU.Processor
         public string name { get { return "orient"; } }
         public Instruction.Type typ {get { return Instruction.Type.NAME; } }
         private string mValue = "none";
+        private double mHdg = 0, mPitch = 0, mRoll = 0;
         public Instruction.Value value { get { return new Instruction.Value(mValue); } }
 
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
-            if (!mValue.Equals("none"))
+            if (mValue.StartsWith("customHP"))
+                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch));
+            else if (mValue.StartsWith("customHPR"))
+                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch, mRoll));
+            else if (!mValue.Equals("none"))
                 FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
         }
 
@@ -1045,6 +1050,27 @@ namespace KPU.Processor
             {
                 mValue = value.n;
             }
+            else if (value.typ == Instruction.Type.TUPLE && value.l.Count == 2)
+            {
+                Instruction.Value hdg = value.l[0], pitch = value.l[1];
+                if (hdg.typ == Instruction.Type.DOUBLE && pitch.typ == Instruction.Type.DOUBLE)
+                {
+                    mValue = string.Format("customHP({0},{1})", hdg.d, pitch.d);
+                    mHdg = hdg.d;
+                    mPitch = pitch.d;
+                }
+            }
+            /*else if (value.typ == Instruction.Type.TUPLE && value.l.Count == 3)
+            {
+                Instruction.Value hdg = value.l[0], pitch = value.l[1], roll = value.l[2];
+                if (hdg.typ == Instruction.Type.DOUBLE && pitch.typ == Instruction.Type.DOUBLE && roll.typ == Instruction.Type.DOUBLE)
+                {
+                    mValue = string.Format("customHPR({0},{1},{2})", hdg.d, pitch.d, roll.d);
+                    mHdg = hdg.d;
+                    mPitch = pitch.d;
+                    mRoll = roll.d;
+                }
+            }*/
         }
 
         public void slewValue(Instruction.Value rate)
