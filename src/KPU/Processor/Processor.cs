@@ -877,7 +877,7 @@ namespace KPU.Processor
         public override string unit { get { return "°"; } }
         public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return false; }}
-        public override double raw { get { return parentVessel.longitude; } }
+        public override double raw { get { return (parentVessel.longitude + 720.0) % 360.0; } }
 
         public Longitude (Processor p) : base(p)
         {
@@ -890,7 +890,7 @@ namespace KPU.Processor
         public override string unit { get { return "m/s"; } }
         public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
-        public override double raw { get { return parentVessel.orbit.orbitalSpeed; } }
+        public override double raw { get { return parentVessel.GetObtVelocity().magnitude; } }
 
         public OrbSpeed (Processor p) : base(p)
         {

@@ -22,7 +22,7 @@ namespace KPU
                 {-3, "n"},
                 {-4, "p"},
             };
-            int offset = (int)Math.Floor(Math.Log10(value) / 3);
+            int offset = (int)Math.Floor(Math.Log10(Math.Abs(value)) / 3);
             offset = Clamp(offset, -4, 4);
             value /= Math.Pow(1000, offset);
             return value.ToString("F") + prefixes[offset] + unit;
