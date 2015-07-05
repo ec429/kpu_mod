@@ -163,14 +163,13 @@ Some more things to note: whitespace (except for newlines) is ignored and may
  when the '-' operator is followed by a literal which does not already begin
  with a minus sign.
 Here are some simple examples of the language:
-	ON < batteries 10 DO @antennas.set false
-	ON > batteries 90 DO @antennas.set true
+	ON < batteries 10 DO @rtAntennas.set false
+	ON > batteries 90 DO @rtAntennas.set true
  This will cause the probe to go into hibernation when its ElectricCharge
  reserves fall below 10%, by shutting down its antennas, and wake back up when
- the batteries reach 90% charge.  (However, the 'antennas' output hasn't been
- implemented yet).
+ the batteries reach 90% charge.
 	ON < srfHeight 10000 DO @orient.set srfRetrograde
-	IF <srfHeight 8000DO@throttle.set * -1000 / srfVerticalSpeed + srfHeight 40
+	IF <srfHeight 8000DO@throttle.set * -1000 / srfVerticalSpeed +srfHeight 40
 	ON < srfHeight 250 DO @gear.set true
  Rudimentary (and untested) lander code, will probably only cope with vertical
  descents.  Constants will need tuning for the vessel's thrust-to-mass ratio

@@ -1156,6 +1156,42 @@ namespace KPU.Processor
         }
     }
 
+    public class SolarPanels : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "solarPanels"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            foreach (Part part in p.parentVessel.Parts)
+            {
+                foreach (ModuleDeployableSolarPanel sp in part.FindModulesImplementing<ModuleDeployableSolarPanel>())
+                {
+                    if (b)
+                        sp.Extend();
+                    else
+                        sp.Retract();
+                }
+            }
+        }
+    }
+
+    public class RTAntennas : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "rtAntennas"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            foreach (Part part in p.parentVessel.Parts)
+            {
+                foreach (RemoteTech.Modules.ModuleRTAntenna ant in part.FindModulesImplementing<RemoteTech.Modules.ModuleRTAntenna>())
+                {
+                    if (b)
+                        ant.ActionOpen(new KSPActionParam(KSPActionGroup.None, KSPActionType.Activate));
+                    else
+                        ant.ActionClose(new KSPActionParam(KSPActionGroup.None, KSPActionType.Deactivate));
+                }
+            }
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -1225,6 +1261,8 @@ namespace KPU.Processor
             addOutput(new Brakes());
             addOutput(new Lights());
             addOutput(new Abort());
+            addOutput(new SolarPanels());
+            addOutput(new RTAntennas());
 
             initPIDParameters();
         }

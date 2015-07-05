@@ -45,6 +45,10 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="RemoteTech">
+      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\Rt\GameData\RemoteTech\Plugins\RemoteTech.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Modules\" />
