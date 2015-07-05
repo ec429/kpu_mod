@@ -67,14 +67,14 @@ namespace KPU.UI
                 }
                 catch (KPU.Processor.Instruction.ParseError exc)
                 {
-                    Logging.Log("Bad line " + line);
-                    Logging.Log(exc.ToString());
+                    Logging.Message("Bad line " + line);
+                    Logging.Message(exc.ToString());
                     return false;
                 }
                 instructions.Add(i);
                 imemWords += i.imemWords;
             }
-            Logging.Log(string.Format("Output IMEM: {0:D} words", imemWords));
+            Logging.Message(string.Format("Output IMEM: {0:D} words", imemWords));
             return true;
         }
 
@@ -106,7 +106,7 @@ namespace KPU.UI
                         mCompiled = compile();
                         if (!mCompiled)
                         {
-                            Logging.Log("Compilation failed");
+                            Logging.Message("Compilation failed");
                         }
                         else // normalise the code
                         {

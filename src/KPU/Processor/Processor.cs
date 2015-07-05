@@ -90,7 +90,7 @@ namespace KPU.Processor
                 if (MaxMatches.Count() != 1)
                 {
                     foreach (KeyValuePair<Tokens, string> kvp in MaxMatches)
-                        Logging.Log(kvp.Key.ToString() + ": " + kvp.Value);
+                        Logging.Message(kvp.Key.ToString() + ": " + kvp.Value);
                     throw new ParseError(string.Format("{0:D} matches for {1}", MaxMatches.Count(), text.Substring(index)));
                 }
                 string matchedText = MaxMatches.First().Value;
@@ -494,7 +494,7 @@ namespace KPU.Processor
                     assertType(n, "cond", Type.BOOLEAN, cond);
                     if (cond.b && !lastValue)
                     {
-                        //Logging.Log("edge fired! " + mText);
+                        Logging.Log("edge fired! " + mText);
                         if (TimeWarp.CurrentRateIndex > 0)
                             TimeWarp.SetRate(0, true); // force 1x speed
                         try
@@ -503,7 +503,7 @@ namespace KPU.Processor
                         }
                         catch(Exception ex)
                         {
-                            Logging.Log(ex.ToString());
+                            Logging.Message(ex.ToString());
                         }
                     }
                     lastValue = cond.b;
@@ -572,12 +572,12 @@ namespace KPU.Processor
                 }
                 catch (Instruction.EvalError exc)
                 {
-                    Logging.Log("EvalError: " + exc.ToString());
+                    Logging.Message("EvalError: " + exc.ToString());
                     skip = true;
                 }
                 catch (Instruction.ExecError exc)
                 {
-                    Logging.Log("ExecError: " + exc.ToString());
+                    Logging.Message("ExecError: " + exc.ToString());
                     skip = true;
                 }
             }
@@ -1179,30 +1179,30 @@ namespace KPU.Processor
             }
             catch (Instruction.ParseError exc)
             {
-                Logging.Log(exc.ToString());
+                Logging.Message(exc.ToString());
                 return false;
             }
             if (i.imemWords > imemWords)
             {
-                Logging.Log("Insufficient IMEM for " + i.mText);
+                Logging.Message("Insufficient IMEM for " + i.mText);
                 return false;
             }
             if (i.requiresLevelTrigger && !hasLevelTrigger)
             {
-                Logging.Log("Processor does not support level triggers");
-                Logging.Log("  " + i.mText);
+                Logging.Message("Processor does not support level triggers");
+                Logging.Message("  " + i.mText);
                 return false;
             }
             if (i.requiresLogicOps && !hasLogicOps)
             {
-                Logging.Log("Processor does not support logical operators");
-                Logging.Log("  " + i.mText);
+                Logging.Message("Processor does not support logical operators");
+                Logging.Message("  " + i.mText);
                 return false;
             }
             if (i.requiresArithOps && !hasArithOps)
             {
-                Logging.Log("Processor does not support arithmetic operators");
-                Logging.Log("  " + i.mText);
+                Logging.Message("Processor does not support arithmetic operators");
+                Logging.Message("  " + i.mText);
                 return false;
             }
             instructions.Add(i);
@@ -1227,7 +1227,7 @@ namespace KPU.Processor
                 }
                 catch (Exception exc)
                 {
-                    Logging.Log("Problem in input " + i.name);
+                    Logging.Message("Problem in input " + i.name);
                     Logging.Log(exc.ToString());
                     Logging.Log(exc.StackTrace);
                 }

@@ -30,18 +30,23 @@ namespace KPU
     }
     public static class Logging
     {
-        public static void Log(string message)
+        public static void Message(string message, bool log=true)
         {
-            UnityEngine.Debug.Log("KPU: " + message);
-            #if DEBUG
+            if (log) Log(message, false);
             try
             {
-                var msg = new ScreenMessage("KPU: debug: " + message, 4f, ScreenMessageStyle.UPPER_LEFT);
+                var msg = new ScreenMessage(message, 4f, ScreenMessageStyle.UPPER_LEFT);
                 ScreenMessages.PostScreenMessage(msg);
             }
             catch (Exception)
             {
             }
+        }
+        public static void Log(string message, bool msg=true)
+        {
+            UnityEngine.Debug.Log("KPU: " + (msg ? "" : "Log: ") + message);
+            #if DEBUG
+            if(msg) Message("KPU: debug: " + message, false);
             #endif
         }
     }

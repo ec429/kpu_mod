@@ -68,19 +68,19 @@ namespace KPU.Modules
             }
             else if (mCodeWindow == null)
             {
-                Logging.Log("No editor active");
+                Logging.Message("No editor active");
             }
             else if (mCodeWindow.mLoaded)
             {
-                Logging.Log("Already loaded");
+                Logging.Message("Already loaded");
             }
             else if (!mCodeWindow.mCompiled)
             {
-                Logging.Log("Code not compiled");
+                Logging.Message("Code not compiled");
             }
             else if (mProcessor.isRunning)
             {
-                Logging.Log("Halt the current program first");
+                Logging.Message("Halt the current program first");
             }
             else
             {
@@ -96,13 +96,13 @@ namespace KPU.Modules
                 }
                 if (ok)
                 {
-                    Logging.Log("Program uploaded successfully");
+                    Logging.Message("Program uploaded successfully");
                     mCodeWindow.mLoaded = true;
                 }
                 else
                 {
                     mProcessor.ClearInstructions();
-                    Logging.Log("IMEM has been cleared");
+                    Logging.Message("IMEM has been cleared");
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace KPU.Modules
         {
             if (mProcessor == null)
             {
-                KPU.Logging.Log("Tried to open but no mProcessor");
+                Logging.Log("Tried to open but no mProcessor");
             }
             else
             {
