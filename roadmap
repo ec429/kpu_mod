@@ -1,0 +1,58 @@
+PART CATEGORIES
+KPU, performs processing of the stored instructions.  Later models gain a wider instruction set and more IMEM
+Planetary IR sensor, determines distance & direction of body being orbited.  [Uses solid angle & known size to determine distance, fails if too close to sun]
+Stellar compass, helps determine orientation.  Variants:
+	Type I: can only follow a single star (so has a rotational degree of freedom)
+	Type II: "Canopus tracker", gives full orientation after ground processing (otherwise Type I)
+	Type III: wide-field stellar compass, full autonomous orientation
+Radioaltimeter, determines altitude.  Later models gain Doppler for surface velocity
+Inertial platform, gives acceleration, computes velocity & position based on a previous 'fix', also gives orientation.  (A 'fix' requires full orientation.)  Results will drift over time leading to degraded accuracy if fixes are infrequent
+KNS, supplies navigational data close to Kerbin by use of ground signals and/or satellite "GPS".  Later models improve precision and range
+Stock landing gear, incorporates sensors to determine touchdown
+Stock sensors.  Some of the science experiments in stock are also usable sensors:
+	Gravioli detector.  Gives localGravity (handy for landing)
+	PresMat Barometer.  Gives airPressure (no idea what use this would be)
+	2HOT Thermometer.  Gives temperature (maybe useful to deal with overheating?)
+
+MANUFACTURERS
+Kelliot Automation: The world leaders in industrial process automation, Kelliot consider even Rockomax engines to be "quaint, tiny machines".
+Kerbolics: A start-up company formed by some bearded researchers from the Kerbal Institute of Technology to manufacture intelligence.
+Kerbal Instruments: Rumours that KI's semiconductors are made by children with tweezers have been firmly denied by the Board.
+Kybernetics Inc.: A semiconductor fab founded by disgruntled ex-KI employees.
+Probodobodyne: Of *course* they have a computer division.
+
+PARTS (* = implemented with placeholder model, + = also has model)
+*Kelliot 4040 KPU.  This simple processor can be instructed to take actions on edge-triggered conditions of a single variable.
+Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays (TODO: syntax).
+*Kelliot KE-7 KPU.  The incorporation of arithmetic and level-triggered actions allows a whole new kind of programming.
+Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
+Kerbolics Mk1 Eyeball.  A planetary IR sensor that only functions on the light side of the planet.
+KI "Spot" PIR.  Copes with sun angles down to 30°.
+PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
+PB "Sirius" ST-5.  After several failed attempts, Probodobodyne finally improved on the Vega with this 30' Type I star tracker.
+Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
+Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
+KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
+*PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
+Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!
+Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
+KI "LORAN".  The LOng RAnge Navigation system from Kerbal Instruments gives KNS-like functionality out to a 3Mm range!
+
+PART DATA
+manufacturer		part name		tech		mass	cost	Z/min	moduleinfo
+Kelliot				4040 KPU		FlightCtrl	0.02	1000	6		KPU, EDGE, SIMPLE, 16 words
+Kelliot				8080 KPU		Miniaturizn	0.04	2000	30		KPU, EDGE, COMPOUND, 64 words
+Kelliot				KE-7 KPU		Electronics	0.1		3200	90		KPU, EL, FULL, 256 words
+Kerbolics			LISP-M			Automation	0.025	5000	15		KPU, EL, FULL, 65536 words
+Kerbolics			Mk1 Eyeball		BasicSci	0.025	300		6		PIR, 90 deg-to-sun
+Kerbal Instruments	"Spot" PIR		AdvExplorn	0.025	1200	15		PIR, 30 deg-to-sun
+Probodobodyne		"Vega" ST-1		Electrics	0.05	1000	9		SC, TYPE1, 2 deg-res
+Probodobodyne		"Sirius" ST-5	AdvElectric	0.05	1500	9		SC, TYPE1, 0.5 deg-res
+Kybernetics			CSC				Electronics	0.1		2400	15		SC, TYPE2, 0.25 deg-res
+Kybernetics			"Pollux" CSA	AdvUnmnTech	0.05	5000	15		SC, TYPE3, 0.01 deg-res
+Kerbal Instruments	RA-3 "Ping"		PrecsnEngnr	0.01	600		6		RA, 50 m-res
+Probodobodyne		FS-RA			UnmanndTech	0.02	2000	15		RA, 10 m-res, 0.2 m/s-res
+Kerbolics			"Tympanum"		ScienceTech	0.05	1000	30		INERTIAL
+Kybernetics			KNS				SpaceExplrn	0.03	1200	45		KNS, 300 km
+Kerbal Instruments	"LORAN"			Electronics	0.05	3600	90		KNS, 3Mm
+(Landing gear technology perk)		AdvLanding							GEARSWITCH
