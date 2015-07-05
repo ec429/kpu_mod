@@ -152,7 +152,7 @@ The full syntax of the language in Backus-Naur form is as follows:
 	comp-op ::= < | >
 	arith-op::= + | - | * | /
 	ident   ::= [a-z][a-zA-Z_.]*
-	literal ::= -?[0-9]+(\.[0-9]+)?
+	literal ::= -?[0-9]+(\.[0-9]+)?~?
 	action  ::= @ ident expr-lst?
     expr-lst::= (, expr-lst)? expr
 Some more things to note: whitespace (except for newlines) is ignored and may
@@ -162,6 +162,12 @@ Some more things to note: whitespace (except for newlines) is ignored and may
  whitespace when an ident is followed by a token beginning with a letter, and
  when the '-' operator is followed by a literal which does not already begin
  with a minus sign.
+The optional trailing tilde '~' on a literal will turn it into an angle: any
+ sum or difference on two angles will be done modulo 360, while a comparison
+ between two angles will be done "naturally": a > b if and only if the
+ positive angle from a to b is smaller than the negative.  For example,
+ 90~ > 0~, but 0~ > 270~ (because the negative angle is 90° while the
+ positive is 270°).  Any attempt to * or / two angles will cause an error.
 Here are some simple examples of the language:
 	ON < batteries 10 DO @rtAntennas.set false
 	ON > batteries 90 DO @rtAntennas.set true

@@ -65,7 +65,7 @@ namespace KPU.Processor
                 {"@", Tokens.TOK_AT},
                 {",", Tokens.TOK_COMMA},
                 {";", Tokens.TOK_SEMI},
-                {"-?[0-9]+(\\.[0-9]+)?", Tokens.TOK_LITERAL},
+                {"-?[0-9]+(\\.[0-9]+)?~?", Tokens.TOK_LITERAL},
                 {"[a-z][a-zA-Z_.]*", Tokens.TOK_IDENT},
                 {"\\s", Tokens.TOK_WHITESPACE},
             };
@@ -326,7 +326,7 @@ namespace KPU.Processor
         public int imemWords { get { return mImemWords; } }
         public bool requiresLevelTrigger = false, requiresLogicOps = false, requiresArithOps = false;
 
-        public enum Type { BOOLEAN, DOUBLE, NAME, TUPLE, VOID };
+        public enum Type { BOOLEAN, DOUBLE, ANGLE, NAME, TUPLE, VOID };
 
         public class Value
         {
@@ -340,7 +340,19 @@ namespace KPU.Processor
             public string n { get { return mName; }}
             public List<Value> t { get { return mTuple; }}
             public Value(bool b) { typ = Type.BOOLEAN; mBool = b; }
-            public Value(double d) { typ = Type.DOUBLE; mDouble = d; }
+            public Value(double d, bool angle=false)
+            {
+                if (angle)
+                {
+                    typ = Type.ANGLE;
+                    mDouble = d % 360.0;
+                }
+                else
+                {
+                    typ = Type.DOUBLE;
+                    mDouble = d;
+                }
+            }
             public Value(string n) { typ = Type.NAME; mName = n; }
             public Value(Value car, Value cdr) { typ = Type.TUPLE; mTuple = new List<Value>(2){car, cdr}; }
             public Value() { typ = Type.VOID; }
@@ -356,6 +368,7 @@ namespace KPU.Processor
                 case Type.BOOLEAN:
                     return mBool ? "True" : "False";
                 case Type.DOUBLE:
+                case Type.ANGLE:
                     return mDouble.ToString("g4");
                 case Type.NAME:
                     return "[" + mName + "]";
@@ -440,18 +453,38 @@ namespace KPU.Processor
             case Tokens.TOK_ARITH_OP: // + - * /
                 left = evalRecursive(n.mChildren[0], p);
                 right = evalRecursive(n.mChildren[1], p);
-                assertType(n, "left", Type.DOUBLE, left);
-                assertType(n, "right", Type.DOUBLE, right);
-                if (n.mToken.Key.Equals("+"))
-                    return new Value(left.d + right.d);
-                else if (n.mToken.Key.Equals("-"))
-                    return new Value(left.d - right.d);
-                else if (n.mToken.Key.Equals("*"))
-                    return new Value(left.d * right.d);
-                else if (n.mToken.Key.Equals("/"))
-                    return new Value(left.d / right.d);
-                else // can't happen
-                    throw new EvalError(n.mToken.Key);
+                if ((left.typ == Type.ANGLE) && (right.typ == Type.ANGLE))
+                {
+                    if (n.mToken.Key.Equals("+"))
+                        return new Value((left.d + right.d) % 360.0, true);
+                    else if (n.mToken.Key.Equals("-"))
+                        return new Value((left.d + 360.0 - right.d) % 360.0, true);
+                    else if (n.mToken.Key.Equals("*"))
+                        throw new EvalError("'*' not valid on angles");
+                    else if (n.mToken.Key.Equals("/"))
+                        throw new EvalError("'/' not valid on angles");
+                    else // can't happen
+                        throw new EvalError(n.mToken.Key);
+                }
+                else
+                {
+                    if (left.typ == Type.ANGLE)
+                        left = new Value(left.d);
+                    else if (right.typ == Type.ANGLE)
+                        right = new Value(right.d);
+                    assertType(n, "left", Type.DOUBLE, left);
+                    assertType(n, "right", Type.DOUBLE, right);
+                    if (n.mToken.Key.Equals("+"))
+                        return new Value(left.d + right.d);
+                    else if (n.mToken.Key.Equals("-"))
+                        return new Value(left.d - right.d);
+                    else if (n.mToken.Key.Equals("*"))
+                        return new Value(left.d * right.d);
+                    else if (n.mToken.Key.Equals("/"))
+                        return new Value(left.d / right.d);
+                    else // can't happen
+                        throw new EvalError(n.mToken.Key);
+                 }
             case Tokens.TOK_AT:
                 left = evalRecursive(n.mChildren[0], p);
                 right = evalRecursive(n.mChildren[1], p);
@@ -464,14 +497,35 @@ namespace KPU.Processor
             case Tokens.TOK_COMP_OP: // < >
                 left = evalRecursive(n.mChildren[0], p);
                 right = evalRecursive(n.mChildren[1], p);
-                assertType(n, "left", Type.DOUBLE, left);
-                assertType(n, "right", Type.DOUBLE, right);
-                if (n.mToken.Key.Equals("<"))
-                    return new Value(left.d < right.d);
-                else if (n.mToken.Key.Equals(">"))
-                    return new Value(left.d > right.d);
-                else // can't happen
-                    throw new EvalError(n.mToken.Key);
+                if (left.typ == Type.ANGLE && right.typ == Type.ANGLE)
+                {
+                    double diff = left.d - right.d;
+                    if (diff > 180.0)
+                        diff -= 360.0;
+                    else if (diff < -180.0)
+                        diff += 360.0;
+                    if (n.mToken.Key.Equals("<"))
+                        return new Value(diff < 0);
+                    else if (n.mToken.Key.Equals(">"))
+                        return new Value(diff > 0);
+                    else // can't happen
+                        throw new EvalError(n.mToken.Key);
+                }
+                else
+                {
+                    if (left.typ == Type.ANGLE)
+                        left = new Value(left.d);
+                    else if (right.typ == Type.ANGLE)
+                        right = new Value(right.d);
+                    assertType(n, "left", Type.DOUBLE, left);
+                    assertType(n, "right", Type.DOUBLE, right);
+                    if (n.mToken.Key.Equals("<"))
+                        return new Value(left.d < right.d);
+                    else if (n.mToken.Key.Equals(">"))
+                        return new Value(left.d > right.d);
+                    else // can't happen
+                        throw new EvalError(n.mToken.Key);
+                }
             case Tokens.TOK_IDENT:
                 if (n.mToken.Key.Equals("true"))
                     return new Value(true);
@@ -484,6 +538,8 @@ namespace KPU.Processor
                         return new Value(i.Bool);
                     if (i.typ == InputType.DOUBLE)
                         return new Value(i.Double);
+                    if (i.typ == InputType.ANGLE)
+                        return new Value(i.Double, true);
                     return new Value();
                 }
                 return new Value(n.mToken.Key);
@@ -528,7 +584,10 @@ namespace KPU.Processor
             case Tokens.TOK_LITERAL:
                 try
                 {
-                    return new Value(Double.Parse(n.mToken.Key));
+                    if (n.mToken.Key.EndsWith("~"))
+                        return new Value(Double.Parse(n.mToken.Key.TrimEnd('~')), true);
+                    else
+                        return new Value(Double.Parse(n.mToken.Key));
                 }
                 catch (Exception) // can't happen?
                 {
@@ -584,7 +643,7 @@ namespace KPU.Processor
         }
     }
 
-    public enum InputType { BOOLEAN, DOUBLE };
+    public enum InputType { BOOLEAN, DOUBLE, ANGLE };
 
     public class InputValue
     {
@@ -592,10 +651,18 @@ namespace KPU.Processor
         public bool Bool;
         public double Double;
 
-        public InputValue(double value)
+        public InputValue(double value, bool angle=false)
         {
-            typ = InputType.DOUBLE;
-            Double = value;
+            if (angle)
+            {
+                typ = InputType.ANGLE;
+                Double = value % 360.0;
+            }
+            else
+            {
+                typ = InputType.DOUBLE;
+                Double = value;
+            }
         }
 
         public InputValue(bool value)
@@ -611,6 +678,7 @@ namespace KPU.Processor
             case InputType.BOOLEAN:
                 return Bool ? "1" : "0";
             case InputType.DOUBLE:
+            case InputType.ANGLE:
                 return Double.ToString("g");
             default: // can't happen
                 return typ.ToString();
@@ -741,12 +809,14 @@ namespace KPU.Processor
     public class SensorDouble : SensorDriven
     {
         public virtual double raw { get { return Double.PositiveInfinity; } }
+        public virtual InputType typ { get { return InputType.DOUBLE; } }
         public InputValue value
         {
             get
             {
-                if (!available) return new InputValue(Double.PositiveInfinity);
-                return new InputValue(Math.Round(raw / res) * res);
+                bool angle = (typ == InputType.ANGLE);
+                if (!available) return new InputValue(Double.PositiveInfinity, angle);
+                return new InputValue(Math.Round(raw / res) * res, angle);
             }
         }
         public SensorDouble(Processor p) : base(p)
@@ -777,7 +847,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "srfHeight"; } }
         public override string unit { get { return "m"; } }
-        public InputType typ { get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw
         {
@@ -796,7 +865,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "srfSpeed"; } }
         public override string unit { get { return "m/s"; } }
-        public InputType typ { get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw
         {
@@ -815,7 +883,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "srfVerticalSpeed"; } }
         public override string unit { get { return "m/s"; } }
-        public InputType typ { get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw
         {
@@ -836,7 +903,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "localGravity"; } }
         public override string unit { get { return "m/s²"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw { get { return FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude; } }
 
@@ -849,7 +915,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "altitude"; } }
         public override string unit { get { return "m"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw { get { return parentVessel.altitude; } }
 
@@ -862,7 +927,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "latitude"; } }
         public override string unit { get { return "°"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
+        public override InputType typ {get { return InputType.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return parentVessel.latitude; } }
 
@@ -875,7 +940,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "longitude"; } }
         public override string unit { get { return "°"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
+        public override InputType typ {get { return InputType.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return (parentVessel.longitude + 720.0) % 360.0; } }
 
@@ -888,7 +953,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbSpeed"; } }
         public override string unit { get { return "m/s"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw { get { return parentVessel.GetObtVelocity().magnitude; } }
 
@@ -901,7 +965,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbPeriapsis"; } }
         public override string unit { get { return "m"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw { get { return parentVessel.orbit.PeA; } }
 
@@ -914,7 +977,6 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbApoapsis"; } }
         public override string unit { get { return "m"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
         public bool useSI { get { return true; }}
         public override double raw { get { return parentVessel.orbit.ApA; } }
 
@@ -927,7 +989,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbInclination"; } }
         public override string unit { get { return "°"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
+        public override InputType typ {get { return InputType.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return parentVessel.orbit.inclination; } }
 
@@ -940,7 +1002,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbANLongitude"; } }
         public override string unit { get { return "°"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
+        public override InputType typ {get { return InputType.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return (parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle + 360) % 360; } }
 
@@ -955,7 +1017,7 @@ namespace KPU.Processor
         // especially as the language has no easy way to work with angles
         public override string name { get { return "orbPeriapsisLongitude"; } }
         public override string unit { get { return "°"; } }
-        public InputType typ {get { return InputType.DOUBLE; } }
+        public override InputType typ {get { return InputType.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get {
             double l = parentVessel.orbit.argumentOfPeriapsis + parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle;
