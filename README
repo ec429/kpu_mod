@@ -175,10 +175,11 @@ Here are some simple examples of the language:
  descents.  Constants will need tuning for the vessel's thrust-to-mass ratio
  and the gravity of the target body.
 Supported values for @orient.set are:
+ srfPrograde
+ orbPrograde
  srfRetrograde
  orbRetrograde
- srfVertical (currently the same as orbVertical, but it might be changed to
-              mean "terrain normal")
+ srfVertical (points normal to terrain)
  orbVertical (points away from centre of planet/moon)
 
 

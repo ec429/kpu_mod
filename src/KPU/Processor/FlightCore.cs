@@ -24,6 +24,14 @@ namespace KPU.Processor
                 frame = ReferenceFrame.Orbit;
                 attitude = RelativeAttitude.Retrograde;
                 break;
+            case "srfPrograde":
+                frame = ReferenceFrame.Surface;
+                attitude = RelativeAttitude.Prograde;
+                break;
+            case "orbPrograde":
+                frame = ReferenceFrame.Orbit;
+                attitude = RelativeAttitude.Prograde;
+                break;
             case "srfVertical":
                 frame = ReferenceFrame.Surface;
                 attitude = RelativeAttitude.Vertical;
@@ -88,8 +96,18 @@ namespace KPU.Processor
 
                 case RelativeAttitude.Vertical:
                     ignoreRoll = true;
-                    up = forward;
-                    forward = (v.CoM - v.mainBody.position);
+                    switch (fa.frame)
+                    {
+                    case ReferenceFrame.Surface:
+                        up = forward;
+                        forward = v.terrainNormal;
+                        break;
+                    case ReferenceFrame.Orbit:
+                    default:
+                        up = forward;
+                        forward = (v.CoM - v.mainBody.position);
+                        break;
+                    }
                     rotationReference = Quaternion.LookRotation(forward, up);
                     break;
             }
