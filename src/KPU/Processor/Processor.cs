@@ -1052,24 +1052,59 @@ namespace KPU.Processor
         }
     }
 
-    public class GearOutput : IOutputData
+    public class Stage : IOutputData
     {
-        public string name { get { return "gear"; } }
+        public string name { get { return "stage"; } }
+        public Instruction.Type typ {get { return Instruction.Type.BOOLEAN; } }
+        public Instruction.Value value { get { return new Instruction.Value(mQueued > 0); } }
+        private int mQueued;
+
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+            if (mQueued > 0)
+            {
+                Staging.ActivateNextStage();
+                mQueued--;
+            }
+        }
+
+        public void clean()
+        {
+            mQueued = 0;
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.BOOLEAN && value.b)
+            {
+                mQueued++;
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+        }
+    }
+
+    public class BooleanTrigger
+    {
         public Instruction.Type typ {get { return Instruction.Type.BOOLEAN; } }
         private bool mValue = false;
         private bool mChange = false;
         public Instruction.Value value { get { return new Instruction.Value(mValue); } }
 
+        public virtual void rawInvoke(FlightCtrlState fcs, Processor p, bool b) {}
+        public virtual bool rawGet(FlightCtrlState fcs, Processor p) { return false; }
+
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
             if (mChange)
-                p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Gear, mValue);
+                rawInvoke(fcs, p, mValue);
             mChange = false;
         }
 
         public void clean()
         {
-            mValue = false;
             mChange = false;
         }
 
@@ -1082,8 +1117,42 @@ namespace KPU.Processor
             }
         }
 
-        public void slewValue(Instruction.Value rate)
+        public void slewValue(Instruction.Value rate) {}
+    }
+
+    public class GearOutput : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "gear"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
         {
+            p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Gear, b);
+        }
+    }
+
+    public class Brakes : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "brakes"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Brakes, b);
+        }
+    }
+
+    public class Lights : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "lights"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Light, b);
+        }
+    }
+
+    public class Abort : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "abort"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            p.parentVessel.ActionGroups.SetGroup(KSPActionGroup.Abort, b);
         }
     }
 
@@ -1151,7 +1220,11 @@ namespace KPU.Processor
             AddInput(new PeriLongitude(this));
             addOutput(new Throttle());
             addOutput(new Orient());
+            addOutput(new Stage());
             addOutput(new GearOutput());
+            addOutput(new Brakes());
+            addOutput(new Lights());
+            addOutput(new Abort());
 
             initPIDParameters();
         }
