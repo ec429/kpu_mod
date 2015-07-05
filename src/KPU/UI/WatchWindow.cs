@@ -53,11 +53,18 @@ namespace KPU.UI
                         foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.InputValue> item in mProcessor.inputValues)
                         {
                             string unit = "";
+                            bool useSI = false;
                             if (mProcessor.inputs.ContainsKey(item.Key))
+                            {
                                 unit = mProcessor.inputs[item.Key].unit;
+                                useSI = mProcessor.inputs[item.Key].useSI;
+                            }
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(item.Key, mKeyStyle);
-                            GUILayout.Label(item.Value.ToString() + unit, mValueStyle);
+                            if (useSI && item.Value.typ == KPU.Processor.InputType.DOUBLE)
+                                GUILayout.Label(Util.formatSI(item.Value.Double, unit), mValueStyle);
+                            else
+                                GUILayout.Label(item.Value.ToString() + unit, mValueStyle);
                             GUILayout.EndHorizontal();
                         }
                     }

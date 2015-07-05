@@ -621,6 +621,7 @@ namespace KPU.Processor
         string name { get; }
         string unit { get; }
         bool available { get; }
+        bool useSI { get; }
         InputType typ { get; }
         InputValue value { get; }
     }
@@ -630,6 +631,7 @@ namespace KPU.Processor
         public string name { get { return "batteries"; } }
         public string unit { get { return "%"; } }
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
+        public bool useSI { get { return false; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(ElectricChargeFillLevel * 100.0f); } }
         private Processor mProc = null;
@@ -677,6 +679,7 @@ namespace KPU.Processor
         public string name { get { return "vesselTmr"; } }
         public string unit { get { return "m/s²"; } }
         public bool available { get { return parentVessel != null && TotalMass > 0.1f; }}
+        public bool useSI { get { return true; }}
         public InputType typ {get { return InputType.DOUBLE; } }
         public InputValue value { get { return new InputValue(TMR); } }
         private Processor mProc = null;
@@ -719,24 +722,41 @@ namespace KPU.Processor
         {
             get
             {
-                return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name) && m.hasPower));
+                return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name) && m.isWorking));
             }
         }
         public double res { get {
             double rv = Double.PositiveInfinity;
             foreach (Part p in parentVessel.Parts)
                 foreach(KPU.Modules.ModuleKpuSensor m in p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>())
-                    if (m.sensorType.Equals(name) && m.hasPower)
+                    if (m.sensorType.Equals(name) && m.isWorking)
                         if (m.sensorRes < rv)
                             rv = m.sensorRes;
             return rv;
             }}
     }
 
+    public class SensorDouble : SensorDriven
+    {
+        public virtual double raw { get { return Double.PositiveInfinity; } }
+        public InputValue value
+        {
+            get
+            {
+                if (!available) return new InputValue(Double.PositiveInfinity);
+                return new InputValue(Math.Round(raw / res) * res);
+            }
+        }
+        public SensorDouble(Processor p) : base(p)
+        {
+        }
+    }
+
     public class Gear : SensorDriven, IInputData
     {
         public override string name { get { return "gear"; } }
         public InputType typ { get { return InputType.BOOLEAN; } }
+        public bool useSI { get { return false; }}
         public InputValue value
         {
             get
@@ -751,18 +771,17 @@ namespace KPU.Processor
         }
     }
 
-    public class SrfHeight : SensorDriven, IInputData
+    public class SrfHeight : SensorDouble, IInputData
     {
         public override string name { get { return "srfHeight"; } }
         public override string unit { get { return "m"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
-        public InputValue value
+        public bool useSI { get { return true; }}
+        public override double raw
         {
             get
             {
-                if (!available) return new InputValue(Double.PositiveInfinity);
-                double h = parentVessel.altitude - parentVessel.terrainAltitude;
-                return new InputValue(Math.Round(h / res) * res);
+                return parentVessel.altitude - parentVessel.terrainAltitude;
             }
         }
 
@@ -771,18 +790,17 @@ namespace KPU.Processor
         }
     }
 
-    public class SrfSpeed : SensorDriven, IInputData
+    public class SrfSpeed : SensorDouble, IInputData
     {
         public override string name { get { return "srfSpeed"; } }
         public override string unit { get { return "m/s"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
-        public InputValue value
+        public bool useSI { get { return true; }}
+        public override double raw
         {
             get
             {
-                if (!available) return new InputValue(Double.PositiveInfinity);
-                double s = parentVessel.GetSrfVelocity().magnitude;
-                return new InputValue(Math.Round(s / res) * res);
+                return parentVessel.GetSrfVelocity().magnitude;
             }
         }
 
@@ -791,20 +809,19 @@ namespace KPU.Processor
         }
     }
 
-    public class SrfVerticalSpeed : SensorDriven, IInputData
+    public class SrfVerticalSpeed : SensorDouble, IInputData
     {
         public override string name { get { return "srfVerticalSpeed"; } }
         public override string unit { get { return "m/s"; } }
         public InputType typ { get { return InputType.DOUBLE; } }
-        public InputValue value
+        public bool useSI { get { return true; }}
+        public override double raw
         {
             get
             {
-                if (!available) return new InputValue(Double.PositiveInfinity);
                 Vector3 v = parentVessel.GetSrfVelocity();
                 Vector3 up = Vector3.Normalize(parentVessel.CoM - parentVessel.mainBody.position);
-                double vs = Vector3.Dot(v, up);
-                return new InputValue(Math.Round(vs / res) * res);
+                return Vector3.Dot(v, up);
             }
         }
 
@@ -813,14 +830,137 @@ namespace KPU.Processor
         }
     }
 
-    public class LocalG : SensorDriven, IInputData
+    public class LocalG : SensorDouble, IInputData
     {
         public override string name { get { return "localGravity"; } }
         public override string unit { get { return "m/s²"; } }
         public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude); } }
+        public bool useSI { get { return true; }}
+        public override double raw { get { return FlightGlobals.getGeeForceAtPosition(FlightGlobals.ship_position).magnitude; } }
 
         public LocalG (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Altitude : SensorDouble, IInputData
+    {
+        public override string name { get { return "altitude"; } }
+        public override string unit { get { return "m"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return true; }}
+        public override double raw { get { return parentVessel.altitude; } }
+
+        public Altitude (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Latitude : SensorDouble, IInputData
+    {
+        public override string name { get { return "latitude"; } }
+        public override string unit { get { return "°"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return false; }}
+        public override double raw { get { return parentVessel.latitude; } }
+
+        public Latitude (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Longitude : SensorDouble, IInputData
+    {
+        public override string name { get { return "longitude"; } }
+        public override string unit { get { return "°"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return false; }}
+        public override double raw { get { return parentVessel.longitude; } }
+
+        public Longitude (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class OrbSpeed : SensorDouble, IInputData
+    {
+        public override string name { get { return "orbSpeed"; } }
+        public override string unit { get { return "m/s"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return true; }}
+        public override double raw { get { return parentVessel.orbit.orbitalSpeed; } }
+
+        public OrbSpeed (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Periapsis : SensorDouble, IInputData
+    {
+        public override string name { get { return "orbPeriapsis"; } }
+        public override string unit { get { return "m"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return true; }}
+        public override double raw { get { return parentVessel.orbit.PeA; } }
+
+        public Periapsis (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Apoapsis : SensorDouble, IInputData
+    {
+        public override string name { get { return "orbApoapsis"; } }
+        public override string unit { get { return "m"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return true; }}
+        public override double raw { get { return parentVessel.orbit.ApA; } }
+
+        public Apoapsis (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class Inclination : SensorDouble, IInputData
+    {
+        public override string name { get { return "orbInclination"; } }
+        public override string unit { get { return "°"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return false; }}
+        public override double raw { get { return parentVessel.orbit.inclination; } }
+
+        public Inclination (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class ANLongitude : SensorDouble, IInputData
+    {
+        public override string name { get { return "orbANLongitude"; } }
+        public override string unit { get { return "°"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return false; }}
+        public override double raw { get { return (parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle + 360) % 360; } }
+
+        public ANLongitude (Processor p) : base(p)
+        {
+        }
+    }
+
+    public class PeriLongitude : SensorDouble, IInputData
+    {
+        // we give the longitude of periapsis, because that seems more useful than the argument
+        // especially as the language has no easy way to work with angles
+        public override string name { get { return "orbPeriapsisLongitude"; } }
+        public override string unit { get { return "°"; } }
+        public InputType typ {get { return InputType.DOUBLE; } }
+        public bool useSI { get { return false; }}
+        public override double raw { get {
+            double l = parentVessel.orbit.argumentOfPeriapsis + parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle;
+            return (l + 360) % 360;
+        } }
+
+        public PeriLongitude (Processor p) : base(p)
         {
         }
     }
@@ -998,6 +1138,15 @@ namespace KPU.Processor
             AddInput(new SrfVerticalSpeed(this));
             AddInput(new VesselTMR(this));
             AddInput(new LocalG(this));
+            AddInput(new Altitude(this));
+            AddInput(new Latitude(this));
+            AddInput(new Longitude(this));
+            AddInput(new OrbSpeed(this));
+            AddInput(new Periapsis(this));
+            AddInput(new Apoapsis(this));
+            AddInput(new Inclination(this));
+            AddInput(new ANLongitude(this));
+            AddInput(new PeriLongitude(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new GearOutput());

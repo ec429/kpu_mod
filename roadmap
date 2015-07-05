@@ -35,8 +35,8 @@ Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar comp
 KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
 *PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
 Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!
-Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
-KI "LORAN".  The LOng RAnge Navigation system from Kerbal Instruments gives KNS-like functionality out to a 3Mm range!
+*Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
+*KI "LORAN".  The LOng RAnge Navigation system from Kerbal Instruments gives KNS-like functionality out to a 3Mm range!
 
 PART DATA
 manufacturer		part name		tech		mass	cost	Z/min	moduleinfo
