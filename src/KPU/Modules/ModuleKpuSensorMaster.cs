@@ -3,40 +3,58 @@ using System.Text;
 
 namespace KPU.Modules
 {
-    [KSPModule("KPU Sensor Reading")]
-    public class ModuleKpuSensor : PartModule
+    [KSPModule("KPU Sensor")]
+    public class ModuleKpuSensorMaster : PartModule
     {
         // Checked for by InputValues in KPU.Processor
 
         [KSPField()]
-        public string sensorType;
-        [KSPField()]
-        public double sensorRes;
-        [KSPField()]
-        public string sensorUnit = "";
+        public double electricRate = 0;
         [KSPField()]
         public double maxAltitude = 0;
         [KSPField()]
         public string requireBody = "";
-
-        [KSPField(guiName = "Status", guiActive = true)]
-        public string GUI_status = "Inactive";
-
-        private ModuleKpuSensorMaster master { get {
-            return part.FindModuleImplementing<ModuleKpuSensorMaster>();
-        }}
+        [KSPField()]
+        public bool isActive = true;
 
         public bool isWorking;
+        public string GUI_status;
+
+        private void setActive()
+        {
+            Events["EventToggle"].guiName = isActive ? "Deactivate" : "Activate";
+            Events["EventToggle"].guiActive = true;
+        }
+
+        [KSPEvent(name = "EventToggle", guiName = "Toggle", guiActive = false)]
+        public void EventToggle()
+        {
+            isActive = !isActive;
+            setActive();
+        }
+
+        public override void OnStart(StartState state)
+        {
+            setActive();
+        }
 
         public void FixedUpdate()
         {
             if (vessel == null)
                 return;
 
-            Fields["GUI_status"].guiName = sensorType;
-            if (master != null && !master.isWorking)
+            if (!isActive)
             {
-                GUI_status = master.GUI_status;
+                isWorking = false;
+                GUI_status = "Inactive";
+                return;
+            }
+            double resourceRequest = electricRate * TimeWarp.fixedDeltaTime;
+            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            bool hasPower = electricUsage >= resourceRequest * 0.9;
+            if (!hasPower)
+            {
+                GUI_status = "No power!";
                 isWorking = false;
                 return;
             }
@@ -60,14 +78,12 @@ namespace KPU.Modules
         {
             var info = new StringBuilder();
 
-            info.Append("Sensor: ");
-            info.AppendLine(sensorType);
-            if (sensorRes > 0)
-                info.AppendFormat("Resolution: {0:G}{1}", sensorRes, sensorUnit).AppendLine();
             if (maxAltitude > 0)
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
+            if (electricRate > 0)
+                info.AppendFormat("Energy req.: {0:F} charge/s", electricRate).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

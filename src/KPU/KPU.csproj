@@ -64,5 +64,6 @@
     <Compile Include="Processor\FlightCore.cs" />
     <Compile Include="Processor\PIDController.cs" />
     <Compile Include="UI\CodeWindow.cs" />
+    <Compile Include="Modules\ModuleKpuSensorMaster.cs" />
   </ItemGroup>
 </Project>
