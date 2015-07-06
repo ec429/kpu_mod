@@ -69,5 +69,6 @@
     <Compile Include="Processor\PIDController.cs" />
     <Compile Include="UI\CodeWindow.cs" />
     <Compile Include="Modules\ModuleKpuSensorMaster.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 </Project>
