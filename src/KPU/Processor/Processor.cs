@@ -554,6 +554,12 @@ namespace KPU.Processor
                     return new Value(true);
                 if (n.mToken.Key.Equals("false"))
                     return new Value(false);
+                if (n.mToken.Key.Equals("error"))
+                {
+                    bool b = p.error;
+                    p.error = false;
+                    return new Value(b);
+                }
                 if (p.inputValues.ContainsKey(n.mToken.Key))
                 {
                     return new Value(p.inputValues[n.mToken.Key]);
@@ -1037,23 +1043,6 @@ namespace KPU.Processor
         }
     }
 
-    public class ProcessorError : IInputData
-    {
-        public string name { get { return "error"; } }
-        public string unit { get { return ""; } }
-        public bool available { get { return true; }}
-        public bool useSI { get { return false; }}
-        public Instruction.Type typ { get { return Instruction.Type.BOOLEAN; } }
-        public Instruction.Value value { get { return new Instruction.Value(mProcessor.error); } }
-        private Processor mProcessor = null;
-
-        public ProcessorError (Processor p)
-        {
-            mProcessor = p;
-        }
-
-    }
-
     public interface IOutputData
     {
         string name { get; }
@@ -1447,20 +1436,7 @@ namespace KPU.Processor
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
-        private bool mError = false;
-        public bool error
-        {
-            get
-            {
-                bool b = mError;
-                mError = false;
-                return b;
-            }
-            set
-            {
-                mError = value;
-            }
-        }
+        public bool error = false;
 
         public Dictionary<string, IInputData> inputs = new Dictionary<string, IInputData>();
         public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
@@ -1517,7 +1493,6 @@ namespace KPU.Processor
             addInput(new ANLongitude(this));
             addInput(new PeriLongitude(this));
             addInput(new Heading(this));
-            addInput(new ProcessorError(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new Stage());
@@ -1615,7 +1590,7 @@ namespace KPU.Processor
                 {
                     i.eval(this);
                 }
-                mError = false;
+                error = false;
             }
         }
 
