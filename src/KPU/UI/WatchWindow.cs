@@ -50,8 +50,9 @@ namespace KPU.UI
                     GUILayout.Label("Input Values", mHeadingStyle);
                     if (mProcessor.inputValues != null)
                     {
-                        foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.InputValue> item in mProcessor.inputValues)
+                        foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.Instruction.Value> item in mProcessor.inputValues)
                         {
+                            if (item.Key.StartsWith("latch")) continue;
                             string unit = "";
                             bool useSI = false;
                             if (mProcessor.inputs.ContainsKey(item.Key))
@@ -61,10 +62,21 @@ namespace KPU.UI
                             }
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(item.Key, mKeyStyle);
-                            if (useSI && item.Value.typ == KPU.Processor.InputType.DOUBLE)
-                                GUILayout.Label(Util.formatSI(item.Value.Double, unit), mValueStyle);
+                            if (useSI && item.Value.typ == KPU.Processor.Instruction.Type.DOUBLE)
+                                GUILayout.Label(Util.formatSI(item.Value.d, unit), mValueStyle);
                             else
                                 GUILayout.Label(item.Value.ToString() + unit, mValueStyle);
+                            GUILayout.EndHorizontal();
+                        }
+                    }
+                    if (mProcessor.latches > 0 && mProcessor.latchState != null)
+                    {
+                        GUILayout.Label("Latch Values", mHeadingStyle);
+                        for (int i = 0; i < mProcessor.latches; i++)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(string.Format("latch{0:D}", i), mKeyStyle);
+                            GUILayout.Label(mProcessor.latchState[i].ToString(), mValueStyle);
                             GUILayout.EndHorizontal();
                         }
                     }
@@ -73,6 +85,7 @@ namespace KPU.UI
                     {
                         foreach (Processor.IOutputData output in mProcessor.outputs.Values)
                         {
+                            if (output.name.StartsWith("latch")) continue;
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(output.name, mKeyStyle);
                             GUILayout.Label(output.value.ToString(), mValueStyle);

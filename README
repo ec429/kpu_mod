@@ -153,7 +153,7 @@ The full syntax of the language in Backus-Naur form is as follows:
 	log-op  ::= AND | OR
 	comp-op ::= < | >
 	arith-op::= + | - | * | /
-	ident   ::= [a-z][a-zA-Z_.]*
+	ident   ::= [a-z][a-zA-Z0-9_.]*
 	literal ::= -?[0-9]+(\.[0-9]+)?~?
 	action  ::= @ ident expr-lst?
     expr-lst::= (, expr-lst)? expr
@@ -161,9 +161,9 @@ Some more things to note: whitespace (except for newlines) is ignored and may
  be omitted where doing so does not introduce syntactic ambiguity; when the
  program is compiled its source will also be normalised to include a single
  space after every token except '@' and '!'.  Note in particular the need for
- whitespace when an ident is followed by a token beginning with a letter, and
- when the '-' operator is followed by a literal which does not already begin
- with a minus sign.
+ whitespace when an ident is followed by a token beginning with a letter or
+ digit, and when the '-' operator is followed by a literal which does not
+ already begin with a minus sign.
 The optional trailing tilde '~' on a literal will turn it into an angle: any
  sum or difference on two angles will be done modulo 360, while a comparison
  between two angles will be done "naturally": a > b if and only if the
@@ -190,6 +190,11 @@ Supported values for @orient.set are:
  srfVertical (points normal to terrain; probably buggy though)
  orbVertical (points away from centre of planet/moon)
  , hdg pitch (holds the given heading and pitch)
+The Kelliot KE-7 and the Kerbolics LITHP-M also support 'latches', single-bit
+ registers, allowing multiple distinct modes of spacecraft operation.  The
+ KE-7 has two latches, while the LITHP-M has 32.  These can be used like any
+ other input or output, under the names latch0, latch1 etc.  When the program
+ is run, all latches are initialised to false.
 
 
 Where do I report bugs?

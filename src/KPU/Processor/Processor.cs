@@ -66,7 +66,7 @@ namespace KPU.Processor
                 {",", Tokens.TOK_COMMA},
                 {";", Tokens.TOK_SEMI},
                 {"-?[0-9]+(\\.[0-9]+)?~?", Tokens.TOK_LITERAL},
-                {"[a-z][a-zA-Z_.]*", Tokens.TOK_IDENT},
+                {"[a-z][a-zA-Z0-9_.]*", Tokens.TOK_IDENT},
                 {"\\s", Tokens.TOK_WHITESPACE},
             };
             int index = 0;
@@ -339,6 +339,29 @@ namespace KPU.Processor
             public double d { get { return mDouble; }}
             public string n { get { return mName; }}
             public List<Value> t { get { return mTuple; }}
+            public Value(Value v)
+            {
+                typ = v.typ;
+                switch(typ)
+                {
+                case Type.ANGLE:
+                case Type.DOUBLE:
+                    mDouble = v.d;
+                    break;
+                case Type.BOOLEAN:
+                    mBool = v.b;
+                    break;
+                case Type.NAME:
+                    mName = v.n;
+                    break;
+                case Type.TUPLE:
+                    mTuple = new List<Value>(v.t);
+                    break;
+                case Type.VOID:
+                default:
+                    break;
+                }
+            }
             public Value(bool b) { typ = Type.BOOLEAN; mBool = b; }
             public Value(double d, bool angle=false)
             {
@@ -533,14 +556,7 @@ namespace KPU.Processor
                     return new Value(false);
                 if (p.inputValues.ContainsKey(n.mToken.Key))
                 {
-                    InputValue i = p.inputValues[n.mToken.Key];
-                    if (i.typ == InputType.BOOLEAN)
-                        return new Value(i.Bool);
-                    if (i.typ == InputType.DOUBLE)
-                        return new Value(i.Double);
-                    if (i.typ == InputType.ANGLE)
-                        return new Value(i.Double, true);
-                    return new Value();
+                    return new Value(p.inputValues[n.mToken.Key]);
                 }
                 return new Value(n.mToken.Key);
             case Tokens.TOK_KEYWORD: // ON DO IF THEN
@@ -643,57 +659,14 @@ namespace KPU.Processor
         }
     }
 
-    public enum InputType { BOOLEAN, DOUBLE, ANGLE };
-
-    public class InputValue
-    {
-        public InputType typ;
-        public bool Bool;
-        public double Double;
-
-        public InputValue(double value, bool angle=false)
-        {
-            if (angle)
-            {
-                typ = InputType.ANGLE;
-                Double = value % 360.0;
-            }
-            else
-            {
-                typ = InputType.DOUBLE;
-                Double = value;
-            }
-        }
-
-        public InputValue(bool value)
-        {
-            typ = InputType.BOOLEAN;
-            Bool = value;
-        }
-
-        public override string ToString()
-        {
-            switch(typ)
-            {
-            case InputType.BOOLEAN:
-                return Bool ? "1" : "0";
-            case InputType.DOUBLE:
-            case InputType.ANGLE:
-                return Double.ToString("g");
-            default: // can't happen
-                return typ.ToString();
-            }
-        }
-    }
-
     public interface IInputData
     {
         string name { get; }
         string unit { get; }
         bool available { get; }
         bool useSI { get; }
-        InputType typ { get; }
-        InputValue value { get; }
+        Instruction.Type typ { get; }
+        Instruction.Value value { get; }
     }
 
     public class Batteries : IInputData
@@ -702,8 +675,8 @@ namespace KPU.Processor
         public string unit { get { return "%"; } }
         public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
         public bool useSI { get { return false; }}
-        public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(Math.Round(ElectricChargeFillLevel * 10000.0f) / 100.0f); } }
+        public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        public Instruction.Value value { get { return new Instruction.Value(Math.Round(ElectricChargeFillLevel * 10000.0f) / 100.0f); } }
         private Processor mProc = null;
 
         private Vessel parentVessel { get { return mProc.parentVessel; } }
@@ -750,8 +723,8 @@ namespace KPU.Processor
         public string unit { get { return "m/s²"; } }
         public bool available { get { return parentVessel != null && TotalMass > 0.1f; }}
         public bool useSI { get { return true; }}
-        public InputType typ {get { return InputType.DOUBLE; } }
-        public InputValue value { get { return new InputValue(TMR); } }
+        public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        public Instruction.Value value { get { return new Instruction.Value(TMR); } }
         private Processor mProc = null;
 
         private Vessel parentVessel { get { return mProc.parentVessel; } }
@@ -809,14 +782,14 @@ namespace KPU.Processor
     public class SensorDouble : SensorDriven
     {
         public virtual double raw { get { return Double.PositiveInfinity; } }
-        public virtual InputType typ { get { return InputType.DOUBLE; } }
-        public InputValue value
+        public virtual Instruction.Type typ { get { return Instruction.Type.DOUBLE; } }
+        public Instruction.Value value
         {
             get
             {
-                bool angle = (typ == InputType.ANGLE);
-                if (!available) return new InputValue(Double.PositiveInfinity, angle);
-                return new InputValue(Math.Round(raw / res) * res, angle);
+                bool angle = (typ == Instruction.Type.ANGLE);
+                if (!available) return new Instruction.Value(Double.PositiveInfinity, angle);
+                return new Instruction.Value(Math.Round(raw / res) * res, angle);
             }
         }
         public SensorDouble(Processor p) : base(p)
@@ -827,14 +800,14 @@ namespace KPU.Processor
     public class Gear : SensorDriven, IInputData
     {
         public override string name { get { return "gear"; } }
-        public InputType typ { get { return InputType.BOOLEAN; } }
+        public Instruction.Type typ { get { return Instruction.Type.BOOLEAN; } }
         public bool useSI { get { return false; }}
-        public InputValue value
+        public Instruction.Value value
         {
             get
             {
                 Vessel.Situations situation = parentVessel.situation;
-                return new InputValue(situation == Vessel.Situations.LANDED || situation == Vessel.Situations.PRELAUNCH);
+                return new Instruction.Value(situation == Vessel.Situations.LANDED || situation == Vessel.Situations.PRELAUNCH);
             }
         }
 
@@ -927,7 +900,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "latitude"; } }
         public override string unit { get { return "°"; } }
-        public override InputType typ {get { return InputType.ANGLE; } }
+        public override Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return parentVessel.latitude; } }
 
@@ -940,7 +913,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "longitude"; } }
         public override string unit { get { return "°"; } }
-        public override InputType typ {get { return InputType.ANGLE; } }
+        public override Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return (parentVessel.longitude + 720.0) % 360.0; } }
 
@@ -989,7 +962,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbInclination"; } }
         public override string unit { get { return "°"; } }
-        public override InputType typ {get { return InputType.ANGLE; } }
+        public override Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return parentVessel.orbit.inclination; } }
 
@@ -1002,7 +975,7 @@ namespace KPU.Processor
     {
         public override string name { get { return "orbANLongitude"; } }
         public override string unit { get { return "°"; } }
-        public override InputType typ {get { return InputType.ANGLE; } }
+        public override Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get { return (parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle + 360) % 360; } }
 
@@ -1017,7 +990,7 @@ namespace KPU.Processor
         // especially as the language has no easy way to work with angles
         public override string name { get { return "orbPeriapsisLongitude"; } }
         public override string unit { get { return "°"; } }
-        public override InputType typ {get { return InputType.ANGLE; } }
+        public override Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; }}
         public override double raw { get {
             double l = parentVessel.orbit.argumentOfPeriapsis + parentVessel.orbit.LAN - parentVessel.orbit.referenceBody.rotationAngle;
@@ -1038,11 +1011,11 @@ namespace KPU.Processor
         public string name { get { return "srfHeading"; } }
         public string unit { get { return "°"; } }
         public bool available { get { return true; } } // TODO not always available...
-        public InputType typ {get { return InputType.ANGLE; } }
+        public Instruction.Type typ {get { return Instruction.Type.ANGLE; } }
         public bool useSI { get { return false; } }
         public double res { get { return 0.01; } }
-        public InputValue value { get {
-            return new InputValue(Math.Round(raw / res) * res, true);
+        public Instruction.Value value { get {
+            return new Instruction.Value(Math.Round(raw / res) * res, true);
         }}
         private double raw { get {
             Vector3 up = (parentVessel.mainBody.position - parentVessel.CoM).normalized;
@@ -1395,11 +1368,43 @@ namespace KPU.Processor
         }
     }
 
+    public class LatchIO : IInputData, IOutputData
+    {
+        private int mIndex;
+        private Processor mProcessor;
+        public string name { get { return string.Format("latch{0:D}", mIndex); } }
+        public string unit { get { return ""; } }
+        public bool available { get { return true; } }
+        public bool useSI { get { return false; } }
+        public Instruction.Type typ { get { return Instruction.Type.BOOLEAN; } }
+        public Instruction.Value value { get { return new Instruction.Value(mProcessor.latchState[mIndex]); } }
+        public void clean() { mProcessor.latchState[mIndex] = false; }
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+        }
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.BOOLEAN)
+            {
+                mProcessor.latchState[mIndex] = value.b;
+            }
+        }
+        public void slewValue(Instruction.Value rate)
+        {
+        }
+        public LatchIO(Processor p, int index)
+        {
+            mProcessor = p;
+            mIndex = index;
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
-        public int imemWords;
+        public int imemWords, latches;
         public List<Instruction> instructions;
+        public List<bool> latchState = null;
 
         private Part mPart;
         public bool hasPower = false;
@@ -1422,14 +1427,20 @@ namespace KPU.Processor
         public Dictionary<string, IInputData> inputs = new Dictionary<string, IInputData>();
         public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
 
-        private void addOutput(IOutputData o)
-        {
-            outputs[o.name] = o;
-        }
-
-        private void AddInput(IInputData i)
+        private void addInput(IInputData i)
         {
             inputs.Add(i.name, i);
+        }
+
+        private void addOutput(IOutputData o)
+        {
+            outputs.Add(o.name, o);
+        }
+
+        private void addLatch(LatchIO l)
+        {
+            addInput(l);
+            addOutput(l);
         }
 
         public Processor (Part part, Modules.ModuleKpuProcessor module)
@@ -1439,25 +1450,35 @@ namespace KPU.Processor
             hasLogicOps = module.hasLogicOps;
             hasArithOps = module.hasArithOps;
             imemWords = module.imemWords;
+            latches = module.latches;
             isRunning = module.isRunning;
             instructions = new List<Instruction>();
-            AddInput(new Batteries(this));
-            AddInput(new Gear(this));
-            AddInput(new SrfHeight(this));
-            AddInput(new SrfSpeed(this));
-            AddInput(new SrfVerticalSpeed(this));
-            AddInput(new VesselTMR(this));
-            AddInput(new LocalG(this));
-            AddInput(new Altitude(this));
-            AddInput(new Latitude(this));
-            AddInput(new Longitude(this));
-            AddInput(new OrbSpeed(this));
-            AddInput(new Periapsis(this));
-            AddInput(new Apoapsis(this));
-            AddInput(new Inclination(this));
-            AddInput(new ANLongitude(this));
-            AddInput(new PeriLongitude(this));
-            AddInput(new Heading(this));
+            if (latches > 0)
+            {
+                latchState = new List<bool>(latches);
+                for (int i = 0; i < latches; i++)
+                {
+                    latchState.Add(false);
+                    addLatch(new LatchIO(this, i));
+                }
+            }
+            addInput(new Batteries(this));
+            addInput(new Gear(this));
+            addInput(new SrfHeight(this));
+            addInput(new SrfSpeed(this));
+            addInput(new SrfVerticalSpeed(this));
+            addInput(new VesselTMR(this));
+            addInput(new LocalG(this));
+            addInput(new Altitude(this));
+            addInput(new Latitude(this));
+            addInput(new Longitude(this));
+            addInput(new OrbSpeed(this));
+            addInput(new Periapsis(this));
+            addInput(new Apoapsis(this));
+            addInput(new Inclination(this));
+            addInput(new ANLongitude(this));
+            addInput(new PeriLongitude(this));
+            addInput(new Heading(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new Stage());
@@ -1528,11 +1549,11 @@ namespace KPU.Processor
             return true;
         }
 
-        public Dictionary<string, InputValue> inputValues;
+        public Dictionary<string, Instruction.Value> inputValues;
 
         public void OnUpdate ()
         {
-            inputValues = new Dictionary<string, InputValue>();
+            inputValues = new Dictionary<string, Instruction.Value>();
             foreach (IInputData i in inputs.Values)
             {
                 try
@@ -1635,8 +1656,15 @@ namespace KPU.Processor
                 Inst.AddValue("skip", i.skip);
                 InstList.AddNode(Inst);
             }
-
             Proc.AddNode(InstList);
+
+            if (latches > 0)
+            {
+                ConfigNode LatchList = new ConfigNode("Latches");
+                for (int i = 0; i < latches; i++)
+                    LatchList.AddValue(string.Format("latch{0:D}", i), latchState[i].ToString());
+                Proc.AddNode(LatchList);
+            }
 
             node.AddNode(Proc);
         }
@@ -1664,6 +1692,21 @@ namespace KPU.Processor
                         bool.TryParse(Inst.GetValue("lastValue"), out lastValue);
                         bool.TryParse(Inst.GetValue("skip"), out skip);
                         AddInstruction(code, lastValue, skip);
+                    }
+                }
+            }
+
+            ConfigNode LatchList = Proc.GetNode("Latches");
+            if (LatchList != null)
+            {
+                for (int i = 0; i < latches; i++)
+                {
+                    string state = LatchList.GetValue(string.Format("latch{0:D}", i));
+                    if (state != null)
+                    {
+                        bool stateBit = false;
+                        bool.TryParse(state, out stateBit);
+                        latchState[i] = stateBit;
                     }
                 }
             }

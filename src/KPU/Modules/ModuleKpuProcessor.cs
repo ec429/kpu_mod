@@ -17,6 +17,8 @@ namespace KPU.Modules
         public bool hasArithOps;
         [KSPField()]
         public int imemWords;
+        [KSPField()]
+        public int latches;
 
         [KSPField()]
         public double electricRate;
@@ -191,6 +193,9 @@ namespace KPU.Modules
             if (vessel == null)
                 return;
 
+            if (mProcessor == null)
+                return;
+
             double resourceRequest = electricRate * TimeWarp.fixedDeltaTime * (isRunning ? 1.0f : 0.1f);
             double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
             mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
@@ -198,8 +203,7 @@ namespace KPU.Modules
             if (vessel.packed)
                 return;
 
-            if (mProcessor != null)
-                mProcessor.OnFixedUpdate();
+            mProcessor.OnFixedUpdate();
 
             // Re-attach periodically
             vessel.OnFlyByWire -= OnFlyByWirePost;
@@ -229,6 +233,9 @@ namespace KPU.Modules
                 info.AppendLine("Supports Logical Ops");
             if (hasArithOps)
                 info.AppendLine("Supports Arithmetic Ops");
+            info.AppendFormat("IMEM: {0:D} words", imemWords).AppendLine();
+            if (latches > 0)
+                info.AppendFormat("Latches: {0:D}", latches).AppendLine();
             info.AppendFormat("Energy usage: {0:G} charge/s", electricRate).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());

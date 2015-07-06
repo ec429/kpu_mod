@@ -42,8 +42,8 @@ PART DATA
 manufacturer		part name		tech		mass	cost	Z/min	moduleinfo
 Kelliot				4040 KPU		FlightCtrl	0.02	1000	6		KPU, EDGE, SIMPLE, 16 words
 Kelliot				8080 KPU		Miniaturizn	0.04	2000	30		KPU, EDGE, COMPOUND, 64 words
-Kelliot				KE-7 KPU		Electronics	0.1		3200	90		KPU, EL, FULL, 256 words
-Kerbolics			LISP-M			Automation	0.025	5000	15		KPU, EL, FULL, 65536 words
+Kelliot				KE-7 KPU		Electronics	0.1		3200	90		KPU, EL, FULL, 256 words, 2 latches
+Kerbolics			LISP-M			Automation	0.025	5000	15		KPU, EL, FULL, 65536 words, 32 latches
 Kerbolics			Mk1 Eyeball		BasicSci	0.025	300		6		PIR, 90 deg-to-sun
 Kerbal Instruments	"Spot" PIR		AdvExplorn	0.025	1200	15		PIR, 30 deg-to-sun
 Probodobodyne		"Vega" ST-1		Electrics	0.05	1000	9		SC, TYPE1, 2 deg-res
