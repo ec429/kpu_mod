@@ -52,7 +52,7 @@ namespace KPU.UI
                     {
                         foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.Instruction.Value> item in mProcessor.inputValues)
                         {
-                            if (item.Key.StartsWith("latch")) continue;
+                            if (item.Key.StartsWith("latch") || item.Key.Equals("error")) continue;
                             string unit = "";
                             bool useSI = false;
                             if (mProcessor.inputs.ContainsKey(item.Key))
