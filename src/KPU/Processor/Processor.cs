@@ -1029,6 +1029,35 @@ namespace KPU.Processor
         }
     }
 
+    public class Heading : IInputData
+    {
+        private Processor mProc = null;
+
+        private Vessel parentVessel { get { return mProc.parentVessel; } }
+
+        public string name { get { return "srfHeading"; } }
+        public string unit { get { return "°"; } }
+        public bool available { get { return true; } } // TODO not always available...
+        public InputType typ {get { return InputType.ANGLE; } }
+        public bool useSI { get { return false; } }
+        public double res { get { return 0.01; } }
+        public InputValue value { get {
+            return new InputValue(Math.Round(raw / res) * res, true);
+        }}
+        private double raw { get {
+            Vector3 up = (parentVessel.mainBody.position - parentVessel.CoM).normalized;
+            Vector3 fwd = Vector3.ProjectOnPlane(parentVessel.GetTransform().transform.rotation * Vector3.forward, up).normalized;
+            Vector3 north = Vector3.ProjectOnPlane(parentVessel.mainBody.transform.up, up).normalized;
+            double angle = Math.Atan2(Vector3.Dot(Vector3.Cross(fwd, north), up), Vector3.Dot(fwd, north)) * 180.0 / Math.PI;
+            return (angle + 360) % 360;
+        } }
+
+        public Heading (Processor p)
+        {
+            mProc = p;
+        }
+    }
+
     public interface IOutputData
     {
         string name { get; }
@@ -1280,6 +1309,92 @@ namespace KPU.Processor
         }
     }
 
+    public class RoverMotors : IOutputData
+    {
+        public string name { get { return "wheelMotors"; } }
+        public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        private double mValue = 0;
+        private double mSlewRate = 0;
+        public Instruction.Value value { get { return new Instruction.Value(mValue); } }
+
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+            setTo(mValue + mSlewRate * TimeWarp.deltaTime);
+            fcs.wheelThrottle = (float)mValue / 100.0f;
+            mSlewRate = 0;
+        }
+
+        public void clean()
+        {
+            mValue = 0;
+            mSlewRate = 0;
+        }
+
+        private void setTo(double value)
+        {
+            mValue = Math.Min(Math.Max(value, -100.0f), 100.0f);
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.DOUBLE)
+            {
+                setTo(value.d);
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+            if (rate.typ == Instruction.Type.DOUBLE)
+            {
+                mSlewRate += rate.d;
+            }
+        }
+    }
+
+    public class RoverSteer : IOutputData
+    {
+        public string name { get { return "wheelSteering"; } }
+        public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        private double mValue = 0;
+        private double mSlewRate = 0;
+        public Instruction.Value value { get { return new Instruction.Value(mValue); } }
+
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+            setTo(mValue + mSlewRate * TimeWarp.deltaTime);
+            fcs.wheelSteer = (float)mValue / 100.0f;
+            mSlewRate = 0;
+        }
+
+        public void clean()
+        {
+            mValue = 0;
+            mSlewRate = 0;
+        }
+
+        private void setTo(double value)
+        {
+            mValue = Math.Min(Math.Max(value, -100.0f), 100.0f);
+        }
+
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.DOUBLE)
+            {
+                setTo(value.d);
+            }
+        }
+
+        public void slewValue(Instruction.Value rate)
+        {
+            if (rate.typ == Instruction.Type.DOUBLE)
+            {
+                mSlewRate += rate.d;
+            }
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -1342,6 +1457,7 @@ namespace KPU.Processor
             AddInput(new Inclination(this));
             AddInput(new ANLongitude(this));
             AddInput(new PeriLongitude(this));
+            AddInput(new Heading(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new Stage());
@@ -1351,6 +1467,8 @@ namespace KPU.Processor
             addOutput(new Abort());
             addOutput(new SolarPanels());
             addOutput(new RTAntennas());
+            addOutput(new RoverMotors());
+            addOutput(new RoverSteer());
 
             initPIDParameters();
         }

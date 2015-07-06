@@ -116,19 +116,17 @@ namespace KPU.Processor
 
                 case RelativeAttitude.Vertical:
                     ignoreRoll = true;
-                    switch (fa.frame)
-                    {
-                    case ReferenceFrame.Surface:
-                        up = forward;
-                        forward = v.terrainNormal;
-                        break;
-                    case ReferenceFrame.Orbit:
-                    default:
-                        up = forward;
-                        forward = (v.CoM - v.mainBody.position);
-                        break;
-                    }
+                    up = v.mainBody.transform.up;
+                    forward = (v.CoM - v.mainBody.position);
+                    Vector3.OrthoNormalize(ref forward, ref up);
                     rotationReference = Quaternion.LookRotation(forward, up);
+                    if (fa.frame == ReferenceFrame.Surface)
+                    {
+                        forward = rotationReference * v.terrainNormal;
+                        up = v.mainBody.transform.up;
+                        Vector3.OrthoNormalize(ref forward, ref up);
+                        rotationReference = Quaternion.LookRotation(forward, up);
+                     }
                 break;
                 case RelativeAttitude.CustomHP:
                     Quaternion hp = Quaternion.Euler(new Vector3d(Double.IsNaN(fa.Pitch) ? 0 : fa.Pitch,
