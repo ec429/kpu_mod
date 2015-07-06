@@ -195,6 +195,16 @@ The Kelliot KE-7 and the Kerbolics LITHP-M also support 'latches', single-bit
  KE-7 has two latches, while the LITHP-M has 32.  These can be used like any
  other input or output, under the names latch0, latch1 etc.  When the program
  is run, all latches are initialised to false.
+If an error occurs in program execution, the offending statement will be
+ marked 'skip': the processor will no longer attempt to execute it.  Moreover,
+ the input 'error' will be set to true.  It will revert to false after it is
+ read, or after the last statement in the program.  Typical usage will be to
+ put the spacecraft into a 'safe mode' by means of setting a latch:
+	ON error DO @latch0.set true
+ and having all potentially-destructive actions (e.g. engine burns) protected
+ by putting "!latch0 AND" at the start of their condition.
+Note that boolean evaluation will short-circuit, so e.g. "AND false error"
+ will _not_ clear the error flag, because it will never read it.
 
 
 Where do I report bugs?

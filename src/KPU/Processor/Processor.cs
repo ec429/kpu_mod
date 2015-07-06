@@ -1615,6 +1615,7 @@ namespace KPU.Processor
                 {
                     i.eval(this);
                 }
+                mError = false;
             }
         }
 
