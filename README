@@ -133,6 +133,9 @@ Statements in the language, one to a line, take one of the forms
   IF condition THEN action-list
  where _condition_ must be a boolean-valued expression.  Lists of actions are
  formed by the ; operator, which takes two action operands and performs both.
+An ON/DO statement will perform its action-list on a positive edge, i.e. when
+ its condition becomes true.  An IF/THEN statement will continuously perform
+ its action-list as long as its condition remains true.
 An action generally takes the form
   @identifier.method expression
  where _method_ will usually be "set", though numeric outputs also take "incr"
@@ -141,6 +144,8 @@ An action generally takes the form
  _identifier_ should be the name of one of the available outputs.  Strictly
  speaking, the whole phrase 'identifier.method' is considered by the language
  definition to be a single identifier.
+The .incr and .decr methods only make sense for IF/THEN; they won't do much if
+ used in an ON/DO statement.
 The full syntax of the language in Backus-Naur form is as follows:
 	stmt    ::= ( on-stmt | if-stmt | comment ) \n
 	comment ::= #.*
