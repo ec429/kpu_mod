@@ -648,11 +648,13 @@ namespace KPU.Processor
                 catch (Instruction.EvalError exc)
                 {
                     Logging.Message("EvalError: " + exc.ToString());
+                    p.error = true;
                     skip = true;
                 }
                 catch (Instruction.ExecError exc)
                 {
                     Logging.Message("ExecError: " + exc.ToString());
+                    p.error = true;
                     skip = true;
                 }
             }
@@ -1029,6 +1031,23 @@ namespace KPU.Processor
         {
             mProc = p;
         }
+    }
+
+    public class ProcessorError : IInputData
+    {
+        public string name { get { return "error"; } }
+        public string unit { get { return ""; } }
+        public bool available { get { return true; }}
+        public bool useSI { get { return false; }}
+        public Instruction.Type typ { get { return Instruction.Type.BOOLEAN; } }
+        public Instruction.Value value { get { return new Instruction.Value(mProcessor.error); } }
+        private Processor mProcessor = null;
+
+        public ProcessorError (Processor p)
+        {
+            mProcessor = p;
+        }
+
     }
 
     public interface IOutputData
@@ -1424,6 +1443,21 @@ namespace KPU.Processor
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
+        private bool mError = false;
+        public bool error
+        {
+            get
+            {
+                bool b = mError;
+                mError = false;
+                return b;
+            }
+            set
+            {
+                mError = value;
+            }
+        }
+
         public Dictionary<string, IInputData> inputs = new Dictionary<string, IInputData>();
         public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
 
@@ -1479,6 +1513,7 @@ namespace KPU.Processor
             addInput(new ANLongitude(this));
             addInput(new PeriLongitude(this));
             addInput(new Heading(this));
+            addInput(new ProcessorError(this));
             addOutput(new Throttle());
             addOutput(new Orient());
             addOutput(new Stage());
