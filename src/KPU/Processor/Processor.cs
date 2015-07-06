@@ -611,8 +611,12 @@ namespace KPU.Processor
                 }
             case Tokens.TOK_LOG_OP: // AND OR
                 left = evalRecursive(n.mChildren[0], p);
-                right = evalRecursive(n.mChildren[1], p);
                 assertType(n, "left", Type.BOOLEAN, left);
+                if (n.mToken.Key.Equals("AND") && !left.b)
+                    return new Value(false);
+                else if (n.mToken.Key.Equals("OR") && left.b)
+                    return new Value(true);
+                right = evalRecursive(n.mChildren[1], p);
                 assertType(n, "right", Type.BOOLEAN, right);
                 if (n.mToken.Key.Equals("AND"))
                     return new Value(left.b && right.b);
