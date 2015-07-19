@@ -207,6 +207,15 @@ The Kelliot KE-7 and the Kerbolics LITHP-M also support 'latches', single-bit
  KE-7 has two latches, while the LITHP-M has 32.  These can be used like any
  other input or output, under the names latch0, latch1 etc.  When the program
  is run, all latches are initialised to false.
+All processors except the Kelliot 4040 support 'timers', allowing actions to
+ be time-delayed or sequenced.  They provide the inputs and outputs timer0,
+ timer1 etc.  Setting a timer to true will start it counting from the current
+ time, while setting it to false will stop it.  While a timer is counting, it
+ outputs the number of seconds since it was started; when stopped, it outputs
+ -1.  The Kelliot 8080 has one timer, the KE-7 has two, and the Kerbolics
+ LITHP-M has four.  It is actually possible to use a timer as a latch, setting
+ with '@timer0.set true' and testing with '> timer0 -0.5', which may be useful
+ for the 8080 which has a timer but no latches.
 If an error occurs in program execution, the offending statement will be
  marked 'skip': the processor will no longer attempt to execute it.  Moreover,
  the input 'error' will be set to true.  It will revert to false after it is

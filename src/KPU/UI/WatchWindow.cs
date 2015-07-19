@@ -53,6 +53,7 @@ namespace KPU.UI
                         foreach (System.Collections.Generic.KeyValuePair<string, KPU.Processor.Instruction.Value> item in mProcessor.inputValues)
                         {
                             if (item.Key.StartsWith("latch")) continue;
+                            if (item.Key.StartsWith("timer")) continue;
                             string unit = "";
                             bool useSI = false;
                             if (mProcessor.inputs.ContainsKey(item.Key))
@@ -80,12 +81,24 @@ namespace KPU.UI
                             GUILayout.EndHorizontal();
                         }
                     }
+                    if (mProcessor.timers > 0 && mProcessor.timerState != null)
+                    {
+                        GUILayout.Label("Timer Values", mHeadingStyle);
+                        for (int i = 0; i < mProcessor.timers; i++)
+                        {
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label(mProcessor.timerState[i].name, mKeyStyle);
+                            GUILayout.Label(mProcessor.timerState[i].value.ToString() + mProcessor.timerState[i].unit, mValueStyle);
+                            GUILayout.EndHorizontal();
+                        }
+                    }
                     GUILayout.Label("Output Values", mHeadingStyle);
                     if (mProcessor.outputs != null)
                     {
                         foreach (Processor.IOutputData output in mProcessor.outputs.Values)
                         {
                             if (output.name.StartsWith("latch")) continue;
+                            if (output.name.StartsWith("timer")) continue;
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(output.name, mKeyStyle);
                             GUILayout.Label(output.value.ToString(), mValueStyle);

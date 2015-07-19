@@ -19,6 +19,8 @@ namespace KPU.Modules
         public int imemWords;
         [KSPField()]
         public int latches;
+        [KSPField()]
+        public int timers;
 
         [KSPField()]
         public double electricRate;

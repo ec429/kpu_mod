@@ -1462,12 +1462,64 @@ namespace KPU.Processor
         }
     }
 
+    public class TimerIO : IInputData, IOutputData
+    {
+        private int mIndex;
+        private Processor mProcessor;
+        public string name { get { return string.Format("timer{0:D}", mIndex); } }
+        public string unit { get { return "s"; } }
+        public double res = 0.2;
+        public double startTime = -1.0;
+        public bool available { get { return true; } }
+        public bool useSI { get { return false; } }
+        public Instruction.Type typ { get { return Instruction.Type.DOUBLE; } }
+        public double runTime
+        {
+            get
+            {
+                if (startTime < 0.0)
+                    return -1.0;
+                return Planetarium.GetUniversalTime() - startTime;
+            }
+        }
+        public Instruction.Value value
+        {
+            get
+            {
+                return new Instruction.Value(Math.Round(runTime / res) * res);
+            }
+        }
+        public void clean() { mProcessor.latchState[mIndex] = false; }
+        public void Invoke(FlightCtrlState fcs, Processor p)
+        {
+        }
+        public void setValue(Instruction.Value value)
+        {
+            if (value.typ == Instruction.Type.BOOLEAN)
+            {
+                if (value.b)
+                    startTime = Planetarium.GetUniversalTime();
+                else
+                    startTime = -1.0;
+            }
+        }
+        public void slewValue(Instruction.Value rate)
+        {
+        }
+        public TimerIO(Processor p, int index)
+        {
+            mProcessor = p;
+            mIndex = index;
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
-        public int imemWords, latches;
+        public int imemWords, latches, timers;
         public List<Instruction> instructions;
         public List<bool> latchState = null;
+        public List<TimerIO> timerState = null;
 
         private Part mPart;
         public bool hasPower = false;
@@ -1526,6 +1578,12 @@ namespace KPU.Processor
             addOutput(l);
         }
 
+        private void addTimer(TimerIO t)
+        {
+            addInput(t);
+            addOutput(t);
+        }
+
         public Processor (Part part, Modules.ModuleKpuProcessor module)
         {
             mPart = part;
@@ -1534,6 +1592,7 @@ namespace KPU.Processor
             hasArithOps = module.hasArithOps;
             imemWords = module.imemWords;
             latches = module.latches;
+            timers = module.timers;
             isRunning = module.isRunning;
             instructions = new List<Instruction>();
             if (latches > 0)
@@ -1543,6 +1602,16 @@ namespace KPU.Processor
                 {
                     latchState.Add(false);
                     addLatch(new LatchIO(this, i));
+                }
+            }
+            if (timers > 0)
+            {
+                timerState = new List<TimerIO>(timers);
+                for (int i = 0; i < timers; i++)
+                {
+                    TimerIO t = new TimerIO(this, i);
+                    timerState.Add(t);
+                    addTimer(t);
                 }
             }
             addInput(new Batteries(this));
@@ -1762,6 +1831,14 @@ namespace KPU.Processor
                 Proc.AddNode(LatchList);
             }
 
+            if (timers > 0)
+            {
+                ConfigNode TimerList = new ConfigNode("Timers");
+                for (int i = 0; i < timers; i++)
+                    TimerList.AddValue(timerState[i].name, timerState[i].startTime);
+                Proc.AddNode(TimerList);
+            }
+
             node.AddNode(Proc);
         }
 
@@ -1808,6 +1885,29 @@ namespace KPU.Processor
                         bool stateBit = false;
                         bool.TryParse(state, out stateBit);
                         latchState[i] = stateBit;
+                    }
+                    else
+                    {
+                        latchState[i] = false;
+                    }
+                }
+            }
+
+            ConfigNode TimerList = Proc.GetNode("Timers");
+            if (TimerList != null)
+            {
+                for (int i = 0; i < timers; i++)
+                {
+                    string state = TimerList.GetValue(timerState[i].name);
+                    if (state != null)
+                    {
+                        double startTime = -1;
+                        double.TryParse(state, out startTime);
+                        timerState[i].startTime = startTime;
+                    }
+                    else
+                    {
+                        timerState[i].startTime = -1.0;
                     }
                 }
             }
