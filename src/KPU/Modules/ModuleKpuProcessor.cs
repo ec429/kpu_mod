@@ -201,9 +201,16 @@ namespace KPU.Modules
             if (mProcessor == null)
                 return;
 
-            double resourceRequest = electricRate * TimeWarp.fixedDeltaTime * (isRunning ? 1.0f : 0.1f);
-            double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
-            mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
+            if (mProcessor.isRunning)
+            {
+                double resourceRequest = electricRate * TimeWarp.fixedDeltaTime * (mProcessor.isHibernating ? 0.1f : 1.0f);
+                double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+                mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
+            }
+            else
+            {
+                mProcessor.hasPower = false;
+            }
 
             if (vessel.packed)
                 return;
