@@ -130,12 +130,18 @@ The program is written in a language using Forward Polish Notation, also known
  equivalent to "(2 + 3) * 4" in the more conventional infix notation.
 Statements in the language, one to a line, take one of the forms
   ON condition DO action-list
+  ON condition1 HIBERNATE condition2
   IF condition THEN action-list
  where _condition_ must be a boolean-valued expression.  Lists of actions are
  formed by the ; operator, which takes two action operands and performs both.
 An ON/DO statement will perform its action-list on a positive edge, i.e. when
  its condition becomes true.  An IF/THEN statement will continuously perform
  its action-list as long as its condition remains true.
+An ON/HIBERNATE will, on a positive edge of condition1, put the KPU into a
+ hibernation mode.  In this state, it will consume much less ElectricCharge,
+ but will execute no code, merely waiting for condition2 to be true.  When it
+ is, the KPU will come out of hibernation and resume normal code execution
+ from the start of the program.
 An action generally takes the form
   @identifier.method expression
  where _method_ will usually be "set", though numeric outputs also take "incr"
@@ -147,9 +153,10 @@ An action generally takes the form
 The .incr and .decr methods only make sense for IF/THEN; they won't do much if
  used in an ON/DO statement.
 The full syntax of the language in Backus-Naur form is as follows:
-	stmt    ::= ( on-stmt | if-stmt | comment ) \n
+	stmt    ::= ( on-stmt | on-hiber | if-stmt | comment ) \n
 	comment ::= #.*
 	on-stmt ::= ON expr DO act-list
+	on-hiber::= ON expr HIBERNATE expr
 	if-stmt ::= IF expr THEN act-list
 	act-list::= (; act-list)? action
 	expr    ::= un-op expr | bin-op expr expr | ident | literal
