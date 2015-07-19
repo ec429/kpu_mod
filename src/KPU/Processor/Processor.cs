@@ -55,6 +55,7 @@ namespace KPU.Processor
                 {"#.*", Tokens.TOK_COMMENT},
                 {"ON", Tokens.TOK_KEYWORD},
                 {"DO", Tokens.TOK_KEYWORD},
+                {"HIBERNATE", Tokens.TOK_KEYWORD},
                 {"IF", Tokens.TOK_KEYWORD},
                 {"THEN", Tokens.TOK_KEYWORD},
                 {"AND", Tokens.TOK_LOG_OP},
@@ -163,7 +164,7 @@ namespace KPU.Processor
                         throw new ParseError("ON cond was bad: " + cond.ToString());
                     n.Add(cond);
                     actn = AssembleRecursive(tokens);
-                    if (actn.mToken.Value != Tokens.TOK_KEYWORD || !actn.mToken.Key.Equals("DO"))
+                    if (actn.mToken.Value != Tokens.TOK_KEYWORD || !(actn.mToken.Key.Equals("DO") || actn.mToken.Key.Equals("HIBERNATE")))
                         throw new ParseError("ON DO was bad: " + actn.ToString());
                     n.Add(actn);
                     break;
@@ -196,6 +197,17 @@ namespace KPU.Processor
                         actn.mToken.Value != Tokens.TOK_AT)
                         throw new ParseError("THEN actn was bad: " + actn.ToString());
                     n.Add(actn);
+                    break;
+                }
+                if (token.Key.Equals("HIBERNATE"))
+                {
+                    cond = AssembleRecursive(tokens);
+                    if (cond.mToken.Value == Tokens.TOK_KEYWORD ||
+                        cond.mToken.Value == Tokens.TOK_AT ||
+                        cond.mToken.Value == Tokens.TOK_COMMA ||
+                        cond.mToken.Value == Tokens.TOK_SEMI)
+                    throw new ParseError("HIBERNATE wake-up condition was bad: " + cond.ToString());
+                    n.Add(cond);
                     break;
                 }
                 throw new ParseError(token.Key); // can't happen
@@ -601,6 +613,11 @@ namespace KPU.Processor
                     return evalRecursive(n.mChildren[0], p);
                 if (n.mToken.Key.Equals("THEN"))
                     return evalRecursive(n.mChildren[0], p);
+                if (n.mToken.Key.Equals("HIBERNATE"))
+                {
+                    p.hibernate(this);
+                    return new Value();
+                }
                 // can't happen
                 throw new EvalError(n.mToken.Key);
             case Tokens.TOK_LITERAL:
@@ -655,18 +672,52 @@ namespace KPU.Processor
                 {
                     evalRecursive(mAST, p);
                 }
-                catch (Instruction.EvalError exc)
+                catch (EvalError exc)
                 {
                     Logging.Message("EvalError: " + exc.ToString());
                     p.error = true;
                     skip = true;
                 }
-                catch (Instruction.ExecError exc)
+                catch (ExecError exc)
                 {
                     Logging.Message("ExecError: " + exc.ToString());
                     p.error = true;
                     skip = true;
                 }
+            }
+        }
+
+        public void considerWakeup(Processor p)
+        {
+            try
+            {
+                if (mAST.mToken.Value != Tokens.TOK_KEYWORD || !mAST.mToken.Key.Equals("ON"))
+                    throw new ExecError("expected ON, saw " + mAST.mToken.Key);
+                if (mAST.mChildren.Count < 2)
+                    throw new ExecError("ON missing HIBERNATE");
+                ASTNode h = mAST.mChildren[1];
+                if (h.mToken.Value != Tokens.TOK_KEYWORD || !h.mToken.Key.Equals("HIBERNATE"))
+                    throw new ExecError("expected HIBERNATE, saw " + h.mToken.Key);
+                if (h.mChildren.Count < 1)
+                    throw new ExecError("HIBERNATE missing wakeup condition");
+                Value v = evalRecursive(h.mChildren[0], p);
+                assertType(h, "wakeup", Type.BOOLEAN, v);
+                if (v.b)
+                    p.wakeup();
+            }
+            catch (EvalError exc)
+            {
+                Logging.Message("EvalError: " + exc.ToString());
+                p.error = true;
+                p.wakeup(); // leave hibernation
+                skip = true; // and don't let this line put us back in
+            }
+            catch (ExecError exc)
+            {
+                Logging.Message("ExecError: " + exc.ToString());
+                p.error = true;
+                p.wakeup(); // leave hibernation
+                skip = true; // and don't let this line put us back in
             }
         }
     }
@@ -1435,6 +1486,22 @@ namespace KPU.Processor
         public bool isHibernating = false;
         private int hibernationLine;
 
+        public void hibernate(Instruction src)
+        {
+            if (isHibernating) return;
+            if (!instructions.Contains(src)) // can't happen
+                throw new Instruction.ExecError("hibernated instruction not in program");
+            hibernationLine = instructions.IndexOf(src);
+            isHibernating = true;
+            Logging.Log(string.Format("Hibernated from line {0:D}: {1}", hibernationLine, src.ToString()));
+        }
+
+        public void wakeup()
+        {
+            isHibernating = false;
+            Logging.Log("Awoke from hibernation");
+        }
+
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
@@ -1588,9 +1655,17 @@ namespace KPU.Processor
             }
             if (hasPower && isRunning)
             {
-                foreach (Instruction i in instructions)
+                if (isHibernating)
                 {
-                    i.eval(this);
+                    Instruction hi = instructions[hibernationLine];
+                    hi.considerWakeup(this);
+                }
+                else
+                {
+                    foreach (Instruction i in instructions)
+                    {
+                        i.eval(this);
+                    }
                 }
                 error = false;
             }
