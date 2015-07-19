@@ -23,7 +23,7 @@ Probodobodyne: Of *course* they have a computer division.
 
 PARTS (* = implemented with placeholder model, + = also has model)
 *Kelliot 4040 KPU.  This simple processor can be instructed to take actions on edge-triggered conditions of a single variable.
-Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays (TODO: syntax).
+Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays (plan: add timers, a bit like latches).
 *Kelliot KE-7 KPU.  The incorporation of arithmetic and level-triggered actions allows a whole new kind of programming.
 Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
 Kerbolics Mk1 Eyeball.  A planetary IR sensor that only functions on the light side of the planet.
