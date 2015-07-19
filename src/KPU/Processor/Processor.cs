@@ -1432,6 +1432,8 @@ namespace KPU.Processor
                 }
             }
         }
+        public bool isHibernating = false;
+        private int hibernationLine;
 
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
@@ -1659,6 +1661,10 @@ namespace KPU.Processor
             
             ConfigNode Proc = new ConfigNode("Processor");
 
+            Proc.AddValue("isHibernating", isHibernating);
+            if (isHibernating)
+                Proc.AddValue("hibernationLine", hibernationLine);
+
             if (pid != null)
                 pid.Save(Proc);
 
@@ -1690,6 +1696,11 @@ namespace KPU.Processor
                 return;
             
             ConfigNode Proc = node.GetNode("Processor");
+
+            if (Proc.HasValue("isHibernating"))
+                bool.TryParse(Proc.GetValue("isHibernating"), out isHibernating);
+            if (isHibernating && Proc.HasValue("hibernationLine"))
+                int.TryParse(Proc.GetValue("hibernationLine"), out hibernationLine);
 
             if (pid != null)
                 pid.Load(Proc);

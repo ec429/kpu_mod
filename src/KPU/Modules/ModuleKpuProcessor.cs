@@ -25,6 +25,8 @@ namespace KPU.Modules
 
         [KSPField()]
         public bool isRunning = false;
+        [KSPField(guiName = "Status")]
+        public string GUI_status;
         [KSPField(guiName = "IMEM free")]
         public int GUI_imemWords;
 
@@ -174,11 +176,14 @@ namespace KPU.Modules
                 mProcessor.OnUpdate();
                 GUI_imemWords = mProcessor.imemWords;
                 Fields["GUI_imemWords"].guiActive = true;
+                GUI_status = mProcessor.isRunning ? mProcessor.isHibernating ? "Hibernating" : "Running" : "Inactive";
+                Fields["GUI_status"].guiActive = true;
             }
             else
             {
                 GUI_imemWords = -1;
                 Fields["GUI_imemWords"].guiActive = false;
+                Fields["GUI_status"].guiActive = false;
             }
         }
 
