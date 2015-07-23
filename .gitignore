@@ -1,4 +1,4 @@
-src/KPU/obj
-src/KPU/bin
-GameData/KPU/Plugins
+src/*/obj
+src/*/bin
+GameData/*/Plugins
 *.userprefs

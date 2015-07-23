@@ -1,0 +1,31 @@
+Three types of radiation source:
+van-allen: ambient, low-energy
+solar: directed, medium-energy, inverse-square intensity
+galactic: ambient, high-energy, low-rate
+
+van-allen and solar vary with solar activity and (directional) solar storms
+
+On terrestrial planets with magnetosphere and atmosphere, get earthlike behaviour:
+(altitudes given for Kerbin, in m)
+situation	altitude	van-allen	solar		galactic
+sea level	      0		negligible	negligible	negligible
+aircraft	  10000		low		negligible	negligible
+upper atmos	  40000		moderate	very low	negligible
+low orbit	  70000		high		very low	negligible
+		 100000		very high	very low	negligible
+		 150000		moderate	low		negligible
+mid orbit	 500000		low		moderate	very low
+high orbit	2500000		negligible	moderate	low
+
+interplanetary space		none		high		moderate
+
+-----
+
+Effects of radiation strikes:
+
+On shielding, some is absorbed, and gives off heat proportional to energy.
+On command pods, has a (very small) chance to harm Kerbals:
+	low energy: may cause cancer (Kerbal dies several years later).
+	high energy: may cause immediate radiation sickness, imminent death of Kerbal.
+On solar panels, degrades cells, reducing power output.
+On KPUs, may cause SEUs (e.g. latch changes?  program halts?) or noisy sensor readings.
