@@ -50,6 +50,7 @@
     <Compile Include="Util.cs" />
     <Compile Include="Modules\ModuleKappaRayHandler.cs" />
     <Compile Include="Modules\ModuleKappaRayAbsorber.cs" />
+    <Compile Include="KerbalTracker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -35,7 +35,9 @@ namespace kapparay
     {
         public static Core Instance { get; protected set; }
         private Dictionary<Vessel,RadiationTracker> mVessels;
+        private Dictionary<Kerbal,KerbalTracker> mKerbals;
         public SolarFlux mSolar;
+        public System.Random mRandom;
 
         public void Start()
         {
@@ -47,7 +49,9 @@ namespace kapparay
 
             Instance = this;
             mVessels = new Dictionary<Vessel, RadiationTracker>();
+            mKerbals = new Dictionary<Kerbal, KerbalTracker>();
             mSolar = new SolarFlux();
+            mRandom = new System.Random();
 
             Logging.Log("KappaRay Core loaded successfully.");
         }
@@ -55,10 +59,25 @@ namespace kapparay
         public RadiationTracker getRT(Vessel v)
         {
             if (!mVessels.ContainsKey(v))
-            {
                 mVessels[v] = new RadiationTracker(v);
-            }
             return mVessels[v];
+        }
+
+        public KerbalTracker getKT(Kerbal k)
+        {
+            if (!mKerbals.ContainsKey(k))
+                mKerbals[k] = new KerbalTracker(k);
+            return mKerbals[k];
+        }
+
+        public void ForgetVessel(Vessel v)
+        {
+            mVessels.Remove(v);
+        }
+
+        public void ForgetKerbal(Kerbal k)
+        {
+            mKerbals.Remove(k);
         }
 
         public void Update()
@@ -67,6 +86,10 @@ namespace kapparay
             foreach(RadiationTracker rt in mVessels.Values)
             {
                 rt.Update();
+            }
+            foreach(KerbalTracker kt in mKerbals.Values)
+            {
+                kt.Update();
             }
         }
     }

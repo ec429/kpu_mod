@@ -1,17 +1,20 @@
 ﻿using System;
+using UnityEngine;
 
 namespace kapparay
 {
-    public class RadiationTracker
+    public class RadiationTracker : MonoBehaviour
     {
         public Vessel vessel;
 
-        private Random mRandom;
+        private ScreenMessage mV, mS, mG;
 
         public RadiationTracker (Vessel v)
         {
             vessel = v;
-            mRandom = new Random();
+            mV = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
+            mS = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
+            mG = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
         }
 
         public enum RadiationSource { VanAllen, Solar, Galactic };
@@ -64,37 +67,47 @@ namespace kapparay
                 kapparay: 16: Eeloo
                 */
             }
+            mV.message = String.Format("kray: Van Allen: {0:G}", vanAllen);
+            ScreenMessages.PostScreenMessage(mV, true);
             Irradiate(vanAllen, RadiationSource.VanAllen);
             if (directSolar)
+            {
                 Irradiate(solar * solarFlux, RadiationSource.Solar);
+                mS.message = String.Format("kray: Solar: {0:G}", solar * solarFlux);
+                ScreenMessages.PostScreenMessage(mS, true);
+            }
+            else
+            {
+                mS.message = String.Empty;
+            }
             Irradiate(galactic * 0.05, RadiationSource.Galactic);
+            mG.message = String.Format("kray: Galactic: {0:G}", galactic * 0.05);
+            ScreenMessages.PostScreenMessage(mG, true);
         }
 
         public void Irradiate(double strength, RadiationSource source)
         {
             // Vector3d sunDirection = Sun.Instance.sunDirection;
 
-            Logging.Log(String.Format("Irradiate({0:G}, {1})", strength, source.ToString()));
-
             // For now, just bathe all parts in ambient radiation, that can't even be shielded against by other parts
             foreach(Part p in vessel.Parts)
             {
                 int count = 1;
                 if (strength >= 0.1)
-                    count = (int)Math.Ceiling(mRandom.NextDouble() * 10.0 * strength);
-                else if (mRandom.NextDouble() > strength * 10.0)
+                    count = (int)Math.Ceiling(Core.Instance.mRandom.NextDouble() * 10.0 * strength);
+                else if (Core.Instance.mRandom.NextDouble() > strength * 10.0)
                     return; // count=0
                 double energy = 0;
                 switch (source)
                 {
                     case RadiationSource.VanAllen: // low-energy
-                        energy = 10.0 + mRandom.NextDouble() * 150.0;
+                        energy = 10.0 + Core.Instance.mRandom.NextDouble() * 150.0;
                         break;
                     case RadiationSource.Solar: // medium-energy
-                        energy = 120.0 + mRandom.NextDouble() * 300.0;
+                        energy = 120.0 + Core.Instance.mRandom.NextDouble() * 300.0;
                         break;
                     case RadiationSource.Galactic: // high-energy
-                        energy = (1.0 - 4.0 * Math.Log(mRandom.NextDouble())) * 300.0;
+                        energy = (1.0 - 4.0 * Math.Log(Core.Instance.mRandom.NextDouble())) * 300.0;
                         break;
                 }
                 // XXX If a part has multiple handlers, what order do they get called in?
