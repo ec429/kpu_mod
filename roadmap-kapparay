@@ -9,12 +9,12 @@ On terrestrial planets with magnetosphere and atmosphere, get earthlike behaviou
 (altitudes given for Kerbin, in m)
 situation	altitude	van-allen	solar		galactic
 sea level	      0		negligible	negligible	negligible
-aircraft	  10000		low		negligible	negligible
-upper atmos	  40000		moderate	very low	negligible
-low orbit	  70000		high		very low	negligible
-		 100000		very high	very low	negligible
-		 150000		moderate	low		negligible
-mid orbit	 500000		low		moderate	very low
+aircraft	  10000		very low	negligible	negligible
+upper atmos	  40000		low		very low	negligible
+low orbit	  70000		moderate	very low	negligible
+		 250000		high		very low	negligible
+mid orbit	 600000		very high	low		negligible
+		1200000		moderate	moderate	very low
 high orbit	2500000		negligible	moderate	low
 
 interplanetary space		none		high		moderate
