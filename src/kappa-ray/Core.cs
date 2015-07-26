@@ -89,7 +89,8 @@ namespace kapparay
             }
             foreach(KerbalTracker kt in mKerbals.Values)
             {
-                kt.Update();
+                if (kt.Update())
+                    ForgetKerbal(kt.kerbal);
             }
         }
     }

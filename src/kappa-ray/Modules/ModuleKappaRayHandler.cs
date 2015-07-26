@@ -14,7 +14,7 @@ namespace kapparay.Modules
 
         public virtual int OnRadiation(double energy, int count)
         {
-            Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}", part.partName, count, energy), false);
+            Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}", part.partInfo.title, count, energy), false);
             if (part.CrewCapacity > 0)
             {
                 int target = Core.Instance.mRandom.Next(part.CrewCapacity);
@@ -27,7 +27,7 @@ namespace kapparay.Modules
                     }
                 }
             }
-            return count; // all of them passed through us, none were absorbed
+            return count;
         }
     }
 }
