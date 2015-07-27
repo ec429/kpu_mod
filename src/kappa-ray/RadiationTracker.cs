@@ -40,7 +40,7 @@ namespace kapparay
 
         public double galacticModel(double altScale)
         {
-            return Math.Exp(-altScale / mVessel.altitude)
+            return Math.Exp(-altScale / mVessel.altitude);
         }
 
         public void Update()
@@ -54,7 +54,7 @@ namespace kapparay
             switch(planetID.flightGlobalsIndex) /* This completely relies on the indices not being changed.  Mods that add planets will screw this up */
             {
                 case 0: // Sun
-                    vanAllen = 1000.0 * Math.Exp(-altitude/100e6) * Core.Instance.mSolar.flux;
+                    vanAllen = 1000.0 * Math.Exp(-mVessel.altitude/100e6) * Core.Instance.mSolar.flux;
                     solar = 1.0;
                     galactic = Math.Max(1.0 - vanAllen, 0.0);
                     break;
