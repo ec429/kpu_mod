@@ -1,4 +1,62 @@
+Kappa-Ray
+=========
+
+Kappa-Ray is a mod for the game Kerbal Space Program by Squad.
+It subjects vessels to radiation depending on their location, and applies
+ various effects of that radiation.
+
+Kappa-Ray is currently in alpha test; not all features have been implemented.
+
+Kappa-Ray is developed by Edward Cree, who goes by the handle 'soundnfury' on
+ IRC and 'ec429' elsewhere; his website is at http://jttlov.no-ip.org.
+
+
+Radiation Effects
+-----------------
+Most parts will absorb part of the radiation passing through them, thus
+ generating heat.  Parts with ModuleKappaRayAbsorber will be much more
+ effective at this, depending on their absorpCoeff.  (This is useful for
+ shielding).
+Kerbals in command pods and cockpits may suffer radiation sickness, causing
+ immediate death, or may develop cancer, causing delayed death.  (Currently
+ mk1pod only.)
+
+More effects are planned - see roadmap-kapparay for details...
+
+
+Radiation Environments
+----------------------
+There are three types of kappa radiation:
+* Van Allen.  Low energy ambient radiation, found in a belt around planets
+   with magnetic fields.  (Currently only implemented for Kerbin).  Radiation
+   of this type is also found (at very high fluxes) in the Sun's corona.
+   Most Van Allen kappa rays are at too low an energy to harm Kerbals, though
+   exposure does create slight cancer risk.
+* Direct Solar.  Medium energy radiation emitted by the Sun.  As this is
+   directional, it can be effectively shielded against: simply pointing vessel
+   away from sun can drastically reduce kappa flux through command pods, as
+   radiation is absorbed by engines, fuel tanks etc.  Another effective shield
+   is a planetary magnetosphere, busily converting the solar kappa rays into
+   lower-energy Van Allen radiation.  An atmosphere will block kappa rays even
+   more thoroughly.  And of course, hiding in the dark behind a planet or moon
+   will shield against direct solar radiation.
+   The flux of solar k-radiation varies with the inverse square of distance to
+   the Sun, which is bad news for any probes to Moho.
+   Solar kappa rays are right in the window most likely to cause cancer - good
+   shielding is a must for any kerbals in this environment.
+* Galactic.  High-energy cosmic rays.  Like Van Allen radiation, galactic
+   k-rads are ambient, but unlike Van Allen radiation, they hit very hard.
+   Fortunately they have a much lower flux than other sources, and are only
+   found once thoroughly outside the protection of planetary magnetic fields.
+   Exposure to high-energy galactic radiation carries a risk of immediate
+   radiation sickness and prompt death - any unshielded time in this
+   environment is highly hazardous.  However, the low rate of this radiation
+   means you may cheat the reaper for a while; but sooner or later your number
+   will come up.
+
+
 Known bugs:
+-----------
 
 Vessels other than the active one don't currently get radiation fired at them.
 This is because turning that on causes the following bugs:
