@@ -1,0 +1,23 @@
+Known bugs:
+
+Vessels other than the active one don't currently get radiation fired at them.
+This is because turning that on causes the following bugs:
+{
+	Vessels out of physics range appear to fire their radiation at the active
+	 vessel (their CoM is nonsense / in the wrong co-ordinate system).  This
+	 is especially problematic because of asteroids, which are almost always
+	 bathed in solar and galactic radiation.
+
+	If there are multiple vessels in close proximity, each might get some of
+	 the other's radiation.  Close proximity means about 10km.
+	However, it's only _likely_ to take hits if it's much closer, as all
+	 radiation is aimed within a 10m sphere of the CoM.
+	This shouldn't be a problem, as vessels this close should have similar
+	 radiation environments.  Also, the radiation isn't duplicated; if the
+	 'wrong' vessel absorbs it, it won't then go on to hit the 'right' one.
+	 So one vessel can shield another.
+}
+
+Under some circumstances extra radiation readouts appear in the screen
+ messages.  I don't know why (but those screen messages are only an interim
+ anyway, pending a proper UI).
