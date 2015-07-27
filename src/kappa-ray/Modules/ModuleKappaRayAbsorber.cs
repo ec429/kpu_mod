@@ -3,7 +3,7 @@
 namespace kapparay.Modules
 {
     [KSPModule("KappaRay Shielding")]
-    public class ModuleKappaRayAbsorber : ModuleKappaRayHandler
+    public class ModuleKappaRayAbsorber : PartModule, IKappaRayHandler
     {
         [KSPField()]
         public double absorpCoeff;
@@ -19,10 +19,9 @@ namespace kapparay.Modules
             return absorbs;
         }
 
-        public override int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count)
         {
             int absorbs = absorbCount(count, absorpCoeff);
-            part.AddThermalFlux(absorbs * energy / 1e3);
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}, {3:D} absorbed", part.partInfo.title, count, energy, absorbs), false);
             return count - absorbs;
         }

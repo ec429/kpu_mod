@@ -48,12 +48,15 @@
     <Compile Include="Core.cs" />
     <Compile Include="RadiationTracker.cs" />
     <Compile Include="Util.cs" />
-    <Compile Include="Modules\ModuleKappaRayHandler.cs" />
     <Compile Include="Modules\ModuleKappaRayAbsorber.cs" />
     <Compile Include="KerbalTracker.cs" />
+    <Compile Include="Modules\ModuleKappaRaySolarPanel.cs" />
+    <Compile Include="API\IKappaRayHandler.cs" />
+    <Compile Include="Modules\ModuleKappaRayCrewPod.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Modules\" />
+    <Folder Include="API\" />
   </ItemGroup>
 </Project>

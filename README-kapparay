@@ -20,6 +20,8 @@ Most parts will absorb part of the radiation passing through them, thus
 Kerbals in command pods and cockpits may suffer radiation sickness, causing
  immediate death, or may develop cancer, causing delayed death.  (Currently
  mk1pod only.)
+Solar panels will suffer degradation of their photovoltaic cells, reducing
+ their power output.
 
 More effects are planned - see roadmap-kapparay for details...
 
