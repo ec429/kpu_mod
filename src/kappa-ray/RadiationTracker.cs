@@ -19,16 +19,37 @@ namespace kapparay
 
         public enum RadiationSource { VanAllen, Solar, Galactic };
 
+        // Generic models for planetary radiation
+        public double vanAllenModel(double altScale)
+        {
+            // TODO: support off-centre or tilted magnetic fields, like Earth has
+            // (thereby producing something like the South Atlantic Anomaly)
+            double magLat = mVessel.latitude;
+            altScale *= Math.Cos(magLat * Math.PI / 180.0 / 2.0);
+            double magnetic = Math.Exp(-mVessel.altitude / altScale);
+            double magcap = (magnetic - magnetic * magnetic) * 4.0;
+            double vaScale = 1.0 / (1.0 + Math.Pow(Math.Sin(magLat * Math.PI / 180.0), 2.0));
+            return Math.Max(vaScale * magcap * magcap - mVessel.atmDensity * 100.0, 0.0);
+        }
+
+        public double directSolarModel(double altScale)
+        {
+            double magnetic = Math.Exp(-mVessel.altitude / altScale);
+            return Math.Max(1.0 - magnetic * 1.12 - mVessel.atmDensity * 100.0, 0.0);
+        }
+
+        public double galacticModel(double altScale)
+        {
+            return Math.Exp(-altScale / mVessel.altitude)
+        }
+
         public void Update()
         {
             if (FlightDriver.Pause) return;
             if (!mVessel.isActiveVessel) return; /* Can't figure out how to handle background vessels reliably */
             double solarFlux = Core.Instance.mSolar.flux * mVessel.solarFlux / 1400.0; // scale solarFlux to kerbin==1
-            double altitude = mVessel.altitude;
-            double atm = mVessel.atmDensity;
             bool directSolar = mVessel.directSunlight;
             CelestialBody planetID = mVessel.mainBody;
-            double magnetic, magcap;
             double vanAllen, solar, galactic;
             switch(planetID.flightGlobalsIndex) /* This completely relies on the indices not being changed.  Mods that add planets will screw this up */
             {
@@ -38,12 +59,9 @@ namespace kapparay
                     galactic = Math.Max(1.0 - vanAllen, 0.0);
                     break;
                 case 1: // Kerbin
-                    // TODO latitude dependence for Van Allen belts
-                    magnetic = Math.Exp(-altitude / 900e3);
-                    magcap = (magnetic - magnetic * magnetic) * 4.0;
-                    vanAllen = Math.Max(magcap * magcap - atm * 100.0, 0.0);
-                    solar = Math.Max(1.0 - magnetic * 1.12 - atm * 100.0, 0.0);
-                    galactic = Math.Exp(-20e6 / altitude);
+                    vanAllen = vanAllenModel(900e3);
+                    solar = directSolarModel(900e3);
+                    galactic = galacticModel(20e6);
                     break;
                 default: // TODO handle the other bodies.  For now, they have no magnetospheres or atmospheric absorption
                     vanAllen = 0.0;
