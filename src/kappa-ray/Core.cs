@@ -17,43 +17,51 @@ namespace kapparay
                 logFlux = Math.Log(value);
             }
         }
-        private System.Random mRandom;
         private double logFlux;
         public void Update()
         {
-            logFlux = logFlux * 0.999 + (mRandom.NextDouble() - 0.5) * 0.004;
+            logFlux = logFlux * 0.999 + (Core.Instance.mRandom.NextDouble() - 0.5) * 0.004;
+        }
+
+        public void OnSave(ConfigNode node)
+        {
+            node.AddValue("logFlux", logFlux);
+        }
+
+        public void OnLoad(ConfigNode node)
+        {
+            if (node.HasValue("logFlux"))
+                Double.TryParse(node.GetValue("logFlux"), out logFlux);
         }
 
         public SolarFlux()
         {
             flux = 1.0;
-            mRandom = new System.Random();
         }
     }
 
     public class Core : MonoBehaviour
     {
         public static Core Instance { get; protected set; }
+
         private Dictionary<Vessel,RadiationTracker> mVessels;
-        private Dictionary<Kerbal,KerbalTracker> mKerbals;
+        private Dictionary<string,KerbalTracker> mKerbals;
         public SolarFlux mSolar;
         public System.Random mRandom;
 
-        public void Start()
+        public Core()
         {
-            if (Instance != null)
+            if (Core.Instance != null)
             {
                 Destroy(this);
                 return;
             }
 
-            Instance = this;
+            Core.Instance = this;
             mVessels = new Dictionary<Vessel, RadiationTracker>();
-            mKerbals = new Dictionary<Kerbal, KerbalTracker>();
+            mKerbals = new Dictionary<string, KerbalTracker>();
             mSolar = new SolarFlux();
             mRandom = new System.Random();
-
-            Logging.Log("KappaRay Core loaded successfully.");
         }
 
         public RadiationTracker getRT(Vessel v)
@@ -65,9 +73,10 @@ namespace kapparay
 
         public KerbalTracker getKT(Kerbal k)
         {
-            if (!mKerbals.ContainsKey(k))
-                mKerbals[k] = new KerbalTracker(k);
-            return mKerbals[k];
+            string name = k.crewMemberName;
+            if (!mKerbals.ContainsKey(name))
+                mKerbals[name] = new KerbalTracker(name);
+            return mKerbals[name];
         }
 
         public void ForgetVessel(Vessel v)
@@ -77,12 +86,16 @@ namespace kapparay
 
         public void ForgetKerbal(Kerbal k)
         {
-            mKerbals.Remove(k);
+            mKerbals.Remove(k.crewMemberName);
         }
 
         public void Update()
         {
             mSolar.Update();
+            foreach(Vessel v in FlightGlobals.Vessels) // ensure every vessel has a RadiationTracker
+            {
+                getRT(v);
+            }
             foreach(RadiationTracker rt in mVessels.Values)
             {
                 rt.Update();
@@ -93,16 +106,67 @@ namespace kapparay
                     ForgetKerbal(kt.kerbal);
             }
         }
+
+        public void Save(ConfigNode node)
+        {
+            ConfigNode solarNode = new ConfigNode("solar");
+            mSolar.OnSave(solarNode);
+            node.AddNode(solarNode);
+            foreach(KerbalTracker kt in mKerbals.Values)
+            {
+                ConfigNode ktNode = new ConfigNode("kerbalTracker");
+                kt.OnSave(ktNode);
+                node.AddNode(ktNode);
+            }
+        }
+
+        public void Load(ConfigNode node)
+        {
+            ConfigNode solarNode = node.GetNode("solar");
+            if (solarNode != null)
+                mSolar.OnLoad(solarNode);
+            mVessels.Clear();
+            mKerbals.Clear();
+            foreach (ConfigNode ktNode in node.GetNodes("kerbalTracker"))
+            {
+                if (ktNode.HasValue("name"))
+                {
+                    string name = ktNode.GetValue("name");
+                    KerbalTracker kt = new KerbalTracker(name);
+                    kt.OnLoad(ktNode);
+                    mKerbals.Add(name, kt);
+                }
+            }
+            Logging.Log("KappaRay Core loaded successfully.");
+        }
+
+        public void OnDestroy()
+        {
+            Instance = null;
+        }
     }
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class CoreFlight : Core
+    public class CoreFlight : Core {}
+    [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
+    public class CoreSC : Core {}
+    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
+    public class CoreTracking : Core {}
+
+    [KSPScenario(ScenarioCreationOptions.AddToNewGames, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION)]
+    public class ScenarioKappaRay : ScenarioModule
     {
+        public override void OnSave(ConfigNode node)
+        {
+            Core.Instance.Save(node);
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            Core.Instance.Load(node);
+        }
     }
 
-    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
-    public class CoreTracking : Core
-    {
-    }
+
 }
 

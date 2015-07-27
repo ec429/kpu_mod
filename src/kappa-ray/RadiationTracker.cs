@@ -6,7 +6,7 @@ namespace kapparay
 {
     public class RadiationTracker : MonoBehaviour
     {
-        public Vessel vessel;
+        private Vessel mVessel;
 
         private ScreenMessage mV, mS, mG;
 
@@ -14,22 +14,19 @@ namespace kapparay
 
         public RadiationTracker (Vessel v)
         {
-            vessel = v;
-            mV = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
-            mS = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
-            mG = new ScreenMessage(String.Empty, 4f, ScreenMessageStyle.UPPER_LEFT);
+            mVessel = v;
         }
 
         public enum RadiationSource { VanAllen, Solar, Galactic };
 
         public void Update()
         {
-            if (PauseMenu.isOpen) return;
-            double solarFlux = Core.Instance.mSolar.flux * vessel.solarFlux / 1400.0; // scale solarFlux to kerbin==1
-            double altitude = vessel.altitude;
-            double atm = vessel.atmDensity;
-            bool directSolar = vessel.directSunlight;
-            CelestialBody planetID = vessel.mainBody;
+            if (FlightDriver.Pause) return;
+            double solarFlux = Core.Instance.mSolar.flux * mVessel.solarFlux / 1400.0; // scale solarFlux to kerbin==1
+            double altitude = mVessel.altitude;
+            double atm = mVessel.atmDensity;
+            bool directSolar = mVessel.directSunlight;
+            CelestialBody planetID = mVessel.mainBody;
             double magnetic, magcap;
             double vanAllen, solar, galactic;
             switch(planetID.flightGlobalsIndex) /* This completely relies on the indices not being changed.  Mods that add planets will screw this up */
@@ -71,24 +68,35 @@ namespace kapparay
                 kapparay: 16: Eeloo
                 */
             }
-            if (!vessel.packed)
-                mSaveCOM = vessel.CurrentCoM;
-            mV.message = String.Format("kray: Van Allen: {0:G}", vanAllen);
-            ScreenMessages.PostScreenMessage(mV, true);
+            if (!mVessel.packed)
+                mSaveCOM = mVessel.CurrentCoM;
             Irradiate(vanAllen, RadiationSource.VanAllen);
             if (directSolar)
             {
                 Irradiate(solar * solarFlux, RadiationSource.Solar);
-                mS.message = String.Format("kray: Solar: {0:G}", solar * solarFlux);
-                ScreenMessages.PostScreenMessage(mS, true);
             }
-            else
+            else if (mS != null)
             {
                 mS.message = String.Empty;
             }
             Irradiate(galactic * 0.05, RadiationSource.Galactic);
-            mG.message = String.Format("kray: Galactic: {0:G}", galactic * 0.05);
-            ScreenMessages.PostScreenMessage(mG, true);
+            if (mVessel == FlightGlobals.ActiveVessel)
+            {
+                if (mV == null)
+                    mV = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                mV.message = String.Format("kray: Van Allen: {0:G}", vanAllen);
+                ScreenMessages.PostScreenMessage(mV, true);
+                if (directSolar) {
+                    if (mS == null)
+                        mS = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                    mS.message = String.Format("kray: Solar: {0:G}", solar * solarFlux);
+                    ScreenMessages.PostScreenMessage(mS, true);
+                }
+                if (mG == null)
+                    mG = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
+                mG.message = String.Format("kray: Galactic: {0:G}", galactic * 0.05);
+                ScreenMessages.PostScreenMessage(mG, true);
+            }
         }
 
         private Vector3 randomVector(float length)
@@ -142,7 +150,6 @@ namespace kapparay
                 Part p = rh.transform.gameObject.GetComponent<Part>();
                 if (p != null)
                 {
-                    //Logging.Log("Hit a " + p.partInfo.title);
                     bool hasModule = false;
                     foreach(Modules.ModuleKappaRayHandler h in p.FindModulesImplementing<Modules.ModuleKappaRayHandler>())
                     {

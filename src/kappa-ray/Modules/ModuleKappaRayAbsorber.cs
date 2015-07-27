@@ -26,6 +26,17 @@ namespace kapparay.Modules
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}, {3:D} absorbed", part.partInfo.title, count, energy, absorbs), false);
             return count - absorbs;
         }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            if (node.HasValue("absorpCoeff"))
+                Double.TryParse(node.GetValue("absorpCoeff"), out absorpCoeff);
+        }
+
+        public override void OnSave(ConfigNode node)
+        {
+            node.AddValue("absorpCoeff", absorpCoeff);
+        }
     }
 }
 
