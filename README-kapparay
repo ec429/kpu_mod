@@ -32,8 +32,13 @@ There are three types of kappa radiation:
 * Van Allen.  Low energy ambient radiation, found in a belt around planets
    with magnetic fields.  (Currently only implemented for Kerbin).  Radiation
    of this type is also found (at very high fluxes) in the Sun's corona.
+   The k-ray flux of Kerbin's Van Allen belts peaks at about 600km altitude
+   over the equator.  At higher latitudes, the peak flux is lower, but so is
+   the altitude at which it occurs.
    Most Van Allen kappa rays are at too low an energy to harm Kerbals, though
-   exposure does create slight cancer risk.
+   exposure does create slight cancer risk.  However, even these low-energy
+   rays are able to degrade solar panels, perhaps halving each panel's output
+   in a year.
 * Direct Solar.  Medium energy radiation emitted by the Sun.  As this is
    directional, it can be effectively shielded against: simply pointing vessel
    away from sun can drastically reduce kappa flux through command pods, as
