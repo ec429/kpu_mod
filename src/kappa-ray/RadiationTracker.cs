@@ -22,6 +22,7 @@ namespace kapparay
         public void Update()
         {
             if (FlightDriver.Pause) return;
+            if (!mVessel.isActiveVessel) return; /* Can't figure out how to handle background vessels reliably */
             double solarFlux = Core.Instance.mSolar.flux * mVessel.solarFlux / 1400.0; // scale solarFlux to kerbin==1
             double altitude = mVessel.altitude;
             double atm = mVessel.atmDensity;
@@ -68,7 +69,7 @@ namespace kapparay
                 kapparay: 16: Eeloo
                 */
             }
-            if (!mVessel.packed)
+            if (!mVessel.HoldPhysics)
                 mSaveCOM = mVessel.CurrentCoM;
             Irradiate(vanAllen, RadiationSource.VanAllen);
             if (directSolar)
@@ -80,21 +81,21 @@ namespace kapparay
                 mS.message = String.Empty;
             }
             Irradiate(galactic * 0.05, RadiationSource.Galactic);
-            if (mVessel == FlightGlobals.ActiveVessel)
+            if (mVessel.isActiveVessel)
             {
                 if (mV == null)
                     mV = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                mV.message = String.Format("kray: Van Allen: {0:G}", vanAllen);
+                mV.message = String.Format("kray: Van Allen: {0:G3}", vanAllen);
                 ScreenMessages.PostScreenMessage(mV, true);
                 if (directSolar) {
                     if (mS == null)
                         mS = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    mS.message = String.Format("kray: Solar: {0:G}", solar * solarFlux);
+                    mS.message = String.Format("kray: Solar: {0:G3}", solar * solarFlux);
                     ScreenMessages.PostScreenMessage(mS, true);
                 }
                 if (mG == null)
                     mG = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                mG.message = String.Format("kray: Galactic: {0:G}", galactic * 0.05);
+                mG.message = String.Format("kray: Galactic: {0:G3}", galactic * 0.05);
                 ScreenMessages.PostScreenMessage(mG, true);
             }
         }

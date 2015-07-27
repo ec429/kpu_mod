@@ -66,6 +66,8 @@ namespace kapparay
 
         public RadiationTracker getRT(Vessel v)
         {
+            if (v == null)
+                return null;
             if (!mVessels.ContainsKey(v))
                 mVessels[v] = new RadiationTracker(v);
             return mVessels[v];
