@@ -38,11 +38,12 @@ namespace kapparay
                     galactic = Math.Max(1.0 - vanAllen, 0.0);
                     break;
                 case 1: // Kerbin
+                    // TODO latitude dependence for Van Allen belts
                     magnetic = Math.Exp(-altitude / 900e3);
                     magcap = (magnetic - magnetic * magnetic) * 4.0;
                     vanAllen = Math.Max(magcap * magcap - atm * 100.0, 0.0);
                     solar = Math.Max(1.0 - magnetic * 1.12 - atm * 100.0, 0.0);
-                    galactic = Math.Max(1.0 - magnetic * 1.24 - atm * 100.0, 0.0);
+                    galactic = Math.Exp(-20e6 / altitude);
                     break;
                 default: // TODO handle the other bodies.  For now, they have no magnetospheres or atmospheric absorption
                     vanAllen = 0.0;
