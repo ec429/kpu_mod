@@ -10,7 +10,10 @@ namespace kapparay
         {
             get
             {
-                return Math.Exp(logFlux);
+                double extra = 0, t = Planetarium.GetUniversalTime();
+                if (t - lastStorm < 3600 * 6 * 2)
+                    extra = Math.Sin(Math.Pow((t - lastStorm) / (3600 * 6 * 2), 0.3) * Math.PI);
+                return Math.Exp(logFlux) + extra * stormStrength;
             }
             protected set
             {
@@ -18,25 +21,71 @@ namespace kapparay
             }
         }
         private double logFlux;
+
+        private double nextStorm;
+        private double lastStorm;
+        private double stormStrength;
+
         public void Update()
         {
+            if (Planetarium.GetUniversalTime() > nextStorm)
+            {
+                TimeWarp.SetRate(0, true); // force drop out of timewarp, they're probably going to want to do something about this
+                Logging.Message("SOLAR STORM DETECTED!");
+                lastStorm = nextStorm;
+                stormStrength = 4.0 + Math.Pow(Core.Instance.mRandom.NextDouble(), 2) * 50.0;
+                ScheduleStorm();
+            }
             logFlux = logFlux * 0.999 + (Core.Instance.mRandom.NextDouble() - 0.5) * 0.004;
         }
 
         public void OnSave(ConfigNode node)
         {
             node.AddValue("logFlux", logFlux);
+            if (!Double.IsNegativeInfinity(lastStorm))
+                node.AddValue("lastStorm", lastStorm);
+            node.AddValue("nextStorm", nextStorm);
+            node.AddValue("stormStrength", stormStrength);
         }
 
         public void OnLoad(ConfigNode node)
         {
             if (node.HasValue("logFlux"))
                 Double.TryParse(node.GetValue("logFlux"), out logFlux);
+            lastStorm = Double.NegativeInfinity;
+            if (node.HasValue("lastStorm"))
+                Double.TryParse(node.GetValue("lastStorm"), out lastStorm);
+            if (node.HasValue("nextStorm"))
+                Double.TryParse(node.GetValue("nextStorm"), out nextStorm);
+            else
+                ScheduleStorm();
+            if (node.HasValue("stormStrength"))
+                Double.TryParse(node.GetValue("stormStrength"), out stormStrength);
+        }
+
+        private void ScheduleStorm()
+        {
+            try
+            {
+                nextStorm = Planetarium.GetUniversalTime() + 3600 * 6 * 2 + Core.Instance.mRandom.Next(3600 * 6 * 98);
+                Logging.Log("Next storm scheduled for " + KSPUtil.PrintDate((int)nextStorm, true, true));
+            }
+            catch (NullReferenceException exc)
+            {
+                Logging.Log("Failed to schedule storm: " + exc.Message + "\n" + exc.StackTrace);
+            }
+        }
+
+        public void OnStart()
+        {
+            ScheduleStorm();
         }
 
         public SolarFlux()
         {
             flux = 1.0;
+            lastStorm = Double.NegativeInfinity;
+            nextStorm = Double.PositiveInfinity;
         }
     }
 
@@ -62,6 +111,11 @@ namespace kapparay
             mKerbals = new Dictionary<string, KerbalTracker>();
             mSolar = new SolarFlux();
             mRandom = new System.Random();
+        }
+
+        public void OnStart()
+        {
+            mSolar.OnStart();
         }
 
         public RadiationTracker getRT(Vessel v)

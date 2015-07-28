@@ -49,9 +49,15 @@ There are three types of kappa radiation:
    more thoroughly.  And of course, hiding in the dark behind a planet or moon
    will shield against direct solar radiation.
    The flux of solar k-radiation varies with the inverse square of distance to
-   the Sun, which is bad news for any probes to Moho.
-   Solar kappa rays are right in the window most likely to cause cancer - good
-   shielding is a must for any kerbals in this environment.
+   the Sun, which is bad news for any probes to Moho.  Also, the sun's k-rad
+   output varies with time; in particular, every now and then a solar storm
+   will occur (on average, one every 50 days or so).  These storms last for
+   two days and, at their peak, k-rad flux may exceed fifty times its normal
+   level!  Fortunately, they take some time to reach their peak, giving you
+   time to make the appropriate preparations.
+   Solar kappa rays are right in the energy level window most likely to cause
+   cancer - good shielding is a must for any kerbals undergoing prolonged
+   exposure to this environment.
 * Galactic.  High-energy cosmic rays.  Like Van Allen radiation, galactic
    k-rads are ambient, but unlike Van Allen radiation, they hit very hard.
    Fortunately they have a much lower flux than other sources, and are only
