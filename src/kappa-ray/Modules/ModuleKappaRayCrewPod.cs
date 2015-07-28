@@ -15,7 +15,7 @@ namespace kapparay.Modules
                 {
                     if (cm.seatIdx == target)
                     {
-                        KerbalTracker kt = Core.Instance.getKT(cm.KerbalRef);
+                        KerbalTracker kt = Core.Instance.getKT(cm);
                         count = kt.OnRadiation(energy, count);
                     }
                 }

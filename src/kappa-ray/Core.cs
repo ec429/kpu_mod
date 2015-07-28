@@ -73,9 +73,13 @@ namespace kapparay
             return mVessels[v];
         }
 
-        public KerbalTracker getKT(Kerbal k)
+        public KerbalTracker getKT(ProtoCrewMember cm)
         {
-            string name = k.crewMemberName;
+            return getKTbyName(cm.name);
+        }
+
+        public KerbalTracker getKTbyName(string name)
+        {
             if (!mKerbals.ContainsKey(name))
                 mKerbals[name] = new KerbalTracker(name);
             return mKerbals[name];
@@ -86,9 +90,9 @@ namespace kapparay
             mVessels.Remove(v);
         }
 
-        public void ForgetKerbal(Kerbal k)
+        public void ForgetKerbal(KerbalTracker kt)
         {
-            mKerbals.Remove(k.crewMemberName);
+            mKerbals.Remove(kt.name);
         }
 
         public void Update()
@@ -105,7 +109,7 @@ namespace kapparay
             foreach(KerbalTracker kt in mKerbals.Values)
             {
                 if (kt.Update())
-                    ForgetKerbal(kt.kerbal);
+                    ForgetKerbal(kt);
             }
         }
 
@@ -169,6 +173,36 @@ namespace kapparay
         }
     }
 
+    [KSPAddon (KSPAddon.Startup.MainMenu, true)]
+    public class AddKappaRayToEVA : MonoBehaviour
+    {
+        private void EvaAddPartModule(AvailablePart part, string module)
+        {
+            try
+            {
+                ConfigNode mn = new ConfigNode("MODULE");
+                mn.AddValue("name", module);
+                part.partPrefab.AddModule(mn);
+                Logging.Log("The expected exception did not happen when adding " + module + " to " + part.name + "!");
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Contains("Object reference not set"))
+                {
+                    Logging.Log("kappa-ray: added " + module + " to " + part.name, false);
+                }
+                else
+                {
+                    Logging.Log("Unexpected error while adding " + module + " to " + part.name + ": " + ex.Message + "\n" + ex.StackTrace, false);
+                }
+            }
+        }
 
+        public void Start ()
+        {
+            EvaAddPartModule(PartLoader.getPartInfoByName("kerbalEVA"), "ModuleKappaRayEVA");
+            EvaAddPartModule(PartLoader.getPartInfoByName("kerbalEVAfemale"), "ModuleKappaRayEVA");
+        }
+    }
 }
 
