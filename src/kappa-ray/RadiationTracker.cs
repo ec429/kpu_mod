@@ -10,8 +10,6 @@ namespace kapparay
 
         private ScreenMessage mV, mS, mG;
 
-        private Vector3 mSaveCOM;
-
         public RadiationTracker (Vessel v)
         {
             mVessel = v;
@@ -88,8 +86,6 @@ namespace kapparay
                 kapparay: 16: Eeloo
                 */
             }
-            if (!mVessel.HoldPhysics)
-                mSaveCOM = mVessel.CurrentCoM;
             Irradiate(vanAllen, RadiationSource.VanAllen);
             if (directSolar)
             {
@@ -139,7 +135,7 @@ namespace kapparay
 
         public void Irradiate(double strength, RadiationSource source)
         {
-            Vector3 aimPt = mSaveCOM + randomVector(10.0f);
+            Vector3 aimPt = mVessel.CurrentCoM + randomVector(10.0f);
             Vector3 aimDir = randomVector(1e4f);
             strength *= TimeWarp.CurrentRate;
             int count = 1;
@@ -164,7 +160,9 @@ namespace kapparay
                     break;
             }
 
+            #ifdef VERYDEBUG
             Logging.Log(String.Format("Casting ray at {0} from {1}, e={2:F3}", aimPt, -aimDir, energy), false);
+            #endif
 
             List<RaycastHit> hits = new List<RaycastHit>(Physics.RaycastAll(aimPt - aimDir, aimDir, 2e4f));
             hits.Sort(RaycastSorter);
