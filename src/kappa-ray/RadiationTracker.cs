@@ -135,14 +135,32 @@ namespace kapparay
 
         public void Irradiate(double strength, RadiationSource source)
         {
-            Vector3 aimPt = mVessel.CurrentCoM + randomVector(10.0f);
-            Vector3 aimDir = randomVector(1e4f);
             strength *= TimeWarp.CurrentRate;
             int count = 1;
             if (strength >= 0.1)
                 count = (int)Math.Ceiling(Core.Instance.mRandom.NextDouble() * 10.0 * strength);
             else if (Core.Instance.mRandom.NextDouble() > strength * 10.0)
                 return; // count=0
+            while (count > 1000) // at really high timewarps we can get huge counts.  Try to keep up
+            {
+                count -= 100;
+                IrradiateOnce(100, source);
+            }
+            while (count > 100)
+            {
+                count -= 10;
+                IrradiateOnce(10, source);
+            }
+            while (count-- > 0)
+            {
+                IrradiateOnce(1, source);
+            }
+        }
+
+        private void IrradiateOnce(int count, RadiationSource source)
+        {
+            Vector3 aimPt = mVessel.CurrentCoM + randomVector(10.0f);
+            Vector3 aimDir = randomVector(1e4f);
             double energy = 0;
             switch (source)
             {
