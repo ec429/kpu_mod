@@ -160,7 +160,7 @@ namespace kapparay
                     break;
             }
 
-            #ifdef VERYDEBUG
+            #if VERYDEBUG
             Logging.Log(String.Format("Casting ray at {0} from {1}, e={2:F3}", aimPt, -aimDir, energy), false);
             #endif
 
