@@ -26,7 +26,16 @@ namespace kapparay
         }
         public static void Log(string message, bool msg=true)
         {
-            UnityEngine.Debug.Log("kapparay: " + (msg ? "" : "Log: ") + message);
+            string ut = "";
+            try
+            {
+                int t = (int)Planetarium.GetUniversalTime();
+                ut = KSPUtil.PrintDate(t, true, true);
+            }
+            catch(NullReferenceException)
+            {
+            }
+            UnityEngine.Debug.Log("kapparay: [" + ut + "] " + (msg ? "" : "Log: ") + message);
             #if DEBUG
             if(msg) Message("kapparay: debug: " + message, false);
             #endif

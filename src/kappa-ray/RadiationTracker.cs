@@ -156,11 +156,15 @@ namespace kapparay
                 case RadiationSource.Solar: // medium-energy
                     energy = 120.0 + Core.Instance.mRandom.NextDouble() * 300.0;
                     aimDir = Sun.Instance.sunDirection;
+                    aimDir.Normalize();
+                    aimDir.Scale(new Vector3(1e4f, 1e4f, 1e4f));
                     break;
                 case RadiationSource.Galactic: // high-energy
                     energy = (1.0 - 4.0 * Math.Log(Core.Instance.mRandom.NextDouble())) * 300.0;
                     break;
             }
+
+            Logging.Log(String.Format("Casting ray at {0} from {1}, e={2:F3}", aimPt, -aimDir, energy), false);
 
             List<RaycastHit> hits = new List<RaycastHit>(Physics.RaycastAll(aimPt - aimDir, aimDir, 2e4f));
             hits.Sort(RaycastSorter);
