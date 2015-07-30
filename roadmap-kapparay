@@ -33,3 +33,7 @@ On KPUs, may cause SEUs (e.g. latch changes?  program halts?) or noisy sensor re
 -----
 
 Maybe also add a fourth radiation source, LV-N engines.  (But not RTGs, those are well shielded.)
+
+-----
+
+to test: seatExternalCmd; I think we'll still be EVA so that will handle it, and the seat doesn't need a ModuleKappaRayCrewPod

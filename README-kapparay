@@ -18,9 +18,8 @@ Most parts will absorb part of the radiation passing through them, thus
  effective at this, depending on their absorpCoeff.  (This is useful for
  shielding).
 Kerbals in command pods and cockpits may suffer radiation sickness, causing
- immediate death, or may develop cancer, causing delayed death.  (Currently
- mk1pod only.)  Kerbals on EVA are at even greater risk, as they are
- completely unshielded.
+ immediate death, or may develop cancer, causing delayed death.  Kerbals on
+ EVA are at even greater risk, as they are completely unshielded.
 Solar panels will suffer degradation of their photovoltaic cells, reducing
  their power output.
 
