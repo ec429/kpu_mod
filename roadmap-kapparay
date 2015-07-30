@@ -30,6 +30,8 @@ On command pods, has a (very small) chance to harm Kerbals:
 On solar panels, degrades cells, reducing power output.
 On KPUs, may cause SEUs (e.g. latch changes?  program halts?) or noisy sensor readings.
 
+Perhaps a science experiment that requires to collect k-rad hits?  (Idea stolen from "K-Radiation" forum thread)
+
 -----
 
 Maybe also add a fourth radiation source, LV-N engines.  (But not RTGs, those are well shielded.)
