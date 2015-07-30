@@ -36,6 +36,10 @@ namespace kapparay
                 stormStrength = 4.0 + Math.Pow(Core.Instance.mRandom.NextDouble(), 2) * 50.0;
                 ScheduleStorm();
             }
+            else if (Double.IsPositiveInfinity(nextStorm))
+            {
+                ScheduleStorm();
+            }
             logFlux = logFlux * 0.999 + (Core.Instance.mRandom.NextDouble() - 0.5) * 0.004;
         }
 
