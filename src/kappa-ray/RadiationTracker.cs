@@ -38,7 +38,7 @@ namespace kapparay
 
         public double galacticModel(double altScale)
         {
-            return Math.Exp(-altScale / mVessel.altitude);
+            return Math.Exp(-altScale / mVessel.altitude - mVessel.atmDensity);
         }
 
         public void Update()
