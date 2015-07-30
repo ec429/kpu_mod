@@ -71,12 +71,6 @@ There are three types of kappa radiation:
 Known bugs:
 -----------
 
-When the vessel is in physics warp, the number of kappa-ray 'hits' we get is
- greatly reduced.  This means parts are exposed to less radiation than they
- should be.  I don't know whether this is a problem with raycasting during
- time warp, or whether the RadiationTracker's Update() isn't getting called as
- often.
-
 Vessels other than the active one don't currently get radiation fired at them.
 This is because turning that on causes the following bugs:
 {
