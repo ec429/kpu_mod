@@ -15,7 +15,7 @@ namespace kapparay
             {
                 if (initChargeRate < chargeRate)
                     initChargeRate = chargeRate;
-                chargeRate *= 1.0f - count / (initChargeRate * 2e5f);
+                chargeRate *= (float)Math.Pow(1.0 - 1.0 / (initChargeRate * 2e5f), count);
                 Logging.Log(String.Format("{0} degraded chargeRate to {1:G}", part.partInfo.title, chargeRate), false);
                 return 0;
             }
