@@ -80,11 +80,6 @@ namespace kapparay
             }
         }
 
-        public void OnStart()
-        {
-            ScheduleStorm();
-        }
-
         public SolarFlux()
         {
             flux = 1.0;
@@ -115,11 +110,6 @@ namespace kapparay
             mKerbals = new Dictionary<string, KerbalTracker>();
             mSolar = new SolarFlux();
             mRandom = new System.Random();
-        }
-
-        public void OnStart()
-        {
-            mSolar.OnStart();
         }
 
         public RadiationTracker getRT(Vessel v)
