@@ -94,3 +94,6 @@ This is because turning that on causes the following bugs:
 Under some circumstances extra radiation readouts appear in the screen
  messages.  I don't know why (but those screen messages are only an interim
  anyway, pending a proper UI).
+
+Because of reasons, the OX-STAT fixed solar panel is no longer physicsless,
+ which may unbalance some small probes with asymmetric OX-STATs.
