@@ -7,7 +7,9 @@ namespace kapparay.Modules
     {
         public int OnRadiation(double energy, int count)
         {
+            #if QUITEDEBUG
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}", part.partInfo.title, count, energy), false);
+            #endif
             if (part.CrewCapacity > 0)
             {
                 int target = Core.Instance.mRandom.Next(part.CrewCapacity);

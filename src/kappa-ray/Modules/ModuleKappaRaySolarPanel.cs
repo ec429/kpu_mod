@@ -10,13 +10,17 @@ namespace kapparay
 
         public int OnRadiation(double energy, int count)
         {
+            #if QUITEDEBUG
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}", part.partInfo.title, count, energy), false);
+            #endif
             if (Core.Instance.mRandom.NextDouble() < Math.Exp(-50.0/energy))
             {
                 if (initChargeRate < chargeRate)
                     initChargeRate = chargeRate;
                 chargeRate *= (float)Math.Pow(1.0 - 1.0 / (initChargeRate * 2e5f), count);
+                #if DEBUG
                 Logging.Log(String.Format("{0} degraded chargeRate to {1:G}", part.partInfo.title, chargeRate), false);
+                #endif
                 return 0;
             }
             return count;

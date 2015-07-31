@@ -22,7 +22,9 @@ namespace kapparay.Modules
         public int OnRadiation(double energy, int count)
         {
             int absorbs = absorbCount(count, absorpCoeff);
+            #if QUITEDEBUG
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}, {3:D} absorbed", part.partInfo.title, count, energy, absorbs), false);
+            #endif
             return count - absorbs;
         }
 
