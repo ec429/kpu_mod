@@ -16,7 +16,9 @@ Radiation Effects
 Most parts will absorb part of the radiation passing through them, thus
  generating heat.  Parts with ModuleKappaRayAbsorber will be much more
  effective at this, depending on their absorpCoeff.  (This is useful for
- shielding).
+ shielding).  Other parts' effective absorpCoeff increases with mass,
+ asymptotically approaching 0.5.  (So for instance, a full fuel tank will
+ absorb more than an empty one.)
 Kerbals in command pods and cockpits may suffer radiation sickness, causing
  immediate death, or may develop cancer, causing delayed death.  Kerbals on
  EVA are at even greater risk, as they are completely unshielded.

@@ -201,8 +201,9 @@ namespace kapparay
                     }
                     if (count > 0 && !hasModule)
                     {
-                        // TODO fuel tanks should have an absorption proportional to their fill level
-                        int absorbs = Modules.ModuleKappaRayAbsorber.absorbCount(count, 0.2);
+                        double totalMass = p.mass + p.GetResourceMass();
+                        double absorpCoeff = (1.0 - Math.Exp(-totalMass / 2.0)) / 2.0;
+                        int absorbs = Modules.ModuleKappaRayAbsorber.absorbCount(count, absorpCoeff);
                         #if QUITEDEBUG
                         Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}, {3:D} absorbed", p.partInfo.title, count, energy, absorbs), false);
                         #endif
