@@ -53,39 +53,141 @@ namespace kapparay
             switch(planetID.flightGlobalsIndex) /* This completely relies on the indices not being changed.  Mods that add planets will screw this up */
             {
                 case 0: // Sun
+                    /* The Sun's equivalent of the Van Allen belt is its corona.  Being surrounded
+                     * by energetic plasma tends to result in a high radiation flux.
+                     * Direct solar irradiance in interplanetary space depends only on solar flux.
+                     * There is also no protection from cosmic rays (except inside the corona,
+                     * where you have bigger problems).
+                     */
                     vanAllen = 1000.0 * Math.Exp(-mVessel.altitude/100e6) * Core.Instance.mSolar.flux;
                     solar = 1.0;
                     galactic = Math.Max(1.0 - vanAllen, 0.0);
                     break;
                 case 1: // Kerbin
+                    /* Kerbin's Van Allen belts peak at around 600km altitude (i.e. 1 Kerbin radius);
+                     * their peak strength is used as the reference point for the flux scale.
+                     * Direct solar becomes a hazard partway through these belts, none penetrating
+                     * below about 105km.
+                     * Cosmic rays are heavily reduced well beyond KEO, but start to become significant
+                     * once approaching the Mun's orbit.
+                     */
                     vanAllen = vanAllenModel(900e3);
                     solar = directSolarModel(900e3);
                     galactic = galacticModel(20e6);
                     break;
-                default: // TODO handle the other bodies.  For now, they have no magnetospheres or atmospheric absorption
+                case 2: // Mun
+                    /* The Mun has no magnetosphere of its own, but Kerbin's field gives some protection
+                     * from cosmic rays.
+                     */
+                    vanAllen = 0.0;
+                    solar = 1.0;
+                    galactic = 0.173; // value for Kerbin orbit at same altitude as Mun
+                    break;
+                case 3: // Minmus
+                    /* As the Mun, but with less help from Kerbin. */
+                    vanAllen = 0.0;
+                    solar = 1.0;
+                    galactic = 0.653; // value for Kerbin orbit at same altitude as Minmus
+                    break;
+                case 4: // Moho
+                    /* Based on Mercury having a magnetic field about 11% of Earth's.
+                     * It's likely that, for the same reasons as Mercury, Moho will have a large,
+                     * iron-rich core, whose rotation will generate a decent magnetic field.
+                     * The proximity to the Sun will pump up Moho's Van Allen belts, partially
+                     * making up for the lower field strength.
+                     */
+                    vanAllen = vanAllenModel(100e3) * 0.7;
+                    solar = directSolarModel(100e3);
+                    galactic = galacticModel(1e6);
+                    break;
+                case 5: // Eve
+                    /* Being large and (probably) geologically active, Eve can be presumed to have
+                     * a strong magnetosphere - probably stronger than Kerbin's.  Meanwhile the
+                     * greater proximity to the Sun will contribute to strong Van Allen belts.
+                     * Cosmic rays won't get anywhere _near_ Eve.  Perhaps they're scared of it?
+                     */
+                    vanAllen = vanAllenModel(1.4e6) * 2.5;
+                    solar = directSolarModel(1.4e6);
+                    galactic = galacticModel(34e6);
+                    break;
+                case 6: // Duna
+                    /* Geologically dead, Duna's magnetic field is very weak - so that even at the
+                     * edge of its atmosphere, some direct solar radiation is observed.
+                     */
+                    vanAllen = vanAllenModel(200e3) * 0.04;
+                    solar = directSolarModel(200e3);
+                    galactic = galacticModel(800e3);
+                    break;
+                case 7: // Ike
+                    /* Ike actually has a tiny magnetic field, but it gives little protection and
+                     * produces no Van Allen belts to speak of. */
+                    vanAllen = 0.0;
+                    solar = (2.0 + directSolarModel(10e3)) / 3.0;
+                    galactic = 0.778 * (4.0 + galacticModel(60e3)) / 5.0;
+                    break;
+                case 8: // Jool
+                    /* Jool's van Allen belts are more than usually powerful thanks to the very high
+                     * electromagnetic activity of the gas giant.  Beware.
+                     */
+                    vanAllen = vanAllenModel(12e6) * 2.0;
+                    solar = directSolarModel(12e6) * 0.8 + galacticModel(50e6) * 0.2;
+                    galactic = galacticModel(1e9);
+                    break;
+                case 9: // Laythe
+                    /* Laythe is subjected to a considerable magnetic beating from Jool which produces
+                     * some radiation belts.  However Jool does also help to block out other radiation.
+                     */
+                    vanAllen = vanAllenModel(4e3) * 0.15;
+                    solar = directSolarModel(8e3) * 0.825;
+                    galactic = 0.0;
+                    break;
+                case 10: // Vall
+                    /* Vall has no magnetic field to speak of. */
+                    vanAllen = 0.0;
+                    solar = 0.857;
+                    galactic = 0.0;
+                    break;
+                case 11: // Bop
+                    /* The rocks of Bop are radioactive! */
+                    vanAllen = Math.Exp(-mVessel.altitude / 200e3) * 0.2;
+                    solar = 0.934;
+                    galactic = 0.000346;
+                    break;
+                case 12: // Tylo
+                    /* Another unmagnetic rock. */
+                    vanAllen = 0.0;
+                    solar = 0.893;
+                    galactic = 0.0;
+                    break;
+                case 13: // Gilly
+                    /* Some protection from cosmic rays, thanks to Eve's strong magnetosphere. */
+                    vanAllen = 0.0;
+                    solar = 1.0;
+                    galactic = 0.336;
+                    break;
+                case 14: // Pol
+                    /* No magnetic field. */
+                    vanAllen = 0.0;
+                    solar = 0.951;
+                    galactic = 0.00352;
+                    break;
+                case 15: // Dres
+                    /* Slight magnetic field, not much though */
+                    vanAllen = 0.0;
+                    solar = 0.8 + directSolarModel(10e3) * 0.2;
+                    galactic = 0.4 + galacticModel(150e3) * 0.6;
+                    break;
+                case 16: // Eeloo
+                    /* Currents of dissolved ions in Eeloo's icy mantle produce a magnetic field. */
+                    vanAllen = vanAllenModel(250e3) * 0.02;
+                    solar = directSolarModel(250e3);
+                    galactic = galacticModel(12e6);
+                    break;
+                default:
                     vanAllen = 0.0;
                     solar = 1.0;
                     galactic = 1.0;
                     break;
-                /*
-                kapparay: 0: Sun
-                kapparay: 1: Kerbin
-                kapparay: 2: Mun
-                kapparay: 3: Minmus
-                kapparay: 4: Moho
-                kapparay: 5: Eve
-                kapparay: 6: Duna
-                kapparay: 7: Ike
-                kapparay: 8: Jool
-                kapparay: 9: Laythe
-                kapparay: 10: Vall
-                kapparay: 11: Bop
-                kapparay: 12: Tylo
-                kapparay: 13: Gilly
-                kapparay: 14: Pol
-                kapparay: 15: Dres
-                kapparay: 16: Eeloo
-                */
             }
             Irradiate(vanAllen, RadiationSource.VanAllen);
             if (directSolar)
