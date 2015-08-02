@@ -4,7 +4,7 @@ using System.Text;
 namespace KPU.Modules
 {
     [KSPModule("KPU Sensor Reading")]
-    public class ModuleKpuSensor : PartModule
+    public class ModuleKpuSensor : PartModule, kapparay.IKappaRayHandler
     {
         // Checked for by InputValues in KPU.Processor
 
@@ -27,6 +27,19 @@ namespace KPU.Modules
         }}
 
         public bool isWorking;
+
+        public double errorBar;
+
+        // For kapparay.IKappaRayHandler
+        public int OnRadiation(double energy, int count)
+        {
+            if (kapparay.Core.Instance.mRandom.NextDouble() < Math.Log10(energy) / 8.0)
+            {
+                errorBar += count;
+                return 0;
+            }
+            return count;
+        }
 
         public void FixedUpdate()
         {

@@ -831,15 +831,25 @@ namespace KPU.Processor
                 return parentVessel != null && parentVessel.Parts.Any(p => p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>().Any(m => m.sensorType.Equals(name) && m.isWorking));
             }
         }
-        public double res { get {
-            double rv = Double.PositiveInfinity;
+        private KPU.Modules.ModuleKpuSensor chooseSensor { get {
+            KPU.Modules.ModuleKpuSensor chosen = null;
             foreach (Part p in parentVessel.Parts)
                 foreach(KPU.Modules.ModuleKpuSensor m in p.FindModulesImplementing<KPU.Modules.ModuleKpuSensor>())
                     if (m.sensorType.Equals(name) && m.isWorking)
-                        if (m.sensorRes < rv)
-                            rv = m.sensorRes;
-            return rv;
-            }}
+                        if (chosen == null || m.sensorRes < chosen.sensorRes)
+                            chosen = m;
+            return chosen;
+        }}
+        public double err { get {
+            KPU.Modules.ModuleKpuSensor s = chooseSensor;
+            if (s != null) return (mProc.mRandom.NextDouble() - 0.5) * s.errorBar * 2.0;
+            return 0;
+        }}
+        public double res { get {
+            KPU.Modules.ModuleKpuSensor s = chooseSensor;
+            if (s != null) return s.sensorRes;
+            return Double.PositiveInfinity;
+        }}
     }
 
     public class SensorDouble : SensorDriven
@@ -852,7 +862,8 @@ namespace KPU.Processor
             {
                 bool angle = (typ == Instruction.Type.ANGLE);
                 if (!available) return new Instruction.Value(Double.PositiveInfinity, angle);
-                return new Instruction.Value(Math.Round(raw / res) * res, angle);
+                double e = err * res;
+                return new Instruction.Value(Math.Round((raw + e) / res) * res, angle);
             }
         }
         public SensorDouble(Processor p) : base(p)
@@ -1521,6 +1532,8 @@ namespace KPU.Processor
         public List<bool> latchState = null;
         public List<TimerIO> timerState = null;
 
+        public System.Random mRandom;
+
         private Part mPart;
         public bool hasPower = false;
         private bool mIsRunning;
@@ -1586,6 +1599,7 @@ namespace KPU.Processor
 
         public Processor (Part part, Modules.ModuleKpuProcessor module)
         {
+            mRandom = new System.Random();
             mPart = part;
             hasLevelTrigger = module.hasLevelTrigger;
             hasLogicOps = module.hasLogicOps;
