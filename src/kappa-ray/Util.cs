@@ -24,6 +24,11 @@ namespace kapparay
             {
             }
         }
+        public static void Exception(Exception exc)
+        {
+            Log(exc.Message + '\n' + exc.StackTrace.ToString(), true);
+        }
+
         public static void Log(string message, bool msg=true)
         {
             string ut = "";

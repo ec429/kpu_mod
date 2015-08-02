@@ -91,11 +91,14 @@ namespace kapparay
     public class Core : MonoBehaviour
     {
         public static Core Instance { get; protected set; }
+        public static Vessel EmptyVessel;
 
         private Dictionary<Vessel,RadiationTracker> mVessels;
         private Dictionary<string,KerbalTracker> mKerbals;
         public SolarFlux mSolar;
         public System.Random mRandom;
+        private ApplicationLauncherButton mButton;
+        private UI.RosterWindow mRosterWindow;
 
         public Core()
         {
@@ -110,6 +113,94 @@ namespace kapparay
             mKerbals = new Dictionary<string, KerbalTracker>();
             mSolar = new SolarFlux();
             mRandom = new System.Random();
+            mRosterWindow = new UI.RosterWindow();
+            EmptyVessel = new Vessel();
+            EmptyVessel.vesselName = "Unassigned";
+        }
+
+        protected void Awake()
+        {
+            try
+            {
+                GameEvents.onGUIApplicationLauncherReady.Add(this.OnGuiAppLauncherReady);
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex);
+            }
+            Logging.Log("ActionMenu was created.", false);
+        }
+
+        protected void Start()
+        {
+            if (mButton == null)
+            {
+                OnGuiAppLauncherReady();
+            }
+        }
+
+        private void OnGUI()
+        {
+            Action windows = delegate { };
+            foreach (var window in UI.AbstractWindow.Windows.Values)
+            {
+                windows += window.Draw;
+            }
+            windows.Invoke();
+        }
+
+        private void OnGuiAppLauncherReady()
+        {
+            try
+            {
+                mButton = ApplicationLauncher.Instance.AddModApplication(
+                OnShow,
+                OnHide,
+                null,
+                null,
+                null,
+                null,
+                ApplicationLauncher.AppScenes.ALWAYS,
+                GameDatabase.Instance.GetTexture("kappa-ray/Textures/toolbar_icon", false));
+                GameEvents.onHideUI.Add(this.OnHide);
+                GameEvents.onShowUI.Add(this.OnShow);
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex);
+            }
+        }
+
+        private void OnHide()
+        {
+            mRosterWindow.Hide();
+        }
+
+        private void OnShow()
+        {
+            mRosterWindow.Show();
+        }
+
+        public Dictionary<Vessel,List<KerbalTracker>> TrackedKerbals()
+        {
+            Dictionary<Vessel,List<KerbalTracker>> rv = new Dictionary<Vessel, List<KerbalTracker>>();
+            rv.Add(EmptyVessel, new List<KerbalTracker>());
+            foreach(KerbalTracker kt in mKerbals.Values)
+            {
+                rv[EmptyVessel].Add(kt);
+            }
+            foreach(Vessel v in mVessels.Keys)
+            {
+                rv.Add(v, new List<KerbalTracker>());
+                foreach(ProtoCrewMember cm in v.GetVesselCrew())
+                {
+                    KerbalTracker kt = getKT(cm);
+                    if (rv[EmptyVessel].Contains(kt))
+                        rv[EmptyVessel].Remove(kt);
+                    rv[v].Add(kt);
+                }
+            }
+            return rv;
         }
 
         public RadiationTracker getRT(Vessel v)
@@ -196,6 +287,19 @@ namespace kapparay
 
         public void OnDestroy()
         {
+            try
+            {
+                GameEvents.onGUIApplicationLauncherReady.Remove(this.OnGuiAppLauncherReady);
+                if (mButton != null)
+                {
+                    ApplicationLauncher.Instance.RemoveModApplication(mButton);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.Exception(ex);
+            }
+            Logging.Log("ActionMenu was destroyed.", false);
             Instance = null;
         }
     }
