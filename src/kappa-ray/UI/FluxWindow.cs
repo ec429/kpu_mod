@@ -35,7 +35,10 @@ namespace kapparay.UI
         {
             GUILayout.BeginVertical();
             {
-                RadiationTracker rt = Core.Instance.getRT(FlightGlobals.ActiveVessel);
+                Vessel active = FlightGlobals.ActiveVessel;
+                if (active == null && PlanetariumCamera.fetch.target.type == MapObject.MapObjectType.VESSEL)
+                    active = PlanetariumCamera.fetch.target.vessel;
+                RadiationTracker rt = Core.Instance.getRT(active);
                 if (!object.ReferenceEquals(rt, null))
                 {
                     GUILayout.Label("Kappa-Ray Fluxes", mHeadingStyle);
