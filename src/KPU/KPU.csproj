@@ -31,15 +31,7 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux\KSP_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -49,8 +41,16 @@
       <HintPath>..\..\..\..\Downloads\KSP_linux_mods\Rt\GameData\RemoteTech\Plugins\RemoteTech.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux_kpu_102\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux_kpu_102\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="kappa-ray">
-      <HintPath>..\..\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
+      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_kk_102\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
