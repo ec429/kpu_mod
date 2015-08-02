@@ -45,6 +45,12 @@ namespace KPU.Processor
 
         public bool skip = false;
         public bool lastValue = false;
+        private bool mGlitched = false;
+
+        public void glitch()
+        {
+            mGlitched = true;
+        }
 
         public enum Tokens { TOK_COMMENT, TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
@@ -582,6 +588,8 @@ namespace KPU.Processor
                 {
                     Value cond = evalRecursive(n.mChildren[0], p);
                     assertType(n, "cond", Type.BOOLEAN, cond);
+                    if (mGlitched)
+                        cond = new Value(!cond.b);
                     if (cond.b && !lastValue)
                     {
                         Logging.Log("edge fired! " + mText);
@@ -603,6 +611,8 @@ namespace KPU.Processor
                 {
                     Value cond = evalRecursive(n.mChildren[0], p);
                     assertType(n, "cond", Type.BOOLEAN, cond);
+                    if (mGlitched)
+                        cond = new Value(!cond.b);
                     if (cond.b)
                     {
                         evalRecursive(n.mChildren[1], p);
@@ -685,6 +695,7 @@ namespace KPU.Processor
                     skip = true;
                 }
             }
+            mGlitched = false;
         }
 
         public void considerWakeup(Processor p)
@@ -1725,6 +1736,7 @@ namespace KPU.Processor
             {
                 if (kapparay.Core.Instance.mRandom.NextDouble() < count * Math.Log10(energy) / 4e3)
                 {
+                    Logging.Log(String.Format("SEU flipped latch {0}", i));
                     latchState[i] = !latchState[i];
                     count -= 1;
                     if (count == 0) return 0;
@@ -1735,7 +1747,8 @@ namespace KPU.Processor
             {
                 if (kapparay.Core.Instance.mRandom.NextDouble() < count * Math.Log10(energy) / 4e3)
                 {
-                    i.lastValue = !i.lastValue;
+                    Logging.Log("SEU glitched " + i.ToString());
+                    i.glitch();
                     count -= 1;
                     if (count == 0) return 0;
                 }

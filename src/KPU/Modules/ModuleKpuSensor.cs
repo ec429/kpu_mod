@@ -33,7 +33,7 @@ namespace KPU.Modules
         // For kapparay.IKappaRayHandler
         public int OnRadiation(double energy, int count)
         {
-            if (kapparay.Core.Instance.mRandom.NextDouble() < Math.Log10(energy) / 8.0)
+            if (kapparay.Core.Instance.mRandom.NextDouble() < Math.Log10(energy) / 4.0)
             {
                 errorBar += count;
                 return 0;
