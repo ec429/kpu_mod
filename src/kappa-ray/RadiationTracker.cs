@@ -8,11 +8,17 @@ namespace kapparay
     {
         private Vessel mVessel;
 
-        private ScreenMessage mV, mS, mG;
+        public double lastV, lastS, lastG;
+
+        public override string ToString()
+        {
+            return "RadiationTracker(" + mVessel.vesselName + ")";
+        }
 
         public RadiationTracker (Vessel v)
         {
             mVessel = v;
+            lastV = lastS = lastG = Double.NaN;
         }
 
         public enum RadiationSource { VanAllen, Solar, Galactic };
@@ -190,32 +196,18 @@ namespace kapparay
                     break;
             }
             Irradiate(vanAllen, RadiationSource.VanAllen);
+            lastV = vanAllen;
             if (directSolar)
             {
                 Irradiate(solar * solarFlux, RadiationSource.Solar);
+                lastS = solar * solarFlux;
             }
-            else if (mS != null)
+            else
             {
-                mS.message = String.Empty;
+                lastS = 0.0;
             }
             Irradiate(galactic * 0.05, RadiationSource.Galactic);
-            if (mVessel.isActiveVessel)
-            {
-                if (mV == null)
-                    mV = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                mV.message = String.Format("kray: Van Allen: {0:G3}", vanAllen);
-                ScreenMessages.PostScreenMessage(mV, true);
-                if (directSolar) {
-                    if (mS == null)
-                        mS = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                    mS.message = String.Format("kray: Solar: {0:G3}", solar * solarFlux);
-                    ScreenMessages.PostScreenMessage(mS, true);
-                }
-                if (mG == null)
-                    mG = new ScreenMessage(String.Empty, 4.0f, ScreenMessageStyle.UPPER_LEFT);
-                mG.message = String.Format("kray: Galactic: {0:G3}", galactic * 0.05);
-                ScreenMessages.PostScreenMessage(mG, true);
-            }
+            lastG = galactic * 0.05;
         }
 
         private Vector3 randomVector(float length)

@@ -98,6 +98,7 @@ namespace kapparay
         public SolarFlux mSolar;
         public System.Random mRandom;
         private ApplicationLauncherButton mButton;
+        private UI.FluxWindow mFluxWindow;
         private UI.RosterWindow mRosterWindow;
 
         public Core()
@@ -113,6 +114,7 @@ namespace kapparay
             mKerbals = new Dictionary<string, KerbalTracker>();
             mSolar = new SolarFlux();
             mRandom = new System.Random();
+            mFluxWindow = new UI.FluxWindow();
             mRosterWindow = new UI.RosterWindow();
             EmptyVessel = new Vessel();
             EmptyVessel.vesselName = "Unassigned";
@@ -141,6 +143,7 @@ namespace kapparay
 
         private void OnGUI()
         {
+            GUI.depth = 0;
             Action windows = delegate { };
             foreach (var window in UI.AbstractWindow.Windows.Values)
             {
@@ -154,16 +157,15 @@ namespace kapparay
             try
             {
                 mButton = ApplicationLauncher.Instance.AddModApplication(
-                OnShow,
-                OnHide,
+                OnChange,
+                OnChange,
                 null,
                 null,
                 null,
                 null,
                 ApplicationLauncher.AppScenes.ALWAYS,
                 GameDatabase.Instance.GetTexture("kappa-ray/Textures/toolbar_icon", false));
-                GameEvents.onHideUI.Add(this.OnHide);
-                GameEvents.onShowUI.Add(this.OnShow);
+                GameEvents.onGameSceneLoadRequested.Add(this.OnSceneChange);
             }
             catch (Exception ex)
             {
@@ -171,12 +173,21 @@ namespace kapparay
             }
         }
 
-        private void OnHide()
+        private void OnChange()
         {
-            mRosterWindow.Hide();
+            mFluxWindow.toggleWindow();
         }
 
-        private void OnShow()
+        private void OnSceneChange(GameScenes s)
+        {
+            if (s != GameScenes.FLIGHT)
+            {
+                mFluxWindow.Hide();
+                mRosterWindow.Hide();
+            }
+        }
+
+        public void ShowRoster()
         {
             mRosterWindow.Show();
         }

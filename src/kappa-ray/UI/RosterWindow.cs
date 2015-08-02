@@ -10,7 +10,7 @@ namespace kapparay.UI
         private GUIStyle mHeadingStyle, mKeyStyle, mValueStyle;
 
         public RosterWindow ()
-            : base(Guid.NewGuid(), "Kappa-Ray Roster", new Rect(100, 100, 515, 320), WindowAlign.Floating)
+            : base(Guid.NewGuid(), "Kappa-Ray Roster", new Rect(400, 100, 360, 320), WindowAlign.Floating)
         {
             mHeadingStyle = new GUIStyle(HighLogic.Skin.label)
             {
