@@ -39,7 +39,7 @@ namespace kapparay
         public double galacticModel(double altScale)
         {
             if (mVessel.altitude < 10) return 0;
-            return Math.Exp(-altScale / mVessel.altitude - mVessel.atmDensity);
+            return Math.Max(Math.Exp(-altScale / mVessel.altitude) - mVessel.atmDensity, 0.0);
         }
 
         public void Update()
