@@ -49,6 +49,10 @@
       <HintPath>..\..\..\..\Downloads\KSP_linux_mods\Rt\GameData\RemoteTech\Plugins\RemoteTech.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="kappa-ray">
+      <HintPath>..\..\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Modules\" />

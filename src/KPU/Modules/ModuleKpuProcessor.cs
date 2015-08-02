@@ -5,7 +5,7 @@ using UnityEngine;
 namespace KPU.Modules
 {
     [KSPModule("KPU Processor")]
-    public class ModuleKpuProcessor : PartModule, IDisposable
+    public class ModuleKpuProcessor : PartModule, IDisposable, kapparay.IKappaRayHandler
     {
         private Processor.Processor mProcessor = null;
 
@@ -169,6 +169,14 @@ namespace KPU.Modules
                 }
             }
             catch (Exception e) { Logging.Log(e.ToString()); };
+        }
+
+        // For kapparay.IKappaRayHandler
+        public int OnRadiation(double energy, int count)
+        {
+            if (mProcessor != null)
+                return mProcessor.OnRadiation(energy, count);
+            return count;
         }
 
         public override void OnUpdate()
