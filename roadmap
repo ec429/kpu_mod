@@ -23,7 +23,7 @@ Probodobodyne: Of *course* they have a computer division.
 
 PARTS (* = implemented with placeholder model, + = also has model)
 *Kelliot 4040 KPU.  This simple processor can be instructed to take actions on edge-triggered conditions of a single variable.
-Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays
+*Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays
 *Kelliot KE-7 KPU.  The incorporation of arithmetic and level-triggered actions allows a whole new kind of programming.
 Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
 Kerbolics Mk1 Eyeball.  A planetary IR sensor that only functions on the light side of the planet.
@@ -32,7 +32,7 @@ PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
 PB "Sirius" ST-5.  After several failed attempts, Probodobodyne finally improved on the Vega with this 30' Type I star tracker.
 Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
 Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
-KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
+*KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
 *PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
 Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!
 *Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
