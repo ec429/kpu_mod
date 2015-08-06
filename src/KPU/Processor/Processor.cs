@@ -1178,14 +1178,44 @@ namespace KPU.Processor
         private double mHdg = 0, mPitch = 0, mRoll = 0;
         public Instruction.Value value { get { return new Instruction.Value(mValue); } }
 
+        private List<Modules.ModuleKpuOrientation> oriSrc(Processor p)
+        {
+            return p.parentVessel.FindPartModulesImplementing<Modules.ModuleKpuOrientation>();
+        }
+
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
+            
             if (mValue.StartsWith("customHP"))
-                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch));
-            else if (mValue.StartsWith("customHPR"))
+            {
+                if (oriSrc(p).Any(m => m.customHP > 0))
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch));
+            }
+            else if (mValue.StartsWith("customHPR")) /* not plumbed in yet */
+            {
+                /* if (oriSrc(p).Any(m => m.customHPR)) */
                 FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch, mRoll));
-            else if (!mValue.Equals("none"))
-                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+            }
+            else if (mValue.Equals("srfPrograde") || mValue.Equals("srfRetrograde"))
+            {
+                if (oriSrc(p).Any(m => m.srfPrograde > 0))
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+            }
+            else if (mValue.Equals("orbPrograde") || mValue.Equals("orbRetrograde"))
+            {
+                if (oriSrc(p).Any(m => m.orbPrograde > 0))
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+            }
+            else if (mValue.Equals("srfVertical"))
+            {
+                if (oriSrc(p).Any(m => m.srfVertical > 0))
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+            }
+            else if (mValue.Equals("orbVertical"))
+            {
+                if (oriSrc(p).Any(m => m.orbVertical > 0))
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
+            }
         }
 
         public void clean()
