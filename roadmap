@@ -28,7 +28,7 @@ PARTS (* = implemented with placeholder model, + = also has model)
 Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
 *Kerbolics Mk1 Eyeball.  A planetary IR sensor that only functions on the light side of the planet or in darkness.
 KI "Spot" PIR.  Copes with sun angles down to 30°.
-PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
+*PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
 PB "Sirius" ST-5.  After several failed attempts, Probodobodyne finally improved on the Vega with this 30' Type I star tracker.
 Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
 Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
