@@ -15,6 +15,8 @@ namespace KPU.Modules
         [KSPField()]
         public string requireBody = "";
         [KSPField()]
+        public double sunDegrees = 0;
+        [KSPField()]
         public bool isActive = true;
 
         public bool isWorking;
@@ -70,6 +72,30 @@ namespace KPU.Modules
                 isWorking = false;
                 return;
             }
+            if (sunDegrees > 0)
+            {
+                if (!vessel.orbit.referenceBody.name.Equals("Sun") && vessel.directSunlight)
+                {
+                    // TODO figure out how to compute Sun angle...
+                    /*Vector3d toParent = vessel.orbit.pos;
+                    Vector3d parentToSun = Vector3d.zero;
+                    CelestialBody currBody = vessel.orbit.referenceBody;
+                    while (!currBody.orbit.referenceBody.name.Equals("Sun"))
+                    {
+                        // something something co-ordinate transforms
+                        parentToSun += currBody.orbit.pos;
+                        currBody = currBody.orbit.referenceBody;
+                    }
+                    // Something something dot/cross product something atan
+                    if (sunAngle < sunDegrees)
+                    {
+                        GUI_status = "Blinded by sunlight";
+                        isWorking = false;
+                        return;
+                    }
+                    */
+                }
+            }
             isWorking = true;
             GUI_status = "OK";
         }
@@ -82,6 +108,8 @@ namespace KPU.Modules
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
+            if (sunDegrees > 0)
+                info.AppendFormat("Min. angle to Sun: {0}", sunDegrees).AppendLine();
             if (electricRate > 0)
                 info.AppendFormat("Energy req.: {0:F} charge/s", electricRate).AppendLine();
 

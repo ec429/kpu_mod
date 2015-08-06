@@ -18,6 +18,8 @@ namespace KPU.Modules
         public double maxAltitude = 0;
         [KSPField()]
         public string requireBody = "";
+        [KSPField()]
+        public double sunDegrees = 0;
 
         [KSPField(guiName = "Status", guiActive = true)]
         public string GUI_status = "Inactive";
@@ -81,6 +83,8 @@ namespace KPU.Modules
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
+            if (sunDegrees > 0)
+                info.AppendFormat("Min. angle to Sun: {0}", sunDegrees).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

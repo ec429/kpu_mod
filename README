@@ -69,19 +69,17 @@ The major part category added is the Processor, which runs the program.  The
 There are four Processor parts planned, though only two have been implemented
  so far.  The Kelliot 4040 is a simple edge-triggered processor that can only
  handle simple conditions, and only has 16 words of IMEM.  The Kelliot 8080
- (not implemented) adds logical operators (AND, OR) allowing more complex
- programs, along with 64 words of IMEM.  The Kelliot KE-7 supports the full
- language including arithmetic operators and level-triggered actions, and
- stores up to 256 words of IMEM, but requires a lot of ElectricCharge (1.5
- charge/s) to operate.  The Kerbolics LITHP-M (not implemented) is far more
- efficient, needing just 0.25 charge/s, with a colossal 65,536 words of IMEM.
+ adds logical operators (AND, OR) allowing more complex programs, along with
+ 64 words of IMEM.  The Kelliot KE-7 supports the full language including
+ arithmetic operators and level-triggered actions, and stores up to 256 words
+ of IMEM, but requires a lot of ElectricCharge (1.5 charge/s) to operate.  The
+ Kerbolics LITHP-M (not implemented) is far more efficient, needing just 0.25
+ charge/s, with a colossal 65,536 words of IMEM.
 The other type of part in this mod is the Sensor.  A program isn't much use
  without inputs to drive it, and KPU has plenty of inputs.
 Most of the sensors have to do with letting the probe work out its position,
  velocity and orientation.  There are several combinations of sensors which
- will allow this, but most of them haven't been implemented yet.  In
- particular, orientation is currently "for free", whereas the plan is to have
- several sensor choices, some of which give more information than others.  For
+ will allow this, some of which give more information than others.  For
  example, the FS-RA Doppler radioaltimeter, which also measures srfHeight,
  srfSpeed and srfVerticalSpeed, will allow orienting to Surface Prograde or
  Retrograde as well as Vertical, whereas star trackers / stellar compasses
@@ -95,8 +93,7 @@ Most of the sensors have to do with letting the probe work out its position,
  enough to Kerbin to triangulate radio signals from around the globe; it will
  function up to 300km altitude.  The later LORAN sensor will do the same out
  to 3Mm - notably, this is sufficient for keostationary orbit.
- Of these sensors, only the FS-RA radioaltimeter and the KNS / LORAN position
- systems have been implemented.
+ Only some of these sensors have been implemented (see 'roadmap' for details).
 There are also sensors for localGravity (using the stock Gravioli Detector)
  and gear landing sensors which detect when the vessel has touched down
  (currently only supported for stock landing legs and wheeled landing gear,
