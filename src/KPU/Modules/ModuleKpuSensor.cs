@@ -84,7 +84,7 @@ namespace KPU.Modules
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
             if (sunDegrees > 0)
-                info.AppendFormat("Min. angle to Sun: {0}", sunDegrees).AppendLine();
+                info.AppendFormat("Min. angle to Sun: {0}°", sunDegrees).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

@@ -1517,7 +1517,6 @@ namespace KPU.Processor
     public class TimerIO : IInputData, IOutputData
     {
         private int mIndex;
-        private Processor mProcessor;
         public string name { get { return string.Format("timer{0:D}", mIndex); } }
         public string unit { get { return "s"; } }
         public double res = 0.2;
@@ -1541,7 +1540,7 @@ namespace KPU.Processor
                 return new Instruction.Value(Math.Round(runTime / res) * res);
             }
         }
-        public void clean() { mProcessor.latchState[mIndex] = false; }
+        public void clean() { startTime = -1.0; }
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
         }
@@ -1560,7 +1559,6 @@ namespace KPU.Processor
         }
         public TimerIO(Processor p, int index)
         {
-            mProcessor = p;
             mIndex = index;
         }
     }
