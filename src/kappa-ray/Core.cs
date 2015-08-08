@@ -245,8 +245,11 @@ namespace kapparay
             mKerbals.Remove(kt.name);
         }
 
+        private double lastUpdate = 0;
+
         public void Update()
         {
+            double t = Planetarium.GetUniversalTime();
             mSolar.Update();
             foreach(Vessel v in FlightGlobals.Vessels) // ensure every vessel has a RadiationTracker
             {
@@ -254,13 +257,14 @@ namespace kapparay
             }
             foreach(RadiationTracker rt in mVessels.Values)
             {
-                rt.Update();
+                rt.Update(t - lastUpdate);
             }
             foreach(KerbalTracker kt in mKerbals.Values)
             {
                 if (kt.Update())
                     ForgetKerbal(kt);
             }
+            lastUpdate = t;
         }
 
         public void Save(ConfigNode node)

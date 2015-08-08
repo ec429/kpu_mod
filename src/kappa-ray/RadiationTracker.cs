@@ -48,7 +48,7 @@ namespace kapparay
             return Math.Max(Math.Exp(-altScale / mVessel.altitude) - mVessel.atmDensity, 0.0);
         }
 
-        public void Update()
+        public void Update(double dT)
         {
             if (FlightDriver.Pause) return;
             if (!mVessel.isActiveVessel) return; /* Can't figure out how to handle background vessels reliably */
@@ -195,18 +195,18 @@ namespace kapparay
                     galactic = 1.0;
                     break;
             }
-            Irradiate(vanAllen, RadiationSource.VanAllen);
+            Irradiate(vanAllen * dT * 50.0, RadiationSource.VanAllen);
             lastV = vanAllen;
             if (directSolar)
             {
-                Irradiate(solar * solarFlux, RadiationSource.Solar);
+                Irradiate(solar * solarFlux * dT * 50.0, RadiationSource.Solar);
                 lastS = solar * solarFlux;
             }
             else
             {
                 lastS = 0.0;
             }
-            Irradiate(galactic * 0.05, RadiationSource.Galactic);
+            Irradiate(galactic * 0.05 * dT * 50.0, RadiationSource.Galactic);
             lastG = galactic * 0.05;
         }
 
@@ -230,7 +230,6 @@ namespace kapparay
 
         public void Irradiate(double strength, RadiationSource source)
         {
-            strength *= TimeWarp.CurrentRate;
             int count = 1;
             if (strength >= 0.1)
                 count = (int)Math.Ceiling(Core.Instance.mRandom.NextDouble() * 10.0 * strength);
