@@ -21,13 +21,13 @@ namespace kapparay.UI
             {
                 fontStyle = FontStyle.Bold,
                 fontSize = 12,
-                fixedWidth = 100,
+                fixedWidth = 80,
             };
             mValueStyle = new GUIStyle(HighLogic.Skin.label)
             {
                 fontStyle = FontStyle.Normal,
                 fontSize = 12,
-                stretchWidth = true,
+                fixedWidth = 60,
             };
         }
 
