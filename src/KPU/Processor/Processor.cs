@@ -910,7 +910,7 @@ namespace KPU.Processor
         {
             get
             {
-                return parentVessel.altitude - parentVessel.terrainAltitude;
+                return parentVessel.altitude - Math.Max(parentVessel.terrainAltitude, 0.0);
             }
         }
 
