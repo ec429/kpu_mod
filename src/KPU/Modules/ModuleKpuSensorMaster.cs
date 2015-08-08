@@ -4,7 +4,7 @@ using System.Text;
 namespace KPU.Modules
 {
     [KSPModule("KPU Sensor")]
-    public class ModuleKpuSensorMaster : PartModule
+    public class ModuleKpuSensorMaster : PartModule, kapparay.IKappaRayHandler
     {
         // Checked for by InputValues in KPU.Processor
 
@@ -18,6 +18,19 @@ namespace KPU.Modules
         public double sunDegrees = 0;
         [KSPField()]
         public bool isActive = true;
+
+        public double errorBar;
+
+        // For kapparay.IKappaRayHandler
+        public int OnRadiation(double energy, int count)
+        {
+            if (kapparay.Core.Instance.mRandom.NextDouble() < Math.Log10(energy) / 4.0)
+            {
+                errorBar += count * 12.0;
+                return 0;
+            }
+            return count;
+        }
 
         public bool isWorking;
         public string GUI_status;
@@ -38,6 +51,11 @@ namespace KPU.Modules
         public override void OnStart(StartState state)
         {
             setActive();
+        }
+
+        public void Update()
+        {
+            errorBar *= 0.995;
         }
 
         public void FixedUpdate()
