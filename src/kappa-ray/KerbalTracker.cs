@@ -30,6 +30,11 @@ namespace kapparay
 
         public bool Update()
         {
+            if (Object.ReferenceEquals(cm, null)) // causes include death, firing or completed tourist itinerary
+            {
+                Logging.Log(String.Format("Forgetting {0}, no longer on roster", name));
+                return true;
+            }
             if (Planetarium.GetUniversalTime() > mCancerTime)
             {
                 Logging.Message(String.Format("Bad news!  {0} has died of cancer.", name));
