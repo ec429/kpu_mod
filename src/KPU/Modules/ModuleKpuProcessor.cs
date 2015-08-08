@@ -172,10 +172,10 @@ namespace KPU.Modules
         }
 
         // For kapparay.IKappaRayHandler
-        public int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count, System.Random random)
         {
             if (mProcessor != null)
-                return mProcessor.OnRadiation(energy, count);
+                return mProcessor.OnRadiation(energy, count, random);
             return count;
         }
 

@@ -4,6 +4,6 @@ namespace kapparay
 {
     public interface IKappaRayHandler
     {
-        int OnRadiation(double energy, int count);
+        int OnRadiation(double energy, int count, System.Random random);
     }
 }

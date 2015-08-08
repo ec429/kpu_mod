@@ -19,7 +19,7 @@ namespace kapparay.Modules
             return absorbs;
         }
 
-        public int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count, System.Random random)
         {
             int absorbs = absorbCount(count, absorpCoeff);
             #if QUITEDEBUG

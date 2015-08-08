@@ -22,10 +22,10 @@ using System.Runtime.InteropServices;
 // Don't include the patch revision in the AssemblyVersion - as this will break any dependent
 // DLLs any time it changes.  Breaking on a minor revision is probably acceptable - it's
 // unlikely that there wouldn't be other breaking changes on a minor version change.
-[assembly: AssemblyVersion("0.1")]
-[assembly: AssemblyFileVersion("0.1.0")]
+[assembly: AssemblyVersion("0.2")]
+[assembly: AssemblyFileVersion("0.2.0")]
 
 // Use KSPAssembly to allow other DLLs to make this DLL a dependency in a
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it
 // does not appear to have a hard requirement to match the assembly version.
-[assembly: KSPAssembly("kappa-ray", 0, 1)]
+[assembly: KSPAssembly("kappa-ray", 0, 2)]

@@ -22,9 +22,9 @@ namespace KPU.Modules
         public double errorBar;
 
         // For kapparay.IKappaRayHandler
-        public int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count, System.Random random)
         {
-            if (kapparay.Core.Instance.mRandom.NextDouble() < Math.Log10(energy) / 4.0)
+            if (random.NextDouble() < Math.Log10(energy) / 4.0)
             {
                 errorBar += count * 12.0;
                 return 0;

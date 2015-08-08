@@ -290,7 +290,7 @@ namespace kapparay
                     {
                         hasModule = true;
                         if (count == 0) break;
-                        count = h.OnRadiation(energy, count);
+                        count = h.OnRadiation(energy, count, Core.Instance.mRandom);
                     }
                     if (count > 0 && !hasModule)
                     {

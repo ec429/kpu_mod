@@ -8,12 +8,12 @@ namespace kapparay
         [KSPField()]
         public float initChargeRate;
 
-        public int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count, System.Random random)
         {
             #if QUITEDEBUG
             Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}", part.partInfo.title, count, energy), false);
             #endif
-            if (Core.Instance.mRandom.NextDouble() < Math.Exp(-50.0/energy))
+            if (random.NextDouble() < Math.Exp(-50.0/energy))
             {
                 if (initChargeRate < chargeRate)
                     initChargeRate = chargeRate;

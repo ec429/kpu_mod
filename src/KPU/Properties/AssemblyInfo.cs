@@ -43,5 +43,5 @@ using System.Runtime.InteropServices;
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it
 // does not appear to have a hard requirement to match the assembly version.
 [assembly: KSPAssembly("KPU", 0, 0)]
-[assembly: KSPAssemblyDependency("kappa-ray", 0, 1)]
+[assembly: KSPAssemblyDependency("kappa-ray", 0, 2)]
 [assembly: KSPAssemblyDependency("RemoteTech", 1, 6)]

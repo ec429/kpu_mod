@@ -1757,12 +1757,12 @@ namespace KPU.Processor
         public Dictionary<string, Instruction.Value> inputValues;
 
         // For kapparay.  Radiation can trigger various kinds of glitches
-        public int OnRadiation(double energy, int count)
+        public int OnRadiation(double energy, int count, System.Random random)
         {
             /* Chance to flip latches */
             for (int i = 0; i < latches; i++)
             {
-                if (kapparay.Core.Instance.mRandom.NextDouble() < count * Math.Log10(energy) / 4e3)
+                if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
                 {
                     Logging.Log(String.Format("SEU flipped latch {0}", i));
                     latchState[i] = !latchState[i];
@@ -1773,7 +1773,7 @@ namespace KPU.Processor
             /* Chance to produce spurious edges */
             foreach (Instruction i in instructions)
             {
-                if (kapparay.Core.Instance.mRandom.NextDouble() < count * Math.Log10(energy) / 4e3)
+                if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
                 {
                     Logging.Log("SEU glitched " + i.ToString());
                     i.glitch();
