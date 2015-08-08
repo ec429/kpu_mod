@@ -52,7 +52,7 @@ namespace kapparay
         {
             if (FlightDriver.Pause) return;
             if (!mVessel.isActiveVessel) return; /* Can't figure out how to handle background vessels reliably */
-            double solarFlux = Core.Instance.mSolar.flux * mVessel.solarFlux / 1400.0; // scale solarFlux to kerbin==1
+            double solarFlux = Core.Instance.mSolar.flux * mVessel.solarFlux / 1360.0; // scale solarFlux to kerbin==1
             bool directSolar = mVessel.directSunlight;
             CelestialBody planetID = mVessel.mainBody;
             double vanAllen, solar, galactic;
