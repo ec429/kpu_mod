@@ -21,7 +21,7 @@ namespace kapparay
         public string name;
         private double mCancerTime = Double.PositiveInfinity;
         public bool hasCancer { get { return !Double.IsPositiveInfinity(mCancerTime); } }
-        public double lifetimeDose = 0;
+        public double softDose = 0, hardDose = 0;
 
         public KerbalTracker(string n)
         {
@@ -49,15 +49,20 @@ namespace kapparay
             node.AddValue("name", name);
             if (hasCancer)
                 node.AddValue("cancerTime", mCancerTime);
-            node.AddValue("lifetimeDose", lifetimeDose);
+            node.AddValue("softDose", softDose);
+            node.AddValue("hardDose", hardDose);
         }
 
         public void OnLoad(ConfigNode node)
         {
             if (node.HasValue("cancerTime"))
                 Double.TryParse(node.GetValue("cancerTime"), out mCancerTime);
-            if (node.HasValue("lifetimeDose"))
-                Double.TryParse(node.GetValue("lifetimeDose"), out lifetimeDose);
+            if (node.HasValue("lifetimeDose")) // For compatibility with older saves
+                Double.TryParse(node.GetValue("lifetimeDose"), out softDose);
+            if (node.HasValue("softDose"))
+                Double.TryParse(node.GetValue("softDose"), out softDose);
+            if (node.HasValue("hardDose"))
+                Double.TryParse(node.GetValue("hardDose"), out softDose);
         }
 
         public int OnRadiation(double energy, int count)
@@ -68,7 +73,7 @@ namespace kapparay
             double pCancer = (1.0 - Math.Pow(energy / 400 - 1.25, 2.0)) * 1e-4;
             if (pDeadly > 0)
             {
-                lifetimeDose += count * pDeadly;
+                hardDose += count * pDeadly;
                 if (Core.Instance.mRandom.NextDouble() > Math.Pow(1.0 - pDeadly, count))
                 {
                     Logging.Message(String.Format("Terrible news!  {0} has died of radiation sickness!", name));
@@ -79,7 +84,7 @@ namespace kapparay
             }
             if (pCancer > 0)
             {
-                lifetimeDose += count * pCancer;
+                softDose += count * pCancer;
                 if (Core.Instance.mRandom.NextDouble() > Math.Pow(1.0 - pCancer, count))
                 {
                     double nCancerTime = Planetarium.GetUniversalTime() + 6 * 3600 * (100.0 + Core.Instance.mRandom.NextDouble() * 1000.0);
