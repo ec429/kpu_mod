@@ -51,7 +51,7 @@ namespace kapparay.UI
                             GUILayout.Label(kt.name, mKeyStyle, GUILayout.Width(140));
                             if (kt.hasCancer)
                                 GUILayout.Label("Cancer!", mValueStyle);
-                            GUILayout.Label(String.Format("Dose {0:F3}, {0:F3}", kt.softDose, kt.hardDose), mValueStyle);
+                            GUILayout.Label(String.Format("Dose {0:F3}, {1:F3}", kt.softDose, kt.hardDose), mValueStyle);
                             GUILayout.EndHorizontal();
                         }
                     }
