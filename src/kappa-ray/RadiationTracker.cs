@@ -1,6 +1,4 @@
-﻿#define QUITEDEBUG
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -306,7 +304,7 @@ namespace kapparay
                     }
 
                     if (count < oldCount)
-                        p.AddThermalFlux((oldCount - count) * energy / 1e3);
+                        p.AddThermalFlux((oldCount - count) * energy / 1e3 / TimeWarp.fixedDeltaTime);
                 }
             }
         }
