@@ -9,16 +9,26 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
+		DebugKappa|x86 = DebugKappa|x86
+		WithKappa|x86 = WithKappa|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.Debug|x86.ActiveCfg = Debug|x86
 		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.Debug|x86.Build.0 = Debug|x86
+		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.DebugKappa|x86.ActiveCfg = DebugKappa|x86
+		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.DebugKappa|x86.Build.0 = DebugKappa|x86
 		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.Release|x86.ActiveCfg = Release|x86
 		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.Release|x86.Build.0 = Release|x86
+		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.WithKappa|x86.ActiveCfg = WithKappa|x86
+		{1DFC5EB1-23F9-4425-A6CC-D4876703DBB8}.WithKappa|x86.Build.0 = WithKappa|x86
 		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.DebugKappa|x86.ActiveCfg = Debug|Any CPU
+		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.DebugKappa|x86.Build.0 = Debug|Any CPU
 		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.Release|x86.ActiveCfg = Release|Any CPU
 		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.Release|x86.Build.0 = Release|Any CPU
+		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.WithKappa|x86.ActiveCfg = Release|Any CPU
+		{F7894725-DC82-41A6-A32D-7BD5FAD776EB}.WithKappa|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		BaseDirectory = ..

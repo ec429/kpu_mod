@@ -4,7 +4,10 @@ using System.Text;
 namespace KPU.Modules
 {
     [KSPModule("KPU Sensor")]
-    public class ModuleKpuSensorMaster : PartModule, kapparay.IKappaRayHandler
+    public class ModuleKpuSensorMaster : PartModule
+#if WITH_KAPPA_RAYS
+    , kapparay.IKappaRayHandler
+#endif
     {
         // Checked for by InputValues in KPU.Processor
 

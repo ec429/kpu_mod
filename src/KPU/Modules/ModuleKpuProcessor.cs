@@ -5,7 +5,10 @@ using UnityEngine;
 namespace KPU.Modules
 {
     [KSPModule("KPU Processor")]
-    public class ModuleKpuProcessor : PartModule, IDisposable, kapparay.IKappaRayHandler
+    public class ModuleKpuProcessor : PartModule, IDisposable
+#if WITH_KAPPA_RAYS
+    , kapparay.IKappaRayHandler
+#endif
     {
         private Processor.Processor mProcessor = null;
 
