@@ -56,6 +56,9 @@ namespace kapparay.UI
                 }
                 if (GUILayout.Button("Show Roster"))
                     Core.Instance.ShowRoster();
+                string ableMsg = Core.Instance.radiationEnabled ? "Disable k-ray" : "Enable k-ray";
+                if (GUILayout.Button(ableMsg))
+                    Core.Instance.radiationEnabled = !Core.Instance.radiationEnabled;
             }
             GUILayout.EndVertical();
             base.Window(id);

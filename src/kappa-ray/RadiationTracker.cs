@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define QUITEDEBUG
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 

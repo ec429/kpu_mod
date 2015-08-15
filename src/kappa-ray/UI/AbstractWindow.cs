@@ -91,7 +91,14 @@ namespace kapparay.UI
 
         private void WindowPre(int uid)
         {
-            Window(uid);
+            try
+            {
+                Window(uid);
+            }
+            catch (Exception exc)
+            {
+                Logging.Exception(exc);
+            }
         }
 
         public virtual void Window(int uid)

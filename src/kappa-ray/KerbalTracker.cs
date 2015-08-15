@@ -57,8 +57,6 @@ namespace kapparay
         {
             if (node.HasValue("cancerTime"))
                 Double.TryParse(node.GetValue("cancerTime"), out mCancerTime);
-            if (node.HasValue("lifetimeDose")) // For compatibility with older saves
-                Double.TryParse(node.GetValue("lifetimeDose"), out softDose);
             if (node.HasValue("softDose"))
                 Double.TryParse(node.GetValue("softDose"), out softDose);
             if (node.HasValue("hardDose"))

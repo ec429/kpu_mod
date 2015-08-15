@@ -93,6 +93,8 @@ namespace kapparay
         public static Core Instance { get; protected set; }
         public static Vessel EmptyVessel;
 
+        public bool radiationEnabled = true;
+
         private Dictionary<Vessel,RadiationTracker> mVessels;
         private Dictionary<string,KerbalTracker> mKerbals;
         public SolarFlux mSolar;
@@ -251,24 +253,29 @@ namespace kapparay
         {
             double t = Planetarium.GetUniversalTime();
             mSolar.Update();
-            foreach(Vessel v in FlightGlobals.Vessels) // ensure every vessel has a RadiationTracker
+            if (radiationEnabled)
             {
-                getRT(v);
+                foreach(Vessel v in FlightGlobals.Vessels) // ensure every vessel has a RadiationTracker
+                {
+                    getRT(v);
+                }
+                foreach(RadiationTracker rt in mVessels.Values)
+                {
+                    rt.Update(t - lastUpdate);
+                }
+                List<KerbalTracker> kerbals = new List<KerbalTracker>(mKerbals.Values);
+                foreach(KerbalTracker kt in kerbals)
+                {
+                    if (kt.Update())
+                        ForgetKerbal(kt);
+                }
+                lastUpdate = t;
             }
-            foreach(RadiationTracker rt in mVessels.Values)
-            {
-                rt.Update(t - lastUpdate);
-            }
-            foreach(KerbalTracker kt in mKerbals.Values)
-            {
-                if (kt.Update())
-                    ForgetKerbal(kt);
-            }
-            lastUpdate = t;
         }
 
         public void Save(ConfigNode node)
         {
+            node.AddValue("radiationEnabled", radiationEnabled);
             ConfigNode solarNode = new ConfigNode("solar");
             mSolar.OnSave(solarNode);
             node.AddNode(solarNode);
@@ -282,6 +289,9 @@ namespace kapparay
 
         public void Load(ConfigNode node)
         {
+            radiationEnabled = true;
+            if (node.HasValue("radiationEnabled"))
+                Boolean.TryParse(node.GetValue("radiationEnabled"), out radiationEnabled);
             ConfigNode solarNode = node.GetNode("solar");
             if (solarNode != null)
                 mSolar.OnLoad(solarNode);
