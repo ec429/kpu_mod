@@ -38,19 +38,19 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="RemoteTech">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\Rt\GameData\RemoteTech\Plugins\RemoteTech.dll</HintPath>
+      <HintPath>..\lib\RemoteTech.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux_kpu_102\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_linux_kpu_102\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\lib\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="kappa-ray">
-      <HintPath>..\..\..\..\Downloads\KSP_linux_mods\KSP_kk_102\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
+      <HintPath>..\..\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
