@@ -269,8 +269,8 @@ namespace kapparay
                     if (kt.Update())
                         ForgetKerbal(kt);
                 }
-                lastUpdate = t;
             }
+            lastUpdate = t;
         }
 
         public void Save(ConfigNode node)
