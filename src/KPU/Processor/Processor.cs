@@ -1770,15 +1770,18 @@ namespace KPU.Processor
                     if (count == 0) return 0;
                 }
             }
-            /* Chance to produce spurious edges */
-            foreach (Instruction i in instructions)
+            if (isRunning)
             {
-                if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
+                /* Chance to produce spurious edges */
+                foreach (Instruction i in instructions)
                 {
-                    Logging.Log("SEU glitched " + i.ToString());
-                    i.glitch();
-                    count -= 1;
-                    if (count == 0) return 0;
+                    if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
+                    {
+                        Logging.Log("SEU glitched " + i.ToString());
+                        i.glitch();
+                        count -= 1;
+                        if (count == 0) return 0;
+                    }
                 }
             }
             return count;
