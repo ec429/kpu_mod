@@ -302,9 +302,14 @@ namespace kapparay
                 if (ktNode.HasValue("name"))
                 {
                     string name = ktNode.GetValue("name");
+                    Logging.Log("Loading " + name);
                     KerbalTracker kt = new KerbalTracker(name);
                     kt.OnLoad(ktNode);
                     mKerbals.Add(name, kt);
+                }
+                else
+                {
+                    Logging.Log(String.Format("No name found in kerbalTracker {0}", ktNode.ToString()));
                 }
             }
             Logging.Log("KappaRay Core loaded successfully.");

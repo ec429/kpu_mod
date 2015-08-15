@@ -60,7 +60,7 @@ namespace kapparay
             if (node.HasValue("softDose"))
                 Double.TryParse(node.GetValue("softDose"), out softDose);
             if (node.HasValue("hardDose"))
-                Double.TryParse(node.GetValue("hardDose"), out softDose);
+                Double.TryParse(node.GetValue("hardDose"), out hardDose);
         }
 
         public int OnRadiation(double energy, int count)
