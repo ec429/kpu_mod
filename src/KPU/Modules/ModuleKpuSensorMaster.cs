@@ -97,24 +97,14 @@ namespace KPU.Modules
             {
                 if (!vessel.orbit.referenceBody.name.Equals("Sun") && vessel.directSunlight)
                 {
-                    // TODO figure out how to compute Sun angle...
-                    /*Vector3d toParent = vessel.orbit.pos;
-                    Vector3d parentToSun = Vector3d.zero;
-                    CelestialBody currBody = vessel.orbit.referenceBody;
-                    while (!currBody.orbit.referenceBody.name.Equals("Sun"))
-                    {
-                        // something something co-ordinate transforms
-                        parentToSun += currBody.orbit.pos;
-                        currBody = currBody.orbit.referenceBody;
-                    }
-                    // Something something dot/cross product something atan
+                    Vector3d sun = -FlightGlobals.Bodies[0].position.xzy, toParent = vessel.orbit.pos;
+                    double sunAngle = Vector3d.Angle(sun, toParent);
                     if (sunAngle < sunDegrees)
                     {
                         GUI_status = "Blinded by sunlight";
                         isWorking = false;
                         return;
                     }
-                    */
                 }
             }
             isWorking = true;
