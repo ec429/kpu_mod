@@ -1178,42 +1178,55 @@ namespace KPU.Processor
         private double mHdg = 0, mPitch = 0, mRoll = 0;
         public Instruction.Value value { get { return new Instruction.Value(mValue); } }
 
-        private List<Modules.ModuleKpuOrientation> oriSrc(Processor p)
+        private List<Modules.ModuleKpuOrientation> oriSrc(Processor p, Predicate<Modules.ModuleKpuOrientation> t)
         {
-            return p.parentVessel.FindPartModulesImplementing<Modules.ModuleKpuOrientation>();
+            return p.parentVessel.FindPartModulesImplementing<Modules.ModuleKpuOrientation>().FindAll(m => m.isWorking && t(m));
+        }
+
+        private double round(double val, double res)
+        {
+            return Math.Round(val / res) * res;
         }
 
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
-            
             if (mValue.StartsWith("customHP"))
             {
-                if (oriSrc(p).Any(m => m.customHP > 0 && m.isWorking))
-                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch));
+                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHP > 0);
+                if (srcs.Count > 0)
+                {
+                    double res = srcs.Min(m => m.resolution);
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(round(mHdg, res), round(mPitch, res)));
+                }
             }
-            else if (mValue.StartsWith("customHPR")) /* not plumbed in yet */
+            else if (mValue.StartsWith("customHPR"))
             {
-                /* if (oriSrc(p).Any(m => m.customHPR > 0 && m.isWorking)) */
-                FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mHdg, mPitch, mRoll));
+                
+                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR > 0);
+                if (srcs.Count > 0)
+                {
+                    double res = srcs.Min(m => m.resolution);
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(round(mHdg, res), round(mPitch, res), round(mRoll, res)));
+                }
             }
             else if (mValue.Equals("srfPrograde") || mValue.Equals("srfRetrograde"))
             {
-                if (oriSrc(p).Any(m => m.srfPrograde > 0 && m.isWorking))
+                if (oriSrc(p, m => m.srfPrograde > 0).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("orbPrograde") || mValue.Equals("orbRetrograde"))
             {
-                if (oriSrc(p).Any(m => m.orbPrograde > 0 && m.isWorking))
+                if (oriSrc(p, m => m.orbPrograde > 0).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("srfVertical"))
             {
-                if (oriSrc(p).Any(m => m.srfVertical > 0 && m.isWorking))
+                if (oriSrc(p, m => m.srfVertical > 0).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("orbVertical"))
             {
-                if (oriSrc(p).Any(m => m.orbVertical > 0 && m.isWorking))
+                if (oriSrc(p, m => m.orbVertical > 0).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
         }

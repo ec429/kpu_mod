@@ -17,7 +17,9 @@ namespace KPU.Modules
         [KSPField()]
         public int customHP;
         [KSPField()]
-        public double resolution = 1; // not currently used
+        public int customHPR; // don't use; currently broken
+        [KSPField()]
+        public double resolution = 1;
         [KSPField()]
         public double maxAltitude = 0;
         [KSPField()]
@@ -57,6 +59,20 @@ namespace KPU.Modules
                 isWorking = false;
                 return;
             }
+            if (sunDegrees > 0)
+            {
+                if (!vessel.orbit.referenceBody.name.Equals("Sun") && vessel.directSunlight)
+                {
+                    Vector3d sun = -FlightGlobals.Bodies[0].position.xzy, toParent = vessel.orbit.pos;
+                    double sunAngle = Vector3d.Angle(sun, toParent);
+                    if (sunAngle < sunDegrees)
+                    {
+                        GUI_status = "Blinded by sunlight";
+                        isWorking = false;
+                        return;
+                    }
+                }
+            }
             isWorking = true;
             GUI_status = "OK";
         }
@@ -76,14 +92,16 @@ namespace KPU.Modules
                 info.AppendLine("Gives orbPrograde, orbRetrograde");
             if (customHP > 0)
                 info.AppendLine("Gives customHP");
+            if (customHPR > 0)
+                info.AppendLine("Gives customHPR");
             if (resolution > 0)
-                info.AppendFormat("Resolution: {0:G}°", resolution).AppendLine();
+                info.AppendFormat("Resolution: {0}", Util.formatAngle(resolution)).AppendLine();
             if (maxAltitude > 0)
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
             if (sunDegrees > 0)
-                info.AppendFormat("Min. angle to Sun: {0}°", sunDegrees).AppendLine();
+                info.AppendFormat("Min. angle to Sun: {0}", Util.formatAngle(sunDegrees)).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

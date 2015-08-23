@@ -56,6 +56,20 @@ namespace KPU.Modules
                 isWorking = false;
                 return;
             }
+            if (sunDegrees > 0)
+            {
+                if (!vessel.orbit.referenceBody.name.Equals("Sun") && vessel.directSunlight)
+                {
+                    Vector3d sun = -FlightGlobals.Bodies[0].position.xzy, toParent = vessel.orbit.pos;
+                    double sunAngle = Vector3d.Angle(sun, toParent);
+                    if (sunAngle < sunDegrees)
+                    {
+                        GUI_status = "Blinded by sunlight";
+                        isWorking = false;
+                        return;
+                    }
+                }
+            }
             isWorking = true;
             GUI_status = "OK";
         }
@@ -73,7 +87,7 @@ namespace KPU.Modules
             if (requireBody.Length > 0)
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
             if (sunDegrees > 0)
-                info.AppendFormat("Min. angle to Sun: {0}°", sunDegrees).AppendLine();
+                info.AppendFormat("Min. angle to Sun: {0}", Util.formatAngle(sunDegrees)).AppendLine();
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

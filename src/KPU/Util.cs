@@ -27,6 +27,15 @@ namespace KPU
             value /= Math.Pow(1000, offset);
             return value.ToString("F") + prefixes[offset] + unit;
         }
+
+        public static string formatAngle(double value)
+        {
+            if (value >= 1.0)
+                return String.Format("{0:G}°", value);
+            if (value >= 1.0 / 60.0)
+                return String.Format("{0:G}’", value * 60.0); // arcminutes
+            return String.Format("{0:G}”", value * 60.0 * 60.0); // arcseconds
+        }
     }
     public static class Logging
     {
