@@ -194,26 +194,32 @@ namespace kapparay
             mRosterWindow.Show();
         }
 
+        private Dictionary<Vessel,List<KerbalTracker>> mTracked = new Dictionary<Vessel, List<KerbalTracker>>();
+
         public Dictionary<Vessel,List<KerbalTracker>> TrackedKerbals()
         {
-            Dictionary<Vessel,List<KerbalTracker>> rv = new Dictionary<Vessel, List<KerbalTracker>>();
-            rv.Add(EmptyVessel, new List<KerbalTracker>());
+            return mTracked;
+        }
+
+        private void updateTrackedKerbals()
+        {
+            mTracked = new Dictionary<Vessel, List<KerbalTracker>>();
+            mTracked.Add(EmptyVessel, new List<KerbalTracker>());
             foreach(KerbalTracker kt in mKerbals.Values)
             {
-                rv[EmptyVessel].Add(kt);
+                mTracked[EmptyVessel].Add(kt);
             }
             foreach(Vessel v in mVessels.Keys)
             {
-                rv.Add(v, new List<KerbalTracker>());
+                mTracked.Add(v, new List<KerbalTracker>());
                 foreach(ProtoCrewMember cm in v.GetVesselCrew())
                 {
                     KerbalTracker kt = getKT(cm);
-                    if (rv[EmptyVessel].Contains(kt))
-                        rv[EmptyVessel].Remove(kt);
-                    rv[v].Add(kt);
+                    if (mTracked[EmptyVessel].Contains(kt))
+                        mTracked[EmptyVessel].Remove(kt);
+                    mTracked[v].Add(kt);
                 }
             }
-            return rv;
         }
 
         public RadiationTracker getRT(Vessel v)
@@ -270,6 +276,7 @@ namespace kapparay
                         ForgetKerbal(kt);
                 }
             }
+            updateTrackedKerbals();
             lastUpdate = t;
         }
 
