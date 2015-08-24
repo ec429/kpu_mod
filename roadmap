@@ -3,7 +3,7 @@ KPU, performs processing of the stored instructions.  Later models gain a wider 
 Planetary IR sensor, determines distance & direction of body being orbited.  [Uses solid angle & known size to determine distance, fails if too close to sun]
 Stellar compass, helps determine orientation.  Variants:
 	Type I: can only follow a single star (so has a rotational degree of freedom)
-	Type II: "Canopus tracker", gives full orientation after ground processing (otherwise Type I)
+	Type II: "Canopus tracker", gives full orientation with an inertial platform (otherwise Type I)
 	Type III: wide-field stellar compass, full autonomous orientation
 Radioaltimeter, determines altitude.  Later models gain Doppler for surface velocity
 Inertial platform, gives acceleration, computes velocity & position based on a previous 'fix', also gives orientation.  (A 'fix' requires full orientation.)  Results will drift over time leading to degraded accuracy if fixes are infrequent
@@ -30,11 +30,11 @@ Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system
 *KI "Spot" PIR.  Copes with sun angles down to 30°.
 *PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
 *PB "Sirius" ST-5.  After several failed attempts, Probodobodyne finally improved on the Vega with this 30' Type I star tracker.
-Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
+*Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
 Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
 *KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
 *PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
-Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!
+*Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!  (Only partially implemented.)
 *Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
 *KI "LORAN".  The LOng RAnge Navigation system from Kerbal Instruments gives KNS-like functionality out to a 3Mm range!
 

@@ -8,8 +8,8 @@ It allows you to load up your space probes with programs to allow them to
 KPU is currently in alpha test; not all features have been implemented.  The
  parts in the mod at present do not have new models; instead they are using
  copies of existing part models (the KER units for the two Kelliot processors,
- the stock Seismic Accelerometer for the FS-RA radioaltimeter, and the
- Reflectron DP-10 from RemoteTech for the KNS and LORAN position sensors).
+ the stock Seismic Accelerometer for the FS-RA radioaltimeter, the Reflectron
+ DP-10 from RemoteTech for the KNS and LORAN position sensors, etc).
  KPU's developer is actively looking for someone to create the part models.
 
 KPU is developed by Edward Cree, who goes by the handle 'soundnfury' on IRC

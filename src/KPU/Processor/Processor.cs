@@ -1087,6 +1087,21 @@ namespace KPU.Processor
         }
     }
 
+    public class Acceleration : SensorDouble, IInputData
+    {
+        public override string name { get { return "acceleration"; } }
+        public override string unit { get { return "m/s²"; } }
+        public override Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
+        public bool useSI { get { return true; }}
+        public override double raw { get {
+            return parentVessel.acceleration.magnitude;
+        } }
+
+        public Acceleration (Processor p) : base(p)
+        {
+        }
+    }
+
     public class Heading : IInputData
     {
         private Processor mProc = null;
