@@ -33,7 +33,7 @@ namespace kapparay.UI
         public float mInitialWidth;
         /// <summary>The initial height of this window</summary>
         public float mInitialHeight;
-        /// <summary>Callback trigger for the change in the posistion</summary>
+        /// <summary>Callback trigger for the change in the position</summary>
         public Action onPositionChanged = delegate { };
         public Rect backupPosition;
 
@@ -51,9 +51,6 @@ namespace kapparay.UI
             backupPosition = position;
             mInitialHeight = position.height + 15;
             mInitialWidth = position.width + 15;
-
-            GameEvents.onHideUI.Add(OnHideUI);
-            GameEvents.onShowUI.Add(OnShowUI);
         }
 
         public Rect RequestPosition() { return Position; }
@@ -69,6 +66,9 @@ namespace kapparay.UI
             }
             Windows[mGuid] = this;
             Enabled = true;
+
+            GameEvents.onHideUI.Add(OnHideUI);
+            GameEvents.onShowUI.Add(OnShowUI);
         }
 
         private void OnHideUI()
