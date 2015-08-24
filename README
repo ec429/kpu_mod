@@ -187,6 +187,9 @@ The optional trailing tilde '~' on a literal will turn it into an angle: any
  positive angle from a to b is smaller than the negative.  For example,
  90~ > 0~, but 0~ > 270~ (because the negative angle is 90° while the
  positive is 270°).  Any attempt to * or / two angles will cause an error.
+The output 'throttle' will take the maximum of the program's output and the
+ flight input.  This allows RemoteTech to execute maneuver nodes while the KPU
+ processor is running.
 Here are some simple examples of the language:
 	ON < batteries 10 DO @rtAntennas.set false
 	ON > batteries 90 DO @rtAntennas.set true
@@ -207,6 +210,7 @@ Supported values for @orient.set are:
  srfVertical (points normal to terrain; probably buggy though)
  orbVertical (points away from centre of planet/moon)
  , hdg pitch (holds the given heading and pitch)
+ , , hdg pitch roll (holds the given heading, pitch and roll; might be buggy)
 The Kelliot KE-7 and the Kerbolics LITHP-M also support 'latches', single-bit
  registers, allowing multiple distinct modes of spacecraft operation.  The
  KE-7 has two latches, while the LITHP-M has 32.  These can be used like any
