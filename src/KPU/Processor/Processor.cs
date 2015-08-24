@@ -1190,16 +1190,7 @@ namespace KPU.Processor
 
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
-            if (mValue.StartsWith("customHP"))
-            {
-                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHP > 0);
-                if (srcs.Count > 0)
-                {
-                    double res = srcs.Min(m => m.resolution);
-                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(round(mHdg, res), round(mPitch, res)));
-                }
-            }
-            else if (mValue.StartsWith("customHPR"))
+            if (mValue.StartsWith("customHPR"))
             {
                 
                 List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR > 0);
@@ -1207,6 +1198,15 @@ namespace KPU.Processor
                 {
                     double res = srcs.Min(m => m.resolution);
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(round(mHdg, res), round(mPitch, res), round(mRoll, res)));
+                }
+            }
+            else if (mValue.StartsWith("customHP"))
+            {
+                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHP > 0);
+                if (srcs.Count > 0)
+                {
+                    double res = srcs.Min(m => m.resolution);
+                    FlightCore.HoldAttitude(fcs, p, new FlightAttitude(round(mHdg, res), round(mPitch, res)));
                 }
             }
             else if (mValue.Equals("srfPrograde") || mValue.Equals("srfRetrograde"))
@@ -1252,7 +1252,7 @@ namespace KPU.Processor
                     mPitch = pitch.d;
                 }
             }
-            /*else if (value.typ == Instruction.Type.TUPLE && value.l.Count == 3)
+            else if (value.typ == Instruction.Type.TUPLE && value.l.Count == 3)
             {
                 Instruction.Value hdg = value.l[0], pitch = value.l[1], roll = value.l[2];
                 if (hdg.typ == Instruction.Type.DOUBLE && pitch.typ == Instruction.Type.DOUBLE && roll.typ == Instruction.Type.DOUBLE)
@@ -1262,7 +1262,7 @@ namespace KPU.Processor
                     mPitch = pitch.d;
                     mRoll = roll.d;
                 }
-            }*/
+            }
         }
 
         public void slewValue(Instruction.Value rate)
