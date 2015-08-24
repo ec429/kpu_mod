@@ -851,11 +851,6 @@ namespace KPU.Processor
                             chosen = m;
             return chosen;
         }}
-        public double err { get {
-            KPU.Modules.ModuleKpuSensor s = chooseSensor;
-            if (s != null) return (mProc.mRandom.NextDouble() - 0.5) * s.errorBar * 2.0;
-            return 0;
-        }}
         public double res { get {
             KPU.Modules.ModuleKpuSensor s = chooseSensor;
             if (s != null) return s.sensorRes;
@@ -873,8 +868,7 @@ namespace KPU.Processor
             {
                 bool angle = (typ == Instruction.Type.ANGLE);
                 if (!available) return new Instruction.Value(Double.PositiveInfinity, angle);
-                double e = err * res;
-                return new Instruction.Value(Math.Round((raw + e) / res) * res, angle);
+                return new Instruction.Value(Math.Round(raw / res) * res, angle);
             }
         }
         public SensorDouble(Processor p) : base(p)

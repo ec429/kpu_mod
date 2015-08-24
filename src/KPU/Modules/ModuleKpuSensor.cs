@@ -32,8 +32,6 @@ namespace KPU.Modules
 
         public bool isWorking;
 
-        public double errorBar { get { return master.errorBar; } }
-
         public void FixedUpdate()
         {
             if (vessel == null)

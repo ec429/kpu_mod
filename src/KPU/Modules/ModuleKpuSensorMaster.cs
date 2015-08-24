@@ -5,9 +5,6 @@ namespace KPU.Modules
 {
     [KSPModule("KPU Sensor")]
     public class ModuleKpuSensorMaster : PartModule
-#if WITH_KAPPA_RAYS
-    , kapparay.IKappaRayHandler
-#endif
     {
         // Checked for by InputValues in KPU.Processor
 
@@ -23,19 +20,6 @@ namespace KPU.Modules
         public bool requireIP = false;
         [KSPField()]
         public bool isActive = true;
-
-        public double errorBar;
-
-        // For kapparay.IKappaRayHandler
-        public int OnRadiation(double energy, int count, System.Random random)
-        {
-            if (random.NextDouble() < Math.Log10(energy) / 4.0)
-            {
-                errorBar += count * 12.0;
-                return 0;
-            }
-            return count;
-        }
 
         public bool isWorking;
         public string GUI_status;
@@ -56,11 +40,6 @@ namespace KPU.Modules
         public override void OnStart(StartState state)
         {
             setActive();
-        }
-
-        public void Update()
-        {
-            errorBar *= 0.995;
         }
 
         public void FixedUpdate()

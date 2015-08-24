@@ -24,9 +24,9 @@ Because KPU contains some code based heavily on similar code in the RemoteTech
 
 NOTE:  There are two builds of KPU, for use with and without kappa-ray.  The
  kappa build requires the kappa-ray mod to be installed, and allows k-rads to
- trigger SEUs (Single Event Upsets) causing spurious edges, latch changes, and
- noisy sensor data, all of which may occasionally make your probe do something
- different to what's in its programming.
+ trigger SEUs (Single Event Upsets) causing spurious edges and latch changes,
+ which may occasionally make your probe do something different to what's in
+ its programming.
  The nokappa build does not implement k-rad effects, and will function equally
  well whether kappa-ray is installed or not.
 
