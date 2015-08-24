@@ -27,7 +27,7 @@ namespace KPU.Modules
         [KSPField()]
         public double sunDegrees = 0;
         [KSPField()]
-        public bool requireIP = false;
+        public int requireIP;
 
         [KSPField(guiName = "Status", guiActive = true)]
         public string GUI_status = "Inactive";
@@ -75,7 +75,7 @@ namespace KPU.Modules
                     }
                 }
             }
-            if (requireIP)
+            if (requireIP > 0)
             {
                 if (!vessel.FindPartModulesImplementing<ModuleKpuInertialPlatform>().Exists(m => m.isWorking))
                     isWorking = false;
@@ -88,7 +88,6 @@ namespace KPU.Modules
         {
             var info = new StringBuilder();
 
-            info.AppendLine("Orientation source:");
             if (srfVertical > 0)
                 info.AppendLine("Gives srfVertical");
             if (orbVertical > 0)
@@ -109,7 +108,7 @@ namespace KPU.Modules
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
             if (sunDegrees > 0)
                 info.AppendFormat("Min. angle to Sun: {0}", Util.formatAngle(sunDegrees)).AppendLine();
-            if (requireIP)
+            if (requireIP > 0)
                 info.AppendLine("Requires Inertial Platform");
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
