@@ -1153,7 +1153,7 @@ namespace KPU.Processor
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
             setTo(mValue + mSlewRate * TimeWarp.deltaTime);
-            fcs.mainThrottle = (float)mValue / 100.0f;
+            fcs.mainThrottle = Math.Max((float)mValue / 100.0f, fcs.mainThrottle);
             mSlewRate = 0;
         }
 
