@@ -85,7 +85,7 @@ namespace kapparay
                 softDose += count * pCancer;
                 if (Core.Instance.mRandom.NextDouble() > Math.Pow(1.0 - pCancer, count))
                 {
-                    double nCancerTime = Planetarium.GetUniversalTime() + 6 * 3600 * (100.0 + Core.Instance.mRandom.NextDouble() * 1000.0);
+                    double nCancerTime = Planetarium.GetUniversalTime() + 6 * 3600 * (400.0 + Core.Instance.mRandom.NextDouble() * 800.0);
                     Logging.Log(String.Format("{0} contracted cancer, life expectancy {1}", name, KSPUtil.PrintDate((int)nCancerTime, false)));
                     mCancerTime = Math.Min(mCancerTime, nCancerTime);
                 }
