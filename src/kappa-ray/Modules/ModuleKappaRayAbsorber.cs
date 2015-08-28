@@ -38,6 +38,11 @@ namespace kapparay.Modules
         {
             node.AddValue("absorpCoeff", absorpCoeff);
         }
+
+        public override string GetInfo()
+        {
+            return String.Format("Absorption: {0:G}", absorpCoeff);
+        }
     }
 }
 
