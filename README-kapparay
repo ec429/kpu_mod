@@ -95,5 +95,8 @@ This is because turning that on causes the following bugs:
 
 It's possible to have two instances of the FluxWindow open.
 
+Kerbals don't actually die when they should; they lose their XP, and their
+ camera shows K.I.A., but scene changes (?) resuscitate them.
+
 Because of reasons, the OX-STAT fixed solar panel is no longer physicsless,
  which may unbalance some small probes with asymmetric OX-STATs.
