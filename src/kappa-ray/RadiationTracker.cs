@@ -210,7 +210,7 @@ namespace kapparay
             lastG = galactic * 0.05;
         }
 
-        private Vector3 randomVector(float length)
+        public Vector3 randomVector(float length)
         {
             Vector3 v = new Vector3((float)(Core.Instance.mRandom.NextDouble() - 0.5),
                                     (float)(Core.Instance.mRandom.NextDouble() - 0.5),
@@ -277,6 +277,12 @@ namespace kapparay
             #endif
 
             List<RaycastHit> hits = new List<RaycastHit>(Physics.RaycastAll(aimPt - aimDir, aimDir, 2e4f));
+
+            IrradiateList(count, energy, hits);
+        }
+
+        public void IrradiateList(int count, double energy, List<RaycastHit> hits)
+        {
             hits.Sort(RaycastSorter);
 
             foreach(RaycastHit rh in hits)
