@@ -21,13 +21,23 @@ namespace KPU.Modules
         [KSPField()]
         public bool isActive = true;
 
+        [KSPField]
+        public String TechRequired = "None";
+        public bool Unlocked
+        {
+            get
+            {
+                return ResearchAndDevelopment.GetTechnologyState(TechRequired) == RDTech.State.Available || TechRequired.Equals("None");
+            }
+        }
+
         public bool isWorking;
         public string GUI_status;
 
         private void setActive()
         {
             Events["EventToggle"].guiName = isActive ? "Deactivate" : "Activate";
-            Events["EventToggle"].guiActive = true;
+            Events["EventToggle"].guiActive = Unlocked;
         }
 
         [KSPEvent(name = "EventToggle", guiName = "Toggle", guiActive = false)]
@@ -47,6 +57,13 @@ namespace KPU.Modules
             if (vessel == null)
                 return;
 
+            setActive();
+            if (!Unlocked)
+            {
+                isWorking = false;
+                GUI_status = "Tech needed";
+                return;
+            }
             if (!isActive)
             {
                 isWorking = false;
@@ -101,6 +118,8 @@ namespace KPU.Modules
         {
             var info = new StringBuilder();
 
+            if (!Unlocked)
+                info.AppendFormat("Requires tech: {0}", TechRequired).AppendLine();
             if (maxAltitude > 0)
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)

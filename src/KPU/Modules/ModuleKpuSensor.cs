@@ -23,7 +23,19 @@ namespace KPU.Modules
         [KSPField()]
         public bool requireIP = false;
 
-        [KSPField(guiName = "Status", guiActive = true)]
+        [KSPField]
+        public String TechRequired = "None";
+        private bool Unlocked
+        {
+            get
+            {
+                if (master != null && !master.Unlocked)
+                    return false;
+                return ResearchAndDevelopment.GetTechnologyState(TechRequired) == RDTech.State.Available || TechRequired.Equals("None");
+            }
+        }
+
+        [KSPField(guiName = "Status", guiActive = false)]
         public string GUI_status = "Inactive";
 
         private ModuleKpuSensorMaster master { get {
@@ -37,6 +49,8 @@ namespace KPU.Modules
             if (vessel == null)
                 return;
 
+            Fields["GUI_status"].guiActive = Unlocked;
+            if (!Unlocked) return;
             Fields["GUI_status"].guiName = sensorType;
             if (master != null && !master.isWorking)
             {
@@ -85,6 +99,8 @@ namespace KPU.Modules
 
             info.Append("Sensor: ");
             info.AppendLine(sensorType);
+            if (!Unlocked)
+                info.AppendFormat("Requires tech: {0}", TechRequired).AppendLine();
             if (sensorRes > 0)
                 info.AppendFormat("Resolution: {0:G}{1}", sensorRes, sensorUnit).AppendLine();
             if (maxAltitude > 0)
@@ -100,4 +116,3 @@ namespace KPU.Modules
         }
     }
 }
-
