@@ -25,13 +25,13 @@ PARTS (* = implemented with placeholder model, + = also has model)
 *Kelliot 4040 KPU.  This simple processor can be instructed to take actions on edge-triggered conditions of a single variable.
 *Kelliot 8080 KPU.  Improvements in Kelliot's automation technology enabled the 8080, which can AND or OR multiple conditions, and supports time-delays
 *Kelliot KE-7 KPU.  The incorporation of arithmetic and level-triggered actions allows a whole new kind of programming.
-Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
+*Kerbolics LITHP-M.  This hardware implementation of John McKerthy's LITHP system gives power equal to the KE-7 without the weight or the huge current draw.
 *Kerbolics Mk1 Eyeball.  A planetary IR sensor that only functions on the light side of the planet or in darkness.
 *KI "Spot" PIR.  Copes with sun angles down to 30°.
 *PB "Vega" ST-1.  A Type I star tracker with 2° accuracy.
 *PB "Sirius" ST-5.  After several failed attempts, Probodobodyne finally improved on the Vega with this 30' Type I star tracker.
 *Kybernetics CSC.  This revolutionary "Type II" multiple-sensor star tracker enables Mission Control to reliably determine probe orientation to within 15'.
-Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
+*Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
 *KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
 *PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
 *Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!  (Only partially implemented.)
@@ -43,7 +43,7 @@ manufacturer		part name		tech		mass	cost	Z/min	moduleinfo
 Kelliot				4040 KPU		FlightCtrl	0.02	1000	6		KPU, EDGE, SIMPLE, 16 words
 Kelliot				8080 KPU		Miniaturizn	0.04	2000	30		KPU, EDGE, COMPOUND, 64 words, 1 timer
 Kelliot				KE-7 KPU		Electronics	0.1		3200	90		KPU, EL, FULL, 256 words, 2 latches, 2 timers
-Kerbolics			LISP-M			Automation	0.025	5000	15		KPU, EL, FULL, 65536 words, 32 latches, 4 timers
+Kerbolics			LITHP-M			Automation	0.025	5000	15		KPU, EL, FULL, 65536 words, 32 latches, 4 timers
 Kerbolics			Mk1 Eyeball		BasicSci	0.025	300		6		PIR, 90 deg-to-sun
 Kerbal Instruments	"Spot" PIR		AdvExplorn	0.025	1200	15		PIR, 30 deg-to-sun
 Probodobodyne		"Vega" ST-1		Electrics	0.05	1000	9		SC, TYPE1, 2 deg-res
