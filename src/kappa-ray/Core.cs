@@ -102,6 +102,9 @@ namespace kapparay
         private ApplicationLauncherButton mButton;
         private UI.FluxWindow mFluxWindow;
         private UI.RosterWindow mRosterWindow;
+        public Dictionary<string, RadiationEnvironment> va;
+        public Dictionary<string, RadiationEnvironment> so;
+        public Dictionary<string, RadiationEnvironment> ga;
 
         public Core()
         {
@@ -120,6 +123,9 @@ namespace kapparay
             mRosterWindow = new UI.RosterWindow();
             EmptyVessel = new Vessel();
             EmptyVessel.vesselName = "Unassigned";
+            va = new Dictionary<string, RadiationEnvironment>();
+            so = new Dictionary<string, RadiationEnvironment>();
+            ga = new Dictionary<string, RadiationEnvironment>();
         }
 
         protected void Awake()
@@ -140,6 +146,31 @@ namespace kapparay
             if (mButton == null)
             {
                 OnGuiAppLauncherReady();
+            }
+
+            foreach (ConfigNode cn in GameDatabase.Instance.GetConfigNodes("KappaRayEnvironment"))
+            {
+                if (!cn.HasValue("name"))
+                {
+                    Logging.Log("No name in a KappaRayEnvironment node");
+                    continue;
+                }
+                string name = cn.GetValue("name");
+                if (cn.HasValue("vanAllen"))
+                {
+                    string v = cn.GetValue("vanAllen");
+                    va.Add(name, RadiationEnvironment.Parse(v));
+                }
+                if (cn.HasValue("directSolar"))
+                {
+                    string v = cn.GetValue("directSolar");
+                    so.Add(name, RadiationEnvironment.Parse(v));
+                }
+                if (cn.HasValue("galactic"))
+                {
+                    string v = cn.GetValue("galactic");
+                    ga.Add(name, RadiationEnvironment.Parse(v));
+                }
             }
         }
 

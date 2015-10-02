@@ -4,6 +4,103 @@ using UnityEngine;
 
 namespace kapparay
 {
+    public class RadiationEnvironment
+    {
+        public enum ModelType { Corona, VanAllen, DirectSolar, Galactic, ScaledDS, ScaledG, DSPG, Surface, Fixed };
+        public ModelType type;
+        public List<double> parms;
+
+        public RadiationEnvironment(ModelType t, List<double> p)
+        {
+            type = t;
+            parms = p;
+        }
+
+        public static RadiationEnvironment Parse(string s)
+        {
+            ModelType t = ModelType.Fixed;
+            List<double> p = new List<double>();
+            foreach (string word in s.Split(new Char[] {' '}))
+            {
+                double v;
+                if (word.Equals("Corona"))
+                    t = ModelType.Corona;
+                else if (word.Equals("VanAllen"))
+                    t = ModelType.VanAllen;
+                else if (word.Equals("DirectSolar"))
+                    t = ModelType.DirectSolar;
+                else if (word.Equals("Galactic"))
+                    t = ModelType.Galactic;
+                else if (word.Equals("ScaledDS"))
+                    t = ModelType.ScaledDS;
+                else if (word.Equals("ScaledG"))
+                    t = ModelType.ScaledG;
+                else if (word.Equals("DS+G"))
+                    t = ModelType.DSPG;
+                else if (word.Equals("Surface"))
+                    t = ModelType.Surface;
+                else if (word.Equals("Fixed"))
+                    t = ModelType.Fixed;
+                else if (Double.TryParse(word, out v))
+                    p.Add(v);
+                else
+                    Logging.Log(String.Format("Failed to parse word {0} in RadiationEnvironment '{1}'", word, s));
+            }
+            return new RadiationEnvironment(t, p);
+        }
+
+        // Generic models for planetary radiation
+        public double vanAllenModel(Vessel v, double altScale)
+        {
+            // TODO: support off-centre or tilted magnetic fields, like Earth has
+            // (thereby producing something like the South Atlantic Anomaly)
+            double magLat = v.latitude;
+            altScale *= Math.Cos(magLat * Math.PI / 180.0 / 2.0);
+            double magnetic = Math.Exp(-v.altitude / altScale);
+            double magcap = (magnetic - magnetic * magnetic) * 4.0;
+            double vaScale = 1.0 / (1.0 + Math.Pow(Math.Sin(magLat * Math.PI / 180.0), 2.0));
+            return Math.Max(vaScale * magcap * magcap - v.atmDensity * 100.0, 0.0);
+        }
+
+        public double directSolarModel(Vessel v, double altScale)
+        {
+            double magnetic = Math.Exp(-v.altitude / altScale);
+            return Math.Max(1.0 - magnetic * 1.12 - v.atmDensity * 100.0, 0.0);
+        }
+
+        public double galacticModel(Vessel v, double altScale)
+        {
+            if (v.altitude < 10) return 0;
+            return Math.Max(Math.Exp(-altScale / v.altitude) - v.atmDensity, 0.0);
+        }
+
+        public double value(Vessel v)
+        {
+            switch(type)
+            {
+                case ModelType.Corona:
+                    return parms[0] * Math.Exp(-v.altitude/parms[1]) * Core.Instance.mSolar.flux;
+                case ModelType.VanAllen:
+                    return vanAllenModel(v, parms[0]) * (parms.Count > 1 ? parms[1] : 1.0);
+                case ModelType.DirectSolar:
+                    return directSolarModel(v, parms[0]) * (parms.Count > 1 ? parms[1] : 1.0);
+                case ModelType.Galactic:
+                    return galacticModel(v, parms[0]);
+                case ModelType.ScaledDS:
+                    return ((directSolarModel(v, parms[0]) + parms[1]) / parms[2]);
+                case ModelType.ScaledG:
+                    return ((galacticModel(v, parms[0]) + parms[1]) / parms[2]);
+                case ModelType.DSPG:
+                    return directSolarModel(v, parms[0]) * parms[1] + galacticModel(v, parms[2]) * parms[3];
+                case ModelType.Surface:
+                    return Math.Exp(-v.altitude / parms[0]) * (parms.Count > 1 ? parms[1] : 1.0);
+                case ModelType.Fixed:
+                default:
+                    return parms[0];
+            }
+        }
+    }
+
     public class RadiationTracker : MonoBehaviour
     {
         private Vessel mVessel;
@@ -23,31 +120,6 @@ namespace kapparay
 
         public enum RadiationSource { VanAllen, Solar, Galactic };
 
-        // Generic models for planetary radiation
-        public double vanAllenModel(double altScale)
-        {
-            // TODO: support off-centre or tilted magnetic fields, like Earth has
-            // (thereby producing something like the South Atlantic Anomaly)
-            double magLat = mVessel.latitude;
-            altScale *= Math.Cos(magLat * Math.PI / 180.0 / 2.0);
-            double magnetic = Math.Exp(-mVessel.altitude / altScale);
-            double magcap = (magnetic - magnetic * magnetic) * 4.0;
-            double vaScale = 1.0 / (1.0 + Math.Pow(Math.Sin(magLat * Math.PI / 180.0), 2.0));
-            return Math.Max(vaScale * magcap * magcap - mVessel.atmDensity * 100.0, 0.0);
-        }
-
-        public double directSolarModel(double altScale)
-        {
-            double magnetic = Math.Exp(-mVessel.altitude / altScale);
-            return Math.Max(1.0 - magnetic * 1.12 - mVessel.atmDensity * 100.0, 0.0);
-        }
-
-        public double galacticModel(double altScale)
-        {
-            if (mVessel.altitude < 10) return 0;
-            return Math.Max(Math.Exp(-altScale / mVessel.altitude) - mVessel.atmDensity, 0.0);
-        }
-
         public void Update(double dT)
         {
             if (FlightDriver.Pause) return;
@@ -56,145 +128,16 @@ namespace kapparay
             bool directSolar = mVessel.directSunlight;
             CelestialBody planetID = mVessel.mainBody;
             double vanAllen, solar, galactic;
-            switch(planetID.flightGlobalsIndex) /* This completely relies on the indices not being changed.  Mods that add planets will screw this up */
-            {
-                case 0: // Sun
-                    /* The Sun's equivalent of the Van Allen belt is its corona.  Being surrounded
-                     * by energetic plasma tends to result in a high radiation flux.
-                     * Direct solar irradiance in interplanetary space depends only on solar flux.
-                     * There is also no protection from cosmic rays (except inside the corona,
-                     * where you have bigger problems).
-                     */
-                    vanAllen = 1000.0 * Math.Exp(-mVessel.altitude/100e6) * Core.Instance.mSolar.flux;
-                    solar = 1.0;
-                    galactic = Math.Max(1.0 - vanAllen, 0.0);
-                    break;
-                case 1: // Kerbin
-                    /* Kerbin's Van Allen belts peak at around 600km altitude (i.e. 1 Kerbin radius);
-                     * their peak strength is used as the reference point for the flux scale.
-                     * Direct solar becomes a hazard partway through these belts, none penetrating
-                     * below about 105km.
-                     * Cosmic rays are heavily reduced well beyond KEO, but start to become significant
-                     * once approaching the Mun's orbit.
-                     */
-                    vanAllen = vanAllenModel(900e3);
-                    solar = directSolarModel(900e3);
-                    galactic = galacticModel(20e6);
-                    break;
-                case 2: // Mun
-                    /* The Mun has no magnetosphere of its own, but Kerbin's field gives some protection
-                     * from cosmic rays.
-                     */
-                    vanAllen = 0.0;
-                    solar = 1.0;
-                    galactic = 0.173; // value for Kerbin orbit at same altitude as Mun
-                    break;
-                case 3: // Minmus
-                    /* As the Mun, but with less help from Kerbin. */
-                    vanAllen = 0.0;
-                    solar = 1.0;
-                    galactic = 0.653; // value for Kerbin orbit at same altitude as Minmus
-                    break;
-                case 4: // Moho
-                    /* Based on Mercury having a magnetic field about 11% of Earth's.
-                     * It's likely that, for the same reasons as Mercury, Moho will have a large,
-                     * iron-rich core, whose rotation will generate a decent magnetic field.
-                     * The proximity to the Sun will pump up Moho's Van Allen belts, partially
-                     * making up for the lower field strength.
-                     */
-                    vanAllen = vanAllenModel(100e3) * 0.7;
-                    solar = directSolarModel(100e3);
-                    galactic = galacticModel(1e6);
-                    break;
-                case 5: // Eve
-                    /* Being large and (probably) geologically active, Eve can be presumed to have
-                     * a strong magnetosphere - probably stronger than Kerbin's.  Meanwhile the
-                     * greater proximity to the Sun will contribute to strong Van Allen belts.
-                     * Cosmic rays won't get anywhere _near_ Eve.  Perhaps they're scared of it?
-                     */
-                    vanAllen = vanAllenModel(1.4e6) * 2.5;
-                    solar = directSolarModel(1.4e6);
-                    galactic = galacticModel(34e6);
-                    break;
-                case 6: // Duna
-                    /* Geologically dead, Duna's magnetic field is very weak - so that even at the
-                     * edge of its atmosphere, some direct solar radiation is observed.
-                     */
-                    vanAllen = vanAllenModel(200e3) * 0.04;
-                    solar = directSolarModel(200e3);
-                    galactic = galacticModel(800e3);
-                    break;
-                case 7: // Ike
-                    /* Ike actually has a tiny magnetic field, but it gives little protection and
-                     * produces no Van Allen belts to speak of. */
-                    vanAllen = 0.0;
-                    solar = (2.0 + directSolarModel(10e3)) / 3.0;
-                    galactic = 0.778 * (4.0 + galacticModel(60e3)) / 5.0;
-                    break;
-                case 8: // Jool
-                    /* Jool's van Allen belts are more than usually powerful thanks to the very high
-                     * electromagnetic activity of the gas giant.  Beware.
-                     */
-                    vanAllen = vanAllenModel(12e6) * 2.0;
-                    solar = directSolarModel(12e6) * 0.8 + galacticModel(50e6) * 0.2;
-                    galactic = galacticModel(1e9);
-                    break;
-                case 9: // Laythe
-                    /* Laythe is subjected to a considerable magnetic beating from Jool which produces
-                     * some radiation belts.  However Jool does also help to block out other radiation.
-                     */
-                    vanAllen = vanAllenModel(4e3) * 0.15;
-                    solar = directSolarModel(8e3) * 0.825;
-                    galactic = 0.0;
-                    break;
-                case 10: // Vall
-                    /* Vall has no magnetic field to speak of. */
-                    vanAllen = 0.0;
-                    solar = 0.857;
-                    galactic = 0.0;
-                    break;
-                case 11: // Bop
-                    /* The rocks of Bop are radioactive! */
-                    vanAllen = Math.Exp(-mVessel.altitude / 200e3) * 0.2;
-                    solar = 0.934;
-                    galactic = 0.000346;
-                    break;
-                case 12: // Tylo
-                    /* Another unmagnetic rock. */
-                    vanAllen = 0.0;
-                    solar = 0.893;
-                    galactic = 0.0;
-                    break;
-                case 13: // Gilly
-                    /* Some protection from cosmic rays, thanks to Eve's strong magnetosphere. */
-                    vanAllen = 0.0;
-                    solar = 1.0;
-                    galactic = 0.336;
-                    break;
-                case 14: // Pol
-                    /* No magnetic field. */
-                    vanAllen = 0.0;
-                    solar = 0.951;
-                    galactic = 0.00352;
-                    break;
-                case 15: // Dres
-                    /* Slight magnetic field, not much though */
-                    vanAllen = 0.0;
-                    solar = 0.8 + directSolarModel(10e3) * 0.2;
-                    galactic = 0.4 + galacticModel(150e3) * 0.6;
-                    break;
-                case 16: // Eeloo
-                    /* Currents of dissolved ions in Eeloo's icy mantle produce a magnetic field. */
-                    vanAllen = vanAllenModel(250e3) * 0.02;
-                    solar = directSolarModel(250e3);
-                    galactic = galacticModel(12e6);
-                    break;
-                default:
-                    vanAllen = 0.0;
-                    solar = 1.0;
-                    galactic = 1.0;
-                    break;
-            }
+            string planetName = planetID.name;
+            vanAllen = 0.0;
+            solar = 1.0;
+            galactic = 1.0;
+            if (Core.Instance.va.ContainsKey(planetName))
+                vanAllen = Core.Instance.va[planetName].value(mVessel);
+            if (Core.Instance.so.ContainsKey(planetName))
+                solar = Core.Instance.so[planetName].value(mVessel);
+            if (Core.Instance.ga.ContainsKey(planetName))
+                galactic = Core.Instance.ga[planetName].value(mVessel);
             Irradiate(vanAllen * dT * 50.0, RadiationSource.VanAllen);
             lastV = vanAllen;
             if (directSolar)
