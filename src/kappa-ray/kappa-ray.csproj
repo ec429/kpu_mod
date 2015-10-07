@@ -57,6 +57,7 @@
     <Compile Include="UI\RosterWindow.cs" />
     <Compile Include="UI\FluxWindow.cs" />
     <Compile Include="Modules\ModuleKappaRayEmitter.cs" />
+    <Compile Include="API\IRadiationTracker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

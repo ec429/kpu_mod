@@ -101,7 +101,7 @@ namespace kapparay
         }
     }
 
-    public class RadiationTracker : MonoBehaviour
+    public class RadiationTracker : MonoBehaviour, IRadiationTracker
     {
         private Vessel mVessel;
 
@@ -153,15 +153,21 @@ namespace kapparay
             lastG = galactic * 0.05;
         }
 
-        public Vector3 randomVector(float length)
+        public Vector3 randomVector()
         {
             Vector3 v = new Vector3((float)(Core.Instance.mRandom.NextDouble() - 0.5),
                                     (float)(Core.Instance.mRandom.NextDouble() - 0.5),
                                     (float)(Core.Instance.mRandom.NextDouble() - 0.5));
             if (v.magnitude < 1e-6) // very unlikely
                 v = Vector3.up;
-            Vector3 mag = new Vector3(length, length, length);
             v.Normalize();
+            return v;
+        }
+
+        public Vector3 randomVector(float length)
+        {
+            Vector3 v = randomVector();
+            Vector3 mag = new Vector3(length, length, length);
             v.Scale(mag);
             return v;
         }
@@ -197,7 +203,7 @@ namespace kapparay
         private void IrradiateOnce(int count, RadiationSource source)
         {
             Vector3 aimPt = mVessel.CurrentCoM + randomVector(10.0f);
-            Vector3 aimDir = randomVector(1e4f);
+            Vector3 aimDir = randomVector();
             double energy = 0;
             switch (source)
             {
@@ -207,24 +213,28 @@ namespace kapparay
                 case RadiationSource.Solar: // medium-energy
                     energy = 120.0 + Core.Instance.mRandom.NextDouble() * 300.0;
                     aimDir = Sun.Instance.sunDirection;
-                    aimDir.Normalize();
-                    aimDir.Scale(new Vector3(1e4f, 1e4f, 1e4f));
                     break;
                 case RadiationSource.Galactic: // high-energy
                     energy = (1.0 - 4.0 * Math.Log(Core.Instance.mRandom.NextDouble())) * 300.0;
                     break;
             }
 
-            #if VERYDEBUG
-            Logging.Log(String.Format("Casting ray at {0} from {1}, e={2:F3}", aimPt, -aimDir, energy), false);
-            #endif
+            IrradiateVector(count, energy, aimPt - aimDir * 1e4f, aimDir);
+        }
 
-            List<RaycastHit> hits = new List<RaycastHit>(Physics.RaycastAll(aimPt - aimDir, aimDir, 2e4f));
+        public void IrradiateFromPart(int count, double energy, Part p)
+        {
+            IrradiateVector(count, energy, p.partTransform.position, randomVector());
+        }
+
+        public void IrradiateVector(int count, double energy, Vector3 from, Vector3 dir)
+        {
+            List<RaycastHit> hits = new List<RaycastHit>(Physics.RaycastAll(from, dir, 2e4f));
 
             IrradiateList(count, energy, hits);
         }
 
-        public void IrradiateList(int count, double energy, List<RaycastHit> hits)
+        private void IrradiateList(int count, double energy, List<RaycastHit> hits)
         {
             hits.Sort(RaycastSorter);
 
