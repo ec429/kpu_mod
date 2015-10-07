@@ -105,6 +105,7 @@ namespace kapparay
         public Dictionary<string, RadiationEnvironment> va;
         public Dictionary<string, RadiationEnvironment> so;
         public Dictionary<string, RadiationEnvironment> ga;
+        public Dictionary<string, double> resAbsCe;
 
         public Core()
         {
@@ -126,6 +127,7 @@ namespace kapparay
             va = new Dictionary<string, RadiationEnvironment>();
             so = new Dictionary<string, RadiationEnvironment>();
             ga = new Dictionary<string, RadiationEnvironment>();
+            resAbsCe = new Dictionary<string, double>();
         }
 
         protected void Awake()
@@ -170,6 +172,21 @@ namespace kapparay
                 {
                     string v = cn.GetValue("galactic");
                     ga.Add(name, RadiationEnvironment.Parse(v));
+                }
+            }
+
+            foreach (ConfigNode cn in GameDatabase.Instance.GetConfigNodes("KappaRayResource"))
+            {
+                if (!cn.HasValue("name"))
+                {
+                    Logging.Log("No name in a KappaRayEnvironment node");
+                    continue;
+                }
+                string name = cn.GetValue("name");
+                double rac;
+                if (cn.HasValue("absorpCoeff") && Double.TryParse(cn.GetValue("absorpCoeff"), out rac))
+                {
+                    resAbsCe.Add(name, rac);
                 }
             }
         }

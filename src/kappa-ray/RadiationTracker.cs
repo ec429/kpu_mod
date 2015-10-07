@@ -241,11 +241,18 @@ namespace kapparay
                         if (count == 0) break;
                         count = h.OnRadiation(energy, count, Core.Instance.mRandom);
                     }
-                    if (count > 0 && !hasModule)
+                    if (count > 0)
                     {
-                        double totalMass = p.mass + p.GetResourceMass();
-                        double absorpCoeff = (1.0 - Math.Exp(-totalMass / 2.0)) / 2.0;
-                        int absorbs = Modules.ModuleKappaRayAbsorber.absorbCount(count, absorpCoeff);
+                        double negAbsorpCoeff = hasModule ? 1.0 : Math.Exp(-Math.Pow(p.mass, 1/3.0) / 8.0); // implicit resAbsCe of 0.125 for structure, assuming density of 1
+                        foreach (PartResource pr in p.Resources)
+                        {
+                            if (Core.Instance.resAbsCe.ContainsKey(pr.resourceName))
+                            {
+                                double nrac = Math.Exp(-Math.Pow(pr.amount, 1/3.0) * pr.info.density * Core.Instance.resAbsCe[pr.resourceName]);
+                                negAbsorpCoeff *= nrac;
+                            }
+                        }
+                        int absorbs = Modules.ModuleKappaRayAbsorber.absorbCount(count, 1.0 - negAbsorpCoeff);
                         #if QUITEDEBUG
                         Logging.Log(String.Format("{0} struck by {1:D} rays of energy {2:G}, {3:D} absorbed", p.partInfo.title, count, energy, absorbs), false);
                         #endif
