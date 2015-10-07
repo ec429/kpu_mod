@@ -79,7 +79,7 @@ namespace kapparay.Modules
 
         public override string GetInfo()
         {
-            return String.Format("Emits {0:G} per throttle %", throttleCoeff);
+            return String.Format("Emits {0:G} per throttle %", throttleCoeff * 100.0);
         }
     }
 }
