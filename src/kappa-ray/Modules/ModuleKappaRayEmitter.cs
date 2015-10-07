@@ -69,7 +69,7 @@ namespace kapparay.Modules
                     ModuleEngines e = part.FindModuleImplementing<ModuleEngines>();
                     if (e.isOperational)
                     {
-                        double strength = throttleCoeff * e.requestedThrottle;
+                        double strength = throttleCoeff * e.requestedThrottle * 100.0;
                         Irradiate(strength);
                     }
                 }
