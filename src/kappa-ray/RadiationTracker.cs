@@ -202,7 +202,7 @@ namespace kapparay
 
         private void IrradiateOnce(int count, RadiationSource source)
         {
-            Vector3 aimPt = mVessel.CurrentCoM + randomVector(10.0f);
+            Vector3 aimPt = mVessel.rootPart.partTransform.position + randomVector(10.0f);
             Vector3 aimDir = randomVector();
             double energy = 0;
             switch (source)
