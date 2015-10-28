@@ -39,3 +39,11 @@ Maybe also add a fourth radiation source, LV-N engines.  (But not RTGs, those ar
 -----
 
 to test: seatExternalCmd; I think we'll still be EVA so that will handle it, and the seat doesn't need a ModuleKappaRayCrewPod
+
+-----
+
+suggested on IRC:
+<xShadowx> soundnfury: dont forget a KIS equipable radiation suit
+<xShadowx> soundnfury: also can have kerbals go blind from radiation, so on eva screen fades to a grey color, g-effects has a nice example for fading the screen
+<xShadowx> soundnfury: and can tap into progeny when taniwha releases, radiation mutates genes
+<xShadowx> soundnfury: maybe an interface into testflight or dangit, to justup the failure rate as damage is done
