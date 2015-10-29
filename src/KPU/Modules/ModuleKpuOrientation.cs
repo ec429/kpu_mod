@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 
 namespace KPU.Modules
 {
@@ -19,7 +20,7 @@ namespace KPU.Modules
         [KSPField()]
         public int customHPR;
         [KSPField()]
-        public double resolution = 1;
+        public double inherentRes = 1;
         [KSPField()]
         public double maxAltitude = 0;
         [KSPField()]
@@ -27,7 +28,9 @@ namespace KPU.Modules
         [KSPField()]
         public double sunDegrees = 0;
         [KSPField()]
-        public int requireIP;
+        public bool requireIP;
+        [KSPField()]
+        public bool fromIP;
 
         [KSPField(guiName = "Status", guiActive = true)]
         public string GUI_status = "Inactive";
@@ -35,6 +38,20 @@ namespace KPU.Modules
         private ModuleKpuSensorMaster master { get {
             return part.FindModuleImplementing<ModuleKpuSensorMaster>();
         }}
+
+        private double lossFactor = 1.0;
+
+        public double resolution
+        {
+            get
+            {
+                return inherentRes * lossFactor;
+            }
+            set
+            {
+                inherentRes = value;
+            }
+        }
 
         public bool isWorking;
 
@@ -75,10 +92,15 @@ namespace KPU.Modules
                     }
                 }
             }
-            if (requireIP > 0)
+            if (requireIP)
             {
                 if (!vessel.FindPartModulesImplementing<ModuleKpuInertialPlatform>().Exists(m => m.isWorking))
                     isWorking = false;
+            }
+            if (fromIP)
+            {
+                double drift = part.FindModulesImplementing<ModuleKpuInertialPlatform>().ConvertAll<double>(m => m.drift).Min();
+                lossFactor = 1.0 + drift / 25.0; // a drift of 100 degrades resolution by a factor of 5
             }
             isWorking = true;
             GUI_status = "OK";
@@ -108,8 +130,10 @@ namespace KPU.Modules
                 info.AppendFormat("In orbit around: {0}", requireBody).AppendLine();
             if (sunDegrees > 0)
                 info.AppendFormat("Min. angle to Sun: {0}", Util.formatAngle(sunDegrees)).AppendLine();
-            if (requireIP > 0)
+            if (requireIP)
                 info.AppendLine("Requires Inertial Platform");
+            if (fromIP)
+                info.AppendLine("Subject to Inertial Platform drift");
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }

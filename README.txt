@@ -93,14 +93,13 @@ Most of the sensors have to do with letting the probe work out its position,
  will allow arbitrary orientation (though some will not be able to determine
  roll, as they work by tracking a single star).  Planetary Infrared sensors
  will tell a probe where the planet (or moon) being orbited is, thus giving
- orbHeight and Vertical orientation, while an Inertial Platform (not yet fully
- implemented) will need to be recalibrated periodically by position updates
- from Mission Control (so an out-of-contact probe will gradually experience
- drift and lose accuracy).  The Kerbin Navigation System (KNS) will give
- position information to probes close enough to Kerbin to triangulate radio
- signals from around the globe; it will function up to 300km altitude.  The
- later LORAN sensor will do the same out to 3Mm - notably, this is sufficient
- for keostationary orbit.
+ orbHeight and Vertical orientation, while an Inertial Platform will need to
+ be recalibrated periodically by position updates from Mission Control (so an
+ out-of-contact probe will gradually experience drift and lose accuracy).  The
+ Kerbin Navigation System (KNS) will give position information to probes close
+ enough to Kerbin to triangulate radio signals from around the globe; it will
+ function up to 300km altitude.  The later LORAN sensor will do the same out
+ to 3Mm - notably, this is sufficient for keostationary orbit.
 There are also sensors for localGravity (using the stock Gravioli Detector)
  and gear landing sensors which detect when the vessel has touched down.
  Inputs measuring the charge level of batteries and the thrust-to-mass ratio

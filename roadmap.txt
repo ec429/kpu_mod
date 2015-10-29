@@ -7,6 +7,7 @@ Stellar compass, helps determine orientation.  Variants:
 	Type III: wide-field stellar compass, full autonomous orientation
 Radioaltimeter, determines altitude.  Later models gain Doppler for surface velocity
 Inertial platform, gives acceleration, computes velocity & position based on a previous 'fix', also gives orientation.  (A 'fix' requires full orientation.)  Results will drift over time leading to degraded accuracy if fixes are infrequent
+	Drift increases approximately on the curve "d = 1 + 1.6 * (1.35^t - 1)", where 't' is time in minutes since last fix, and 'd' is the factor by which sensor resolution is multiplied.
 KNS, supplies navigational data close to Kerbin by use of ground signals and/or satellite "GPS".  Later models improve precision and range
 Stock landing gear, incorporates sensors to determine touchdown
 Stock sensors.  Some of the science experiments in stock are also usable sensors:
@@ -34,7 +35,7 @@ PARTS (* = implemented with placeholder model, + = also has model)
 *Kybernetics "Pollux" CSA.  The on-board processing of this Type III stellar compass is capable of calculating orientation with sub-arcminute accuracy.
 *KI RA-3 "Ping".  This basic radioaltimeter gives height over ground to about 50m accuracy.
 *PB FS-RA.  By measuring the Koppler shift, this radioaltimeter can also determine ground speed and (if orientation is known) course.
-*Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!  (Only partially implemented.)
+*Kerbolics "Tympanum" Inertial Platform.  If you knew where you were, now you can know where you are!
 *Kybernetics KNS.  The "Kerbal Navigation System" will give you a full position and velocity report from anywhere within 300km of Kerbin.
 *KI "LORAN".  The LOng RAnge Navigation system from Kerbal Instruments gives KNS-like functionality out to a 3Mm range!
 

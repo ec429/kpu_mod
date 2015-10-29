@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 
 namespace KPU.Modules
 {
@@ -11,7 +12,7 @@ namespace KPU.Modules
         [KSPField()]
         public string sensorType;
         [KSPField()]
-        public double sensorRes;
+        public double inherentRes;
         [KSPField()]
         public string sensorUnit = "";
         [KSPField()]
@@ -22,6 +23,8 @@ namespace KPU.Modules
         public double sunDegrees = 0;
         [KSPField()]
         public bool requireIP = false;
+        [KSPField()]
+        public bool fromIP = false;
 
         [KSPField]
         public String TechRequired = "None";
@@ -37,6 +40,20 @@ namespace KPU.Modules
 
         [KSPField(guiName = "Status", guiActive = false)]
         public string GUI_status = "Inactive";
+
+        private double lossFactor = 1.0;
+
+        public double sensorRes
+        {
+            get
+            {
+                return inherentRes * lossFactor;
+            }
+            set
+            {
+                inherentRes = value;
+            }
+        }
 
         private ModuleKpuSensorMaster master { get {
             return part.FindModuleImplementing<ModuleKpuSensorMaster>();
@@ -87,7 +104,16 @@ namespace KPU.Modules
             if (requireIP)
             {
                 if (!vessel.FindPartModulesImplementing<ModuleKpuInertialPlatform>().Exists(m => m.isWorking))
+                {
+                    GUI_status = "No inertial platform";
                     isWorking = false;
+                    return;
+                }
+            }
+            if (fromIP)
+            {
+                double drift = part.FindModulesImplementing<ModuleKpuInertialPlatform>().ConvertAll<double>(m => m.drift).Min();
+                lossFactor = 1.0 + drift / 25.0; // a drift of 100 degrades resolution by a factor of 5
             }
             isWorking = true;
             GUI_status = "OK";
@@ -102,7 +128,7 @@ namespace KPU.Modules
             if (!Unlocked)
                 info.AppendFormat("Requires tech: {0}", TechRequired).AppendLine();
             if (sensorRes > 0)
-                info.AppendFormat("Resolution: {0:G}{1}", sensorRes, sensorUnit).AppendLine();
+                info.AppendFormat("Resolution: {0:G}{1}", inherentRes, sensorUnit).AppendLine();
             if (maxAltitude > 0)
                 info.AppendFormat("Max. Altitude: {0}", Util.formatSI(maxAltitude, "m")).AppendLine();
             if (requireBody.Length > 0)
@@ -111,6 +137,8 @@ namespace KPU.Modules
                 info.AppendFormat("Min. angle to Sun: {0}", Util.formatAngle(sunDegrees)).AppendLine();
             if (requireIP)
                 info.AppendLine("Requires Inertial Platform");
+            if (fromIP)
+                info.AppendLine("Subject to Inertial Platform drift");
 
             return info.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }
