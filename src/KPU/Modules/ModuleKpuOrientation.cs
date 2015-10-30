@@ -8,17 +8,17 @@ namespace KPU.Modules
     public class ModuleKpuOrientation : PartModule
     {
         [KSPField()]
-        public int srfVertical;
+        public bool srfVertical;
         [KSPField()]
-        public int orbVertical;
+        public bool orbVertical;
         [KSPField()]
-        public int srfPrograde;
+        public bool srfPrograde;
         [KSPField()]
-        public int orbPrograde;
+        public bool orbPrograde;
         [KSPField()]
-        public int customHP;
+        public bool customHP;
         [KSPField()]
-        public int customHPR;
+        public bool customHPR;
         [KSPField()]
         public double inherentRes = 1;
         [KSPField()]
@@ -110,17 +110,17 @@ namespace KPU.Modules
         {
             var info = new StringBuilder();
 
-            if (srfVertical > 0)
+            if (srfVertical)
                 info.AppendLine("Gives srfVertical");
-            if (orbVertical > 0)
+            if (orbVertical)
                 info.AppendLine("Gives orbVertical");
-            if (srfPrograde > 0)
+            if (srfPrograde)
                 info.AppendLine("Gives srfPrograde, srfRetrograde");
-            if (orbPrograde > 0)
+            if (orbPrograde)
                 info.AppendLine("Gives orbPrograde, orbRetrograde");
-            if (customHP > 0)
+            if (customHP)
                 info.AppendLine("Gives customHP");
-            if (customHPR > 0)
+            if (customHPR)
                 info.AppendLine("Gives customHPR");
             if (resolution > 0)
                 info.AppendFormat("Resolution: {0}", Util.formatAngle(resolution)).AppendLine();

@@ -1202,7 +1202,7 @@ namespace KPU.Processor
             if (mValue.StartsWith("customHPR"))
             {
                 
-                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR > 0);
+                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR);
                 if (srcs.Count > 0)
                 {
                     double res = srcs.Min(m => m.resolution);
@@ -1211,7 +1211,7 @@ namespace KPU.Processor
             }
             else if (mValue.StartsWith("customHP"))
             {
-                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHP > 0);
+                List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHP);
                 if (srcs.Count > 0)
                 {
                     double res = srcs.Min(m => m.resolution);
@@ -1220,22 +1220,22 @@ namespace KPU.Processor
             }
             else if (mValue.Equals("srfPrograde") || mValue.Equals("srfRetrograde"))
             {
-                if (oriSrc(p, m => m.srfPrograde > 0).Count > 0)
+                if (oriSrc(p, m => m.srfPrograde).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("orbPrograde") || mValue.Equals("orbRetrograde"))
             {
-                if (oriSrc(p, m => m.orbPrograde > 0).Count > 0)
+                if (oriSrc(p, m => m.orbPrograde).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("srfVertical"))
             {
-                if (oriSrc(p, m => m.srfVertical > 0).Count > 0)
+                if (oriSrc(p, m => m.srfVertical).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
             else if (mValue.Equals("orbVertical"))
             {
-                if (oriSrc(p, m => m.orbVertical > 0).Count > 0)
+                if (oriSrc(p, m => m.orbVertical).Count > 0)
                     FlightCore.HoldAttitude(fcs, p, new FlightAttitude(mValue));
             }
         }

@@ -17,7 +17,7 @@ namespace KPU.Modules
         [KSPField()]
         public double sunDegrees = 0;
         [KSPField()]
-        public bool requireIP = false;
+        public bool requireIP;
         [KSPField()]
         public bool isActive = true;
 

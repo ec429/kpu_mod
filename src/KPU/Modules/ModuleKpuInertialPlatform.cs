@@ -42,7 +42,7 @@ namespace KPU.Modules
         private bool haveOrientation { get {
             // need 1 degree or better resolution.
             // exclude fromIP so we don't use ourself as a calibration source!
-            return vessel.FindPartModulesImplementing<ModuleKpuOrientation>().Exists(m => m.isWorking && m.customHPR > 0 && !m.fromIP && m.resolution <= 1.0);
+            return vessel.FindPartModulesImplementing<ModuleKpuOrientation>().Exists(m => m.isWorking && m.customHPR && !m.fromIP && m.resolution <= 1.0);
         }}
 
         public void FixedUpdate()
