@@ -43,17 +43,7 @@ namespace KPU.Modules
 
         private double lossFactor = 1.0;
 
-        public double sensorRes
-        {
-            get
-            {
-                return inherentRes * lossFactor;
-            }
-            set
-            {
-                inherentRes = value;
-            }
-        }
+        public double sensorRes { get { return inherentRes * lossFactor; }}
 
         private ModuleKpuSensorMaster master { get {
             return part.FindModuleImplementing<ModuleKpuSensorMaster>();
