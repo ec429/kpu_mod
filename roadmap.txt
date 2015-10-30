@@ -7,7 +7,7 @@ Stellar compass, helps determine orientation.  Variants:
 	Type III: wide-field stellar compass, full autonomous orientation
 Radioaltimeter, determines altitude.  Later models gain Doppler for surface velocity
 Inertial platform, gives acceleration, computes velocity & position based on a previous 'fix', also gives orientation.  (A 'fix' requires full orientation.)  Results will drift over time leading to degraded accuracy if fixes are infrequent
-	Drift increases approximately on the curve "d = 1 + 1.6 * (1.35^t - 1)", where 't' is time in minutes since last fix, and 'd' is the factor by which sensor resolution is multiplied.
+	Drift increases approximately on the curve "d = 1 + 1.6 * (1.35^t - 1)", where 't' is time in minutes since last fix, and 'd' is the factor by which sensor resolution is multiplied.  In particular, accuracy is halved after 97 seconds, and falls to one-fifth after 250 seconds.  By 10 minutes from fix, the results are pretty much useless (d ~= 31.57, giving for instance an altitude resolution worse than 6km).
 KNS, supplies navigational data close to Kerbin by use of ground signals and/or satellite "GPS".  Later models improve precision and range
 	We could maybe make it so the user has to build a network of stations (or satellites) himself, rather than that being abstracted in the part unlock cost.  But effectively you can achieve the same thing with a comsat network + link back to KSC + inertial platform, and that also covers destinations other than Kerbin.  Also, building an entire GPS network might be a bit tedious...
 Stock landing gear, incorporates sensors to determine touchdown
