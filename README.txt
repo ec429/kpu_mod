@@ -93,7 +93,7 @@ Most of the sensors have to do with letting the probe work out its position,
  will allow arbitrary orientation (though some will not be able to determine
  roll, as they work by tracking a single star).  Planetary Infrared sensors
  will tell a probe where the planet (or moon) being orbited is, thus giving
- orbHeight and Vertical orientation, while an Inertial Platform will need to
+ altitude and Vertical orientation, while an Inertial Platform will need to
  be recalibrated periodically by position updates from Mission Control (so an
  out-of-contact probe will gradually experience drift and lose accuracy).  The
  Kerbin Navigation System (KNS) will give position information to probes close
