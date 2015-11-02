@@ -117,7 +117,7 @@ namespace KPU.UI
                     require("Level Trigger", selectedProgram.requiresLevelTrigger, proc == null ? false : proc.hasLevelTrigger);
                     require("Logic Ops", selectedProgram.requiresLogicOps, proc == null ? false : proc.hasLogicOps);
                     require("Arithmetic Ops", selectedProgram.requiresArithOps, proc == null ? false : proc.hasArithOps);
-                    bool enough = proc == null ? false : selectedProgram.imemWords <= proc.imemWords;
+                    bool enough = proc == null ? false : selectedProgram.imemWords <= proc.maxImemWords;
                     GUILayout.Label(String.Format("Requires {0} words of IMEM", selectedProgram.imemWords), enough ? mGoodNewsStyle : mBadNewsStyle);
                     GUILayout.Label("Inputs Used", mHeadingStyle, GUILayout.Width(280));
                     mScrollInputs = GUILayout.BeginScrollView(mScrollInputs, GUILayout.Height(64));

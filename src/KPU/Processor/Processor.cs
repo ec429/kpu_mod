@@ -1611,7 +1611,7 @@ namespace KPU.Processor
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
-        public int imemWords, latches, timers;
+        public int imemWords, maxImemWords, latches, timers;
         public List<Instruction> instructions;
         public List<bool> latchState = null;
         public List<TimerIO> timerState = null;
@@ -1688,7 +1688,7 @@ namespace KPU.Processor
             hasLevelTrigger = module.hasLevelTrigger;
             hasLogicOps = module.hasLogicOps;
             hasArithOps = module.hasArithOps;
-            imemWords = module.imemWords;
+            maxImemWords = imemWords = module.imemWords;
             latches = module.latches;
             timers = module.timers;
             isRunning = module.isRunning;
