@@ -396,7 +396,7 @@ namespace kapparay
     [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
     public class CoreTracking : Core {}
 
-    [KSPScenario(ScenarioCreationOptions.AddToNewGames, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION)]
     public class ScenarioKappaRay : ScenarioModule
     {
         public override void OnSave(ConfigNode node)
