@@ -1848,7 +1848,6 @@ namespace KPU.Processor
                 {
                     Logging.Message("Problem in input " + i.name);
                     Logging.Log(exc.ToString());
-                    Logging.Log(exc.StackTrace);
                 }
             }
             if (hasPower && isRunning)
