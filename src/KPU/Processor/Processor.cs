@@ -1834,6 +1834,9 @@ namespace KPU.Processor
 
         public void OnUpdate ()
         {
+            // Check we haven't been destroyed
+            if (parentVessel == null || parentVessel.state == Vessel.State.DEAD) return;
+            if (mPart.State == PartStates.DEAD) return;
             inputValues = new Dictionary<string, Instruction.Value>();
             foreach (IInputData i in inputs.Values)
             {

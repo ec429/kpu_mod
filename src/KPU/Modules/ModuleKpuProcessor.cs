@@ -267,14 +267,13 @@ namespace KPU.Modules
             GameEvents.onVesselChange.Remove(OnVesselChange);
 
             if (mWatchWindow != null)
-            {
                 mWatchWindow.Hide();
-            }
 
             if (mCodeWindow != null)
-            {
                 mCodeWindow.Hide();
-            }
+
+            if (mProcessor != null)
+                mProcessor.isRunning = false;
         }
     }
 }
