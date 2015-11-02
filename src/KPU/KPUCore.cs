@@ -76,7 +76,7 @@ namespace KPU
         }
     }
 
-    [KSPScenario(ScenarioCreationOptions.AddToNewGames, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
     public class ScenarioKPU : ScenarioModule
     {
         public override void OnSave(ConfigNode node)
