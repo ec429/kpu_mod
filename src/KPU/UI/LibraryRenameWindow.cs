@@ -28,6 +28,7 @@ namespace KPU.UI
             bool toclose = false;
             KPU.Library.Library library = KPUCore.Instance.library;
             GUILayout.BeginHorizontal();
+            GUI.SetNextControlName("kpu_nt");
             mNewName = GUILayout.TextField(mNewName, GUILayout.Width(120));
             if (GUILayout.Button("OK", library.nameExists(mNewName) ? mGreyBtnStyle : mBtnStyle, GUILayout.Width(48)))
             {
@@ -63,6 +64,7 @@ namespace KPU.UI
             bool toclose = false;
             KPU.Library.Library library = KPUCore.Instance.library;
             GUILayout.BeginHorizontal();
+            GUI.SetNextControlName("kpu_rt");
             mNewName = GUILayout.TextField(mNewName, GUILayout.Width(120));
             if (GUILayout.Button("Rename", library.nameExists(mNewName) ? mGreyBtnStyle : mBtnStyle, GUILayout.Width(48)))
             {

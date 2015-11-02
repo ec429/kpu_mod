@@ -49,7 +49,7 @@ namespace KPU.UI
         {
             KPU.Library.Library library = KPUCore.Instance.library;
             KPU.Library.Program selectedProgram = null;
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Height(310));
             GUILayout.BeginVertical(GUILayout.Width(250));
             {
                 // name list pane
@@ -144,7 +144,7 @@ namespace KPU.UI
 
         private void require(string what, bool want, bool have)
         {
-            GUILayout.Label(String.Format("Requires {0}: {1}", what, want ? "Yes" : "No"), have || !want ? mGoodNewsStyle : mBadNewsStyle);
+            GUILayout.Label(String.Format("Requires {0}: {1}", what, want ? "Yes" : "No"), have || !want ? mGoodNewsStyle : mBadNewsStyle, GUILayout.Width(270));
         }
     }
 }
