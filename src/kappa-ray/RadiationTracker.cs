@@ -253,7 +253,7 @@ namespace kapparay
                     }
                     if (count > 0)
                     {
-                        double negAbsorpCoeff = hasModule ? 1.0 : Math.Exp(-Math.Pow(p.mass, 1/3.0) / 8.0); // implicit resAbsCe of 0.125 for structure, assuming density of 1
+                        double negAbsorpCoeff = hasModule ? 1.0 : Math.Exp(-Math.Pow(p.mass, 1/3.0) / 20.0); // implicit density * resAbsCe of 0.05 for structure
                         foreach (PartResource pr in p.Resources)
                         {
                             if (Core.Instance.resAbsCe.ContainsKey(pr.resourceName))
