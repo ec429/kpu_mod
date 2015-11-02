@@ -344,6 +344,29 @@ namespace KPU.Processor
         public int imemWords { get { return mImemWords; } }
         public bool requiresLevelTrigger = false, requiresLogicOps = false, requiresArithOps = false;
 
+        public HashSet<string> usedInputs { get {
+            HashSet<string> used = new HashSet<string>();
+            if (mAST.mToken.Value == Tokens.TOK_KEYWORD && (mAST.mToken.Key.Equals("IF") || mAST.mToken.Key.Equals("ON")) && mAST.mChildren.Count > 0)
+            {
+                ASTNode cond = mAST.mChildren[0];
+                foreach (ASTNode node in cond.flat)
+                {
+                    if (node.mToken.Value == Tokens.TOK_IDENT)
+                    {
+                        // ignore builtin inputs
+                        if (node.mToken.Key.Equals("true"))
+                            continue;
+                        if (node.mToken.Key.Equals("false"))
+                            continue;
+                        if (node.mToken.Key.Equals("error"))
+                            continue;
+                        used.Add(node.mToken.Key);
+                    }
+                }
+            }
+            return used;
+        }}
+
         public enum Type { BOOLEAN, DOUBLE, ANGLE, NAME, TUPLE, VOID };
 
         public class Value

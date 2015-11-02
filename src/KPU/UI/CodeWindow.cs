@@ -6,7 +6,7 @@ namespace KPU.UI
 {
     public class CodeWindow : AbstractWindow
     {
-        private KPU.Processor.Processor mProcessor;
+        public KPU.Processor.Processor mProcessor;
         public List<KPU.Processor.Instruction> instructions;
         public bool mCompiled, mLoaded;
         private string mText;
@@ -41,7 +41,7 @@ namespace KPU.UI
             mLoaded = true;
         }
 
-        private void decompile()
+        public void decompile()
         {
             mText = "";
             foreach (KPU.Processor.Instruction i in instructions)
@@ -120,6 +120,25 @@ namespace KPU.UI
                     if (GUILayout.Button("Revert", mLoaded ? mGreyBtnStyle : mBtnStyle, GUILayout.ExpandWidth(false)))
                     {
                         revert();
+                    }
+                    if (GUILayout.Button("Save", mCompiled ? mBtnStyle : mGreyBtnStyle, GUILayout.ExpandWidth(false)) && mCompiled)
+                    {
+                        string name = KPUCore.Instance.library.chooseName();
+                        if (name != null)
+                        {
+                            KPU.Library.Program prog = new KPU.Library.Program();
+                            prog.name = name;
+                            prog.description = String.Format("Saved from {0}", FlightGlobals.ActiveVessel.vesselName);
+                            prog.addCode(instructions);
+                            KPUCore.Instance.library.putProgram(prog);
+                            Logging.Message(String.Format("Saved as {0}", name));
+                            UI.LibraryNameWindow lnw = new UI.LibraryNameWindow(name);
+                            lnw.Show();
+                        }
+                    }
+                    if (GUILayout.Button("Load", mBtnStyle, GUILayout.ExpandWidth(false)))
+                    {
+                        KPUCore.Instance.openLibraryWindow(this);
                     }
                 }
                 GUILayout.EndHorizontal();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+//using System.Text;
 
 namespace KPU
 {
@@ -33,8 +34,19 @@ namespace KPU
             if (value >= 1.0)
                 return String.Format("{0:G}°", value);
             if (value >= 1.0 / 60.0)
-                return String.Format("{0:G}’", value * 60.0); // arcminutes
-            return String.Format("{0:G}”", value * 60.0 * 60.0); // arcseconds
+                return String.Format("{0:G}'", value * 60.0); // arcminutes
+            return String.Format("{0:G}\"", value * 60.0 * 60.0); // arcseconds
+        }
+
+        /* Escape newlines in strings, allowing them to be stored in ConfigNodes */
+        public static string escapeNewlines(string src)
+        {
+            return src.Replace("\\", "\\\\").Replace("\n", "\\n");
+        }
+
+        public static string unEscapeNewlines(string src)
+        {
+            return src.Replace("\\n", "\n").Replace("\\\\", "\\");
         }
     }
     public static class Logging

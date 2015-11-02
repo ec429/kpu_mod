@@ -233,6 +233,24 @@ Note that boolean evaluation will short-circuit, so e.g. "AND false error"
  will _not_ clear the error flag, because it will never read it.
 
 
+Can I save and re-use my programs?
+----------------------------------
+
+Yes!  The KPU Program Library allows you to save programs within your KSP save
+ game.  Just click the 'Save' button in the Code window (note: your code must
+ be in a compiled state) and enter a name in the pop-up window.  Then, to load
+ a program onto a probe, click the 'Load' button in the Code window to open
+ the Program Library.  Here you will see a list of program names, and some
+ information about the one currently selected (such as processor requirements
+ and an editable description field).  Then just click 'Load' in the Program
+ Library to load the currently selected program into the Code window.  (Note
+ that it won't upload the code to the probe yet; you still have to do that
+ separately with the 'Upload Program' action on the processor, and then 'Run
+ Program' to execute it.)
+Remember that the Program Library stores the programs in the KSP save game;
+ consequently, if you start a new game, the Program Library will be empty.
+
+
 Where do I report bugs?
 -----------------------
 
