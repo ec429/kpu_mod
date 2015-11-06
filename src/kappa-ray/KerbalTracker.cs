@@ -16,6 +16,11 @@ namespace kapparay
                 if (c.name.Equals(name))
                     return c;
             }
+            foreach (ProtoCrewMember c in roster.Kerbals(ProtoCrewMember.KerbalType.Unowned))
+            {
+                if (c.name.Equals(name))
+                    return c;
+            }
             return null;
         }}
         public string name;
