@@ -27,14 +27,46 @@ namespace kapparay
         private double mCancerTime = Double.PositiveInfinity;
         public bool hasCancer { get { return !Double.IsPositiveInfinity(mCancerTime); } }
         public double softDose = 0, hardDose = 0;
+        private Vessel mVessel;
 
         public KerbalTracker(string n)
         {
             name = n;
         }
 
-        public bool Update()
+        public void Kill()
         {
+            TimeWarp.SetRate(0, false);
+            if (CameraManager.Instance.currentCameraMode == CameraManager.CameraMode.IVA && mVessel.isActiveVessel)
+            {
+                CameraManager.Instance.SetCameraFlight();
+            }
+            if (!mVessel.isEVA)
+            {
+                Part part = mVessel.Parts.Find(p => p.protoModuleCrew.Contains(cm));
+                if (part != null)
+                {
+                    part.RemoveCrewmember(cm);
+                    cm.Die();
+                    if (HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
+                    {
+                        cm.StartRespawnPeriod(2160000.0); // 100 Kerbin days
+                    }
+                }
+            }
+            else
+            {
+                mVessel.rootPart.Die();
+                if (HighLogic.CurrentGame.Parameters.Difficulty.MissingCrewsRespawn)
+                {
+                    cm.StartRespawnPeriod(2160000.0); // 100 Kerbin days
+                }
+            }
+        }
+
+        public bool Update(Vessel v)
+        {
+            mVessel = v;
             if (Object.ReferenceEquals(cm, null)) // causes include death, firing or completed tourist itinerary
             {
                 Logging.Log(String.Format("Forgetting {0}, no longer on roster", name));
@@ -43,7 +75,7 @@ namespace kapparay
             if (Planetarium.GetUniversalTime() > mCancerTime)
             {
                 Logging.Message(String.Format("Bad news!  {0} has died of cancer.", name));
-                cm.Die();
+                Kill();
                 return true;
             }
             return false;
@@ -80,7 +112,7 @@ namespace kapparay
                 if (Core.Instance.mRandom.NextDouble() > Math.Pow(1.0 - pDeadly, count))
                 {
                     Logging.Message(String.Format("Terrible news!  {0} has died of radiation sickness!", name));
-                    cm.Die();
+                    Kill();
                     Core.Instance.ForgetKerbal(this);
                     return 0;
                 }

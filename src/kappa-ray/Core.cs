@@ -307,6 +307,7 @@ namespace kapparay
         {
             double t = Planetarium.GetUniversalTime();
             mSolar.Update();
+            updateTrackedKerbals();
             if (radiationEnabled)
             {
                 foreach(Vessel v in FlightGlobals.Vessels) // ensure every vessel has a RadiationTracker
@@ -317,14 +318,16 @@ namespace kapparay
                 {
                     rt.Update(t - lastUpdate);
                 }
-                List<KerbalTracker> kerbals = new List<KerbalTracker>(mKerbals.Values);
-                foreach(KerbalTracker kt in kerbals)
+                foreach(KeyValuePair<Vessel,List<KerbalTracker>> kvp in mTracked)
                 {
-                    if (kt.Update())
-                        ForgetKerbal(kt);
+                    Vessel v = kvp.Key;
+                    foreach(KerbalTracker kt in kvp.Value)
+                    {
+                        if (kt.Update(v))
+                            ForgetKerbal(kt);
+                    }
                 }
             }
-            updateTrackedKerbals();
             lastUpdate = t;
         }
 
