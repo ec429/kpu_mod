@@ -158,6 +158,11 @@ namespace kapparay
                     continue;
                 }
                 string name = cn.GetValue("name");
+                if (va.ContainsKey(name))
+                {
+                    Logging.Log(String.Format("Duplicate definitions for KappaRayEnvironment '{0}'", name));
+                    continue;
+                }
                 if (cn.HasValue("vanAllen"))
                 {
                     string v = cn.GetValue("vanAllen");
@@ -183,6 +188,11 @@ namespace kapparay
                     continue;
                 }
                 string name = cn.GetValue("name");
+                if (resAbsCe.ContainsKey(name))
+                {
+                    Logging.Log(String.Format("Duplicate definitions for KappaRayResource '{0}'", name));
+                    continue;
+                }
                 double rac;
                 if (cn.HasValue("absorpCoeff") && Double.TryParse(cn.GetValue("absorpCoeff"), out rac))
                 {
