@@ -1424,6 +1424,27 @@ namespace KPU.Processor
         }
     }
 
+    public class FuelCells : BooleanTrigger, IOutputData
+    {
+        public string name { get { return "fuelCells"; } }
+        public override void rawInvoke(FlightCtrlState fcs, Processor p, bool b)
+        {
+            foreach (Part part in p.parentVessel.Parts)
+            {
+                foreach (ModuleResourceConverter rc in part.FindModulesImplementing<ModuleResourceConverter>())
+                {
+                    if (rc.ConverterName.Equals("Fuel Cell"))
+                    {
+                        if (b)
+                            rc.StartResourceConverter();
+                        else
+                            rc.StopResourceConverter();
+                    }
+                }
+            }
+        }
+    }
+
     public class RTAntennas : BooleanTrigger, IOutputData
     {
         public string name { get { return "rtAntennas"; } }
@@ -1737,6 +1758,7 @@ namespace KPU.Processor
             addOutput(new Lights());
             addOutput(new Abort());
             addOutput(new SolarPanels());
+            addOutput(new FuelCells());
             addOutput(new RTAntennas());
             addOutput(new RoverMotors());
             addOutput(new RoverSteer());
