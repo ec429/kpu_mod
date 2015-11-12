@@ -47,7 +47,9 @@ namespace KPU.Modules
 
         public void FixedUpdate()
         {
-            drift = (drift + 0.004) * 1.0001; // reaches 100 after about 4.2 minutes
+            float tw = TimeWarp.fixedDeltaTime; // higher timewarp will slightly affect the results, but not much
+            // (the 'exact' approach would involve e, but I don't think it's necessary)
+            drift = (drift + 0.2 * tw) * (1 + 0.005 * tw); // reaches 100 after about 4.2 minutes
 
             if (vessel == null)
                 return;
