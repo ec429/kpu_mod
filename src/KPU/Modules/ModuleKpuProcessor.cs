@@ -217,6 +217,7 @@ namespace KPU.Modules
             double scale = mProcessor.isRunning ? mProcessor.isHibernating ? 0.1f : 1.0f : 0.02f;
             double resourceRequest = electricRate * TimeWarp.fixedDeltaTime * scale;
             double electricUsage = part.RequestResource("ElectricCharge", resourceRequest);
+            part.AddThermalFlux(electricUsage * 40.0 / TimeWarp.fixedDeltaTime);
             mProcessor.hasPower = electricUsage >= resourceRequest * 0.9;
 
             if (vessel.packed)
