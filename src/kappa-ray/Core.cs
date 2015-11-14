@@ -325,9 +325,13 @@ namespace kapparay
                 {
                     getRT(v);
                 }
-                foreach(RadiationTracker rt in mVessels.Values)
+                List<Vessel> trackedVessels = new List<Vessel>(mVessels.Keys);
+                foreach(Vessel v in trackedVessels)
                 {
-                    rt.Update(t - lastUpdate);
+                    if (v.state == Vessel.State.DEAD)
+                        ForgetVessel(v);
+                    else
+                        mVessels[v].Update(t - lastUpdate);
                 }
                 foreach(KeyValuePair<Vessel,List<KerbalTracker>> kvp in mTracked)
                 {

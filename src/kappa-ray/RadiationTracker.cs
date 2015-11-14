@@ -103,7 +103,7 @@ namespace kapparay
 
     public class RadiationTracker : MonoBehaviour, IRadiationTracker
     {
-        private Vessel mVessel;
+        public Vessel mVessel;
 
         public double lastV, lastS, lastG;
 
