@@ -243,7 +243,6 @@ namespace kapparay
                 Part p = rh.transform.gameObject.GetComponent<Part>();
                 if (p != null)
                 {
-                    int oldCount = count;
                     bool hasModule = false;
                     foreach(IKappaRayHandler h in p.FindModulesImplementing<IKappaRayHandler>())
                     {
@@ -268,9 +267,6 @@ namespace kapparay
                         #endif
                         count -= absorbs;
                     }
-
-                    if (count < oldCount)
-                        p.AddThermalFlux((oldCount - count) * energy / 1e3 / TimeWarp.fixedDeltaTime);
                 }
             }
         }
