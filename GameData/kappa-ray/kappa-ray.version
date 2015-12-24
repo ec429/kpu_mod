@@ -1,12 +1,12 @@
 {
     "NAME":"Kappa Ray",
     "URL":"http://jttlov.no-ip.org/tar/kappa-ray.version",
-    "DOWNLOAD":"http://jttlov.no-ip.org/tar/kapparay-0.3.3.zip",
+    "DOWNLOAD":"http://jttlov.no-ip.org/tar/kapparay-0.3.4.zip",
     "VERSION":
     {
         "MAJOR":0,
         "MINOR":3,
-        "PATCH":3,
+        "PATCH":4,
         "BUILD":0
     },
     "KSP_VERSION":

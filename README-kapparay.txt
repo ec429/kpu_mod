@@ -15,12 +15,12 @@ Kappa-Ray is licensed under the GNU General Public License, version 2.
 
 Radiation Effects
 -----------------
-Most parts will absorb part of the radiation passing through them, thus
- generating heat.  Parts with ModuleKappaRayAbsorber will be much more
- effective at this, depending on their absorpCoeff.  (This is useful for
- shielding).  Other parts' effective absorpCoeff increases with dry mass, and
- is further increased by contained resources.  (So for instance, a full fuel
- tank - or water tank! - will absorb more than an empty one.)
+Most parts will absorb part of the radiation passing through them.  Parts with
+ ModuleKappaRayAbsorber will be much more effective at this, depending on
+ their absorpCoeff.  (This is useful for shielding).  Other parts' effective
+ absorpCoeff increases with dry mass, and is further increased by contained
+ resources.  (So for instance, a full fuel tank - or water tank! - will absorb
+ more than an empty one.)
 Kerbals in command pods and cockpits may suffer radiation sickness, causing
  immediate death, or may develop cancer, causing delayed death.  Kerbals on
  EVA are at even greater risk, as they are completely unshielded.  The 'dose'
@@ -153,9 +153,6 @@ This is because turning that on causes the following bugs:
 }
 
 It's possible to have two instances of the FluxWindow open.
-
-Kerbals don't actually die when they should; they lose their XP, and their
- camera shows K.I.A., but scene changes (?) resuscitate them.
 
 Because of reasons, the OX-STAT fixed solar panel is no longer physicsless,
  which may unbalance some small probes with asymmetric OX-STATs.
