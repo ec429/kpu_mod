@@ -31,7 +31,7 @@ namespace kapparay
             if (Planetarium.GetUniversalTime() > nextStorm)
             {
                 if (HighLogic.LoadedSceneIsFlight)
-                    TimeWarp.SetRate(0, true); // force drop out of timewarp, they're probably going to want to do something about this
+                    TimeWarp.SetRate(0, false); // force drop out of timewarp, they're probably going to want to do something about this
                 Logging.Message("SOLAR STORM DETECTED!");
                 lastStorm = nextStorm;
                 stormStrength = 4.0 + Math.Pow(Core.Instance.mRandom.NextDouble(), 2) * 50.0;
