@@ -19,6 +19,8 @@ namespace KPU.Modules
         [KSPField()]
         public bool requireIP;
         [KSPField()]
+        public bool requireRadio;
+        [KSPField()]
         public bool isActive = true;
 
         [KSPField]
@@ -109,6 +111,15 @@ namespace KPU.Modules
             {
                 if (!vessel.FindPartModulesImplementing<ModuleKpuInertialPlatform>().Exists(m => m.isWorking))
                     isWorking = false;
+            }
+            if (requireRadio)
+            {
+                if (!RemoteTech.API.API.HasConnectionToKSC(vessel.id))
+                {
+                    GUI_status = "No signal source";
+                    isWorking = false;
+                    return;
+                }
             }
             isWorking = true;
             GUI_status = "OK";

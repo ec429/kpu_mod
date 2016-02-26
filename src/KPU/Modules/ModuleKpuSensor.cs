@@ -25,6 +25,8 @@ namespace KPU.Modules
         public bool requireIP;
         [KSPField()]
         public bool fromIP;
+        [KSPField()]
+        public bool requireRadio;
 
         [KSPField]
         public String TechRequired = "None";
@@ -104,6 +106,15 @@ namespace KPU.Modules
             {
                 double drift = part.FindModulesImplementing<ModuleKpuInertialPlatform>().ConvertAll<double>(m => m.drift).Min();
                 lossFactor = 1.0 + drift / 25.0; // a drift of 100 degrades resolution by a factor of 5
+            }
+            if (requireRadio)
+            {
+                if (!RemoteTech.API.API.HasConnectionToKSC(vessel.id))
+                {
+                    GUI_status = "No signal source";
+                    isWorking = false;
+                    return;
+                }
             }
             isWorking = true;
             GUI_status = "OK";
