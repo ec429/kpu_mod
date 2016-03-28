@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace KPU.UI
@@ -105,6 +106,11 @@ namespace KPU.UI
                             GUILayout.EndHorizontal();
                         }
                     }
+                    GUILayout.Label("Orient Support", mHeadingStyle);
+                    List<string> orients = mProcessor.SupportedOrientations();
+                    if (orients != null)
+                        foreach (string s in orients)
+                            GUILayout.Label(s, mKeyStyle);
                 }
                 GUILayout.EndScrollView();
             }

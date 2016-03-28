@@ -1220,11 +1220,42 @@ namespace KPU.Processor
             return Math.Round(val / res) * res;
         }
 
+        public List<string> supported(Processor p)
+        {
+            List<string> rv = new List<string>();
+            List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR);
+            if (srcs.Count > 0)
+            {
+                double res = srcs.Min(m => m.resolution);
+                rv.Add(String.Format("customHPR, {0}", Util.formatAngle(res)));
+            }
+            srcs = oriSrc(p, m => m.customHP);
+            if (srcs.Count > 0)
+            {
+                double res = srcs.Min(m => m.resolution);
+                rv.Add(String.Format("customHP, {0}", Util.formatAngle(res)));
+            }
+            if (oriSrc(p, m => m.srfPrograde).Count > 0)
+            {
+                rv.Add("srfPrograde");
+                rv.Add("srfRetrograde");
+            }
+            if (oriSrc(p, m => m.orbPrograde).Count > 0)
+            {
+                rv.Add("orbPrograde");
+                rv.Add("orbRetrograde");
+            }
+            if (oriSrc(p, m => m.srfVertical).Count > 0)
+                rv.Add("srfVertical");
+            if (oriSrc(p, m => m.orbVertical).Count > 0)
+                rv.Add("orbVertical");
+            return rv;
+        }
+
         public void Invoke(FlightCtrlState fcs, Processor p)
         {
             if (mValue.StartsWith("customHPR"))
             {
-                
                 List<Modules.ModuleKpuOrientation> srcs = oriSrc(p, m => m.customHPR);
                 if (srcs.Count > 0)
                 {
@@ -1679,6 +1710,7 @@ namespace KPU.Processor
 
         public Dictionary<string, IInputData> inputs = new Dictionary<string, IInputData>();
         public Dictionary<string, IOutputData> outputs = new Dictionary<string, IOutputData>();
+        private Orient orient;
 
         private void addInput(IInputData i)
         {
@@ -1751,7 +1783,7 @@ namespace KPU.Processor
             addInput(new PeriLongitude(this));
             addInput(new Heading(this));
             addOutput(new Throttle());
-            addOutput(new Orient());
+            addOutput(orient = new Orient());
             addOutput(new Stage());
             addOutput(new GearOutput());
             addOutput(new Brakes());
@@ -1764,6 +1796,12 @@ namespace KPU.Processor
             addOutput(new RoverSteer());
 
             initPIDParameters();
+        }
+
+        public List<string> SupportedOrientations()
+        {
+            if (orient == null) return null;
+            return orient.supported(this);
         }
 
         public void ClearInstructions()
