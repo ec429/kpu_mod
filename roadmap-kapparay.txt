@@ -47,3 +47,10 @@ suggested on IRC:
 <xShadowx> soundnfury: also can have kerbals go blind from radiation, so on eva screen fades to a grey color, g-effects has a nice example for fading the screen
 <xShadowx> soundnfury: and can tap into progeny when taniwha releases, radiation mutates genes
 <xShadowx> soundnfury: maybe an interface into testflight or dangit, to justup the failure rate as damage is done
+
+also (timeEfficCurve for solar panels):
+<NathanKell> soundnfury: sure it is!
+<NathanKell> soundnfury: it evaluates the curve based on (UT - this.launchUT)
+<NathanKell> so make launchUT earlier and you increase the effective time it's been in space
+<soundnfury> ... ooh, cunning
+<NathanKell> (note: you also have to create the timeEfficCurve - stock has a single key = 0 1)
