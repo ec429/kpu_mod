@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
 [assembly: AssemblyProduct ("kappa-ray")]
-[assembly: AssemblyCopyright ("Copyright © 2015")]
+[assembly: AssemblyCopyright ("Copyright © 2015-2016")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 [assembly: Guid("162c55d7-bc4f-482e-b134-d45eab047fb1")]
@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 // DLLs any time it changes.  Breaking on a minor revision is probably acceptable - it's
 // unlikely that there wouldn't be other breaking changes on a minor version change.
 [assembly: AssemblyVersion("0.3")]
-[assembly: AssemblyFileVersion("0.3.4")]
+[assembly: AssemblyFileVersion("0.3.5")]
 
 // Use KSPAssembly to allow other DLLs to make this DLL a dependency in a
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it

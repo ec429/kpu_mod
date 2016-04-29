@@ -67,6 +67,17 @@
       <HintPath>..\..\GameData\kappa-ray\Plugins\kappa-ray.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="KSPUtil">
+      <HintPath>..\lib\KSPUtil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="KSPCore">
+      <HintPath>..\lib\KSPCore.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Modules\" />

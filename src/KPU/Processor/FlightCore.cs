@@ -158,7 +158,7 @@ namespace KPU.Processor
         /// <returns>True if there are enough propellant to perform</returns>
         public static bool hasPropellant(System.Collections.Generic.List<Propellant> propellants)
         {
-            if (CheatOptions.InfiniteFuel) return true;
+            if (CheatOptions.InfinitePropellant) return true;
 
             foreach (var props in propellants)
             {
@@ -231,7 +231,7 @@ namespace KPU.Processor
             // Find out the real shorter way to turn were we want to.
             // Thanks to HoneyFox
 
-            Vector3d tgtLocalUp = vesselReference.transform.rotation.Inverse() * target * Vector3d.forward;
+            Vector3d tgtLocalUp = Quaternion.Inverse(vesselReference.transform.rotation) * target * Vector3d.forward;
             Vector3d curLocalUp = Vector3d.up;
 
             double turnAngle = Math.Abs(Vector3d.Angle(curLocalUp, tgtLocalUp));
@@ -374,7 +374,7 @@ namespace KPU.Processor
         public static Vector3d GetStoppingAngle(Vessel vessel, Vector3d torque)
         {
             var momentOfInertia = GetTrueMoI(vessel);
-            var angularVelocity = Quaternion.Inverse(vessel.transform.rotation) * vessel.rigidbody.angularVelocity;
+            var angularVelocity = Quaternion.Inverse(vessel.transform.rotation) * vessel.angularVelocity;
             var angularMomentum = Vector3d.Scale(angularVelocity, momentOfInertia);
 
             // Adapted from MechJeb master on June 27, 2014

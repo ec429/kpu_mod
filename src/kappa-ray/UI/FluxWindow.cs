@@ -36,7 +36,7 @@ namespace kapparay.UI
             GUILayout.BeginVertical();
             {
                 Vessel active = FlightGlobals.ActiveVessel;
-                if (active == null && PlanetariumCamera.fetch.target.type == MapObject.MapObjectType.VESSEL)
+                if (active == null && PlanetariumCamera.fetch.target.type == MapObject.ObjectType.Vessel)
                     active = PlanetariumCamera.fetch.target.vessel;
                 RadiationTracker rt = Core.Instance.getRT(active);
                 if (!object.ReferenceEquals(rt, null))
