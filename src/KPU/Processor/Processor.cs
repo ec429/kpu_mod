@@ -3,6 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using KSP.UI.Screens;
 
 namespace KPU.Processor
 {
@@ -1344,7 +1345,7 @@ namespace KPU.Processor
         {
             if (mQueued > 0)
             {
-                Staging.ActivateNextStage();
+                StageManager.ActivateNextStage();
                 mQueued--;
             }
         }
