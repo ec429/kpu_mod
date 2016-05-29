@@ -73,6 +73,7 @@
     </Reference>
     <Reference Include="KSPCore">
       <HintPath>..\lib\KSPCore.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\lib\UnityEngine.UI.dll</HintPath>

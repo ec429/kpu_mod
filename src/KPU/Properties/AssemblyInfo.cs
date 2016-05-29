@@ -46,4 +46,4 @@ using System.Runtime.InteropServices;
 #if WITH_KAPPA_RAYS
 [assembly: KSPAssemblyDependency("kappa-ray", 0, 3)]
 #endif
-[assembly: KSPAssemblyDependency("RemoteTech", 1, 6)]
+[assembly: KSPAssemblyDependency("RemoteTech", 1, 7)]
