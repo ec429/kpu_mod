@@ -35,11 +35,15 @@ namespace KPU.Library
         }}
 
         public HashSet<string> usedInputs { get {
-            HashSet<string> used = new HashSet<string>();
+            HashSet<string> used = new HashSet<string>(), ignore = new HashSet<string>();
             foreach (KPU.Processor.Instruction i in code)
-            {
-                used.UnionWith(i.usedInputs);
-            }
+                i.usedInputs(ref used, ref ignore);
+            return used;
+        }}
+        public HashSet<string> usedOrients { get {
+                HashSet<string> used = new HashSet<string>(), ignore = new HashSet<string>();
+            foreach (KPU.Processor.Instruction i in code)
+                i.usedInputs(ref ignore, ref used);
             return used;
         }}
 

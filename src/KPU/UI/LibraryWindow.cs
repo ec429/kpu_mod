@@ -135,6 +135,23 @@ namespace KPU.UI
                             GUILayout.Label(input, have ? mGoodNewsStyle : mBadNewsStyle, GUILayout.Width(270));
                         }
                     }
+                    GUILayout.Label("Orients Used", mHeadingStyle, GUILayout.Width(280));
+                    List<string> supportedOrientations = proc == null ? null : proc.SupportedOrientations();
+                    mScrollInputs = GUILayout.BeginScrollView(mScrollInputs, GUILayout.Height(64));
+                    List<string> usedOrients = new List<string>(selectedProgram.usedOrients);
+                    usedOrients.Sort();
+                    foreach (string orient in usedOrients)
+                    {
+                        if (supportedOrientations == null)
+                        {
+                            GUILayout.Label(orient, HighLogic.Skin.label, GUILayout.Width(270));
+                        }
+                        else
+                        {
+                            bool have = supportedOrientations.Contains(orient);
+                            GUILayout.Label(orient, have ? mGoodNewsStyle : mBadNewsStyle, GUILayout.Width(270));
+                        }
+                    }
                     GUILayout.EndScrollView();
                 }
             }

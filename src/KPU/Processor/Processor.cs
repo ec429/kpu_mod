@@ -149,6 +149,27 @@ namespace KPU.Processor
                     return ret;
                 }
             }
+            public void usedInputs(ref HashSet<string> inputs, ref HashSet<string> orients)
+            {
+                this.usedInputs(ref inputs, ref orients, false);
+            }
+            public void usedInputs(ref HashSet<string> inputs, ref HashSet<string> orients, bool inOrient)
+            {
+                if (mToken.Value == Tokens.TOK_COMMENT || mToken.Value == Tokens.TOK_LITERAL)
+                    return;
+                if (mToken.Value == Tokens.TOK_AT)
+                {
+                    mChildren[1].usedInputs(ref inputs, ref orients, mChildren[0].mToken.Key == "orient.set");
+                    return;
+                }
+                if (mToken.Value == Tokens.TOK_IDENT)
+                {
+                    (inOrient ? orients : inputs).Add(mToken.Key);
+                    return;
+                }
+                foreach (ASTNode n in mChildren)
+                    n.usedInputs(ref inputs, ref orients, inOrient);
+            }
         }
 
         public ASTNode mAST;
@@ -345,28 +366,13 @@ namespace KPU.Processor
         public int imemWords { get { return mImemWords; } }
         public bool requiresLevelTrigger = false, requiresLogicOps = false, requiresArithOps = false;
 
-        public HashSet<string> usedInputs { get {
-            HashSet<string> used = new HashSet<string>();
-            if (mAST.mToken.Value == Tokens.TOK_KEYWORD && (mAST.mToken.Key.Equals("IF") || mAST.mToken.Key.Equals("ON")) && mAST.mChildren.Count > 0)
-            {
-                ASTNode cond = mAST.mChildren[0];
-                foreach (ASTNode node in cond.flat)
-                {
-                    if (node.mToken.Value == Tokens.TOK_IDENT)
-                    {
-                        // ignore builtin inputs
-                        if (node.mToken.Key.Equals("true"))
-                            continue;
-                        if (node.mToken.Key.Equals("false"))
-                            continue;
-                        if (node.mToken.Key.Equals("error"))
-                            continue;
-                        used.Add(node.mToken.Key);
-                    }
-                }
-            }
-            return used;
-        }}
+        public void usedInputs(ref HashSet<string> inputs, ref HashSet<string> orients)
+        {
+            string[] builtins = {"true", "false", "error"};
+            mAST.usedInputs(ref inputs, ref orients);
+            inputs.ExceptWith(builtins);
+            orients.ExceptWith(new string[]{"none"});
+        }
 
         public enum Type { BOOLEAN, DOUBLE, ANGLE, NAME, TUPLE, VOID };
 
