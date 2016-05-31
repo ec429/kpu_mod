@@ -119,8 +119,8 @@ namespace KPU.UI
                     require("Arithmetic Ops", selectedProgram.requiresArithOps, proc == null ? false : proc.hasArithOps);
                     bool enough = proc == null ? false : selectedProgram.imemWords <= proc.maxImemWords;
                     GUILayout.Label(String.Format("Requires {0} words of IMEM", selectedProgram.imemWords), enough ? mGoodNewsStyle : mBadNewsStyle);
-                    GUILayout.Label("Inputs Used", mHeadingStyle, GUILayout.Width(280));
                     mScrollInputs = GUILayout.BeginScrollView(mScrollInputs, GUILayout.Height(64));
+                    GUILayout.Label("Inputs Used", mHeadingStyle, GUILayout.Width(270));
                     List<string> usedInputs = new List<string>(selectedProgram.usedInputs);
                     usedInputs.Sort();
                     foreach (string input in usedInputs)
@@ -135,20 +135,18 @@ namespace KPU.UI
                             GUILayout.Label(input, have ? mGoodNewsStyle : mBadNewsStyle, GUILayout.Width(270));
                         }
                     }
-                    GUILayout.Label("Orients Used", mHeadingStyle, GUILayout.Width(280));
-                    List<string> supportedOrientations = proc == null ? null : proc.SupportedOrientations();
-                    mScrollInputs = GUILayout.BeginScrollView(mScrollInputs, GUILayout.Height(64));
+                    GUILayout.Label("Orients Used", mHeadingStyle, GUILayout.Width(270));
                     List<string> usedOrients = new List<string>(selectedProgram.usedOrients);
                     usedOrients.Sort();
                     foreach (string orient in usedOrients)
                     {
-                        if (supportedOrientations == null)
+                        if (proc == null)
                         {
                             GUILayout.Label(orient, HighLogic.Skin.label, GUILayout.Width(270));
                         }
                         else
                         {
-                            bool have = supportedOrientations.Contains(orient);
+                            bool have = proc.IsOrientationSupported(orient);
                             GUILayout.Label(orient, have ? mGoodNewsStyle : mBadNewsStyle, GUILayout.Width(270));
                         }
                     }

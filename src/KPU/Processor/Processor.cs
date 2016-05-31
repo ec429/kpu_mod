@@ -167,6 +167,8 @@ namespace KPU.Processor
                     (inOrient ? orients : inputs).Add(mToken.Key);
                     return;
                 }
+                if (inOrient && mToken.Value == Tokens.TOK_COMMA)
+                    orients.Add(mChildren[0].mToken.Value == Tokens.TOK_COMMA ? "customHPR" : "customHP");
                 foreach (ASTNode n in mChildren)
                     n.usedInputs(ref inputs, ref orients, inOrient);
             }
@@ -1227,6 +1229,23 @@ namespace KPU.Processor
             return Math.Round(val / res) * res;
         }
 
+        public bool isSupported(string name, Processor p)
+        {
+            if (name == "customHP")
+                return oriSrc(p, m => m.customHP).Count > 0;
+            if (name == "customHPR")
+                return oriSrc(p, m => m.customHPR).Count > 0;
+            if (name == "srfPrograde" || name == "srfRetrograde")
+                return oriSrc(p, m => m.srfPrograde).Count > 0;
+            if (name == "orbPrograde" || name == "orbRetrograde")
+                return oriSrc(p, m => m.orbPrograde).Count > 0;
+            if (name == "srfVertical")
+                return oriSrc(p, m => m.srfVertical).Count > 0;
+            if (name == "orbVertical")
+                return oriSrc(p, m => m.orbVertical).Count > 0;
+            return false;
+        }
+
         public List<string> supported(Processor p)
         {
             List<string> rv = new List<string>();
@@ -1809,6 +1828,12 @@ namespace KPU.Processor
         {
             if (orient == null) return null;
             return orient.supported(this);
+        }
+
+        public bool IsOrientationSupported(string name)
+        {
+            if (orient == null) return false;
+            return orient.isSupported(name, this);
         }
 
         public void ClearInstructions()
