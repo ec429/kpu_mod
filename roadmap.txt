@@ -16,6 +16,9 @@ Stock sensors.  Some of the science experiments in stock are also usable sensors
 	PresMat Barometer.  Gives airPressure (no idea what use this would be; what you really want is dynamic pressure (Q) but that depends on air *density*...)
 	2HOT Thermometer.  Gives temperature (maybe useful to deal with overheating?)
 
+OTHER IDEAS
+Inter-processor interrupts.  Each processor on a vessel has a 'name' and can use interrupts to hibernate/wake another processor, set (but not read!) another processor's latches.  So you can have a Master Control Program, a Critical Systems Computer, a Guidance Instrumentation Array, an Encounter Scientific Platform...
+
 MANUFACTURERS
 Kelliot Automation: The world leaders in industrial process automation, Kelliot consider even Rockomax engines to be "quaint, tiny machines".
 Kerbolics: A start-up company formed by some bearded researchers from the Kerbal Institute of Technology to manufacture intelligence.
