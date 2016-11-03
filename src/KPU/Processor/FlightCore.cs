@@ -323,7 +323,7 @@ namespace KPU.Processor
         private static Vector3d GetTrueMoI(Vessel vessel)
         {
             var inertiaTensor = new Matrix3x3();
-            var centerOfMass = vessel.findWorldCenterOfMass();
+            var centerOfMass = vessel.CoM;
 
             foreach (Part p in vessel.parts)
             {
@@ -396,7 +396,7 @@ namespace KPU.Processor
         public static Vector3d GetTorque(Vessel vessel, float thrust)
         {
             // Do everything in vessel coordinates
-            var centerOfMass = vessel.findLocalCenterOfMass();
+            var centerOfMass = vessel.CoM;
 
             // Don't assume any particular symmetry for the vessel
             double pitch = 0, roll = 0, yaw = 0;

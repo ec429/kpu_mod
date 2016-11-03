@@ -37,13 +37,10 @@ using System.Runtime.InteropServices;
 // DLLs any time it changes.  Breaking on a minor revision is probably acceptable - it's
 // unlikely that there wouldn't be other breaking changes on a minor version change.
 [assembly: AssemblyVersion("0.0")]
-[assembly: AssemblyFileVersion("0.0.9")]
+[assembly: AssemblyFileVersion("0.0.10")]
 
 // Use KSPAssembly to allow other DLLs to make this DLL a dependency in a
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it
 // does not appear to have a hard requirement to match the assembly version.
 [assembly: KSPAssembly("KPU", 0, 0)]
-#if WITH_KAPPA_RAYS
-[assembly: KSPAssemblyDependency("kappa-ray", 0, 3)]
-#endif
-[assembly: KSPAssemblyDependency("RemoteTech", 1, 7)]
+[assembly: KSPAssemblyDependency("RemoteTech", 1, 8)]

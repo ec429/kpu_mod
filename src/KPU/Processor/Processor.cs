@@ -46,12 +46,6 @@ namespace KPU.Processor
 
         public bool skip = false;
         public bool lastValue = false;
-        private bool mGlitched = false;
-
-        public void glitch()
-        {
-            mGlitched = true;
-        }
 
         public enum Tokens { TOK_COMMENT, TOK_KEYWORD, TOK_LOG_OP, TOK_COMP_OP, TOK_ARITH_OP, TOK_UN_OP, TOK_AT, TOK_COMMA, TOK_SEMI, TOK_LITERAL, TOK_IDENT, TOK_WHITESPACE };
         private List<KeyValuePair<string, Tokens>> Tokenise(string text)
@@ -620,8 +614,6 @@ namespace KPU.Processor
                 {
                     Value cond = evalRecursive(n.mChildren[0], p);
                     assertType(n, "cond", Type.BOOLEAN, cond);
-                    if (mGlitched)
-                        cond = new Value(!cond.b);
                     if (cond.b && !lastValue)
                     {
                         Logging.Log("edge fired! " + mText);
@@ -643,8 +635,6 @@ namespace KPU.Processor
                 {
                     Value cond = evalRecursive(n.mChildren[0], p);
                     assertType(n, "cond", Type.BOOLEAN, cond);
-                    if (mGlitched)
-                        cond = new Value(!cond.b);
                     if (cond.b)
                     {
                         evalRecursive(n.mChildren[1], p);
@@ -727,7 +717,6 @@ namespace KPU.Processor
                     skip = true;
                 }
             }
-            mGlitched = false;
         }
 
         public void considerWakeup(Processor p)
@@ -779,7 +768,11 @@ namespace KPU.Processor
     {
         public string name { get { return "batteries"; } }
         public string unit { get { return "%"; } }
-        public bool available { get { return TotalElectricChargeCapacity > 0.1f; }}
+        public bool available { get {
+            double amount, max;
+            this.ElectricCharge(out amount, out max);
+            return max > 0.1f;
+        }}
         public bool useSI { get { return false; }}
         public Instruction.Type typ {get { return Instruction.Type.DOUBLE; } }
         public Instruction.Value value { get { return new Instruction.Value(Math.Round(ElectricChargeFillLevel * 10000.0f) / 100.0f); } }
@@ -792,33 +785,25 @@ namespace KPU.Processor
             mProc = p;
         }
 
-        private IEnumerable<PartResource> ElectricChargeResources
+        private void ElectricCharge(out double amount, out double max)
         {
-            get
-            {
-                if (this.parentVessel != null && this.parentVessel.rootPart != null) {
-                    int ecid = PartResourceLibrary.Instance.GetDefinition ("ElectricCharge").id;
-                    List<PartResource> resources = new List<PartResource> ();
-                    this.parentVessel.rootPart.GetConnectedResources (ecid, ResourceFlowMode.ALL_VESSEL, resources);
-                    return resources;
-                }
-                return new List<PartResource>();
+            if (this.parentVessel != null && this.parentVessel.rootPart != null) {
+                int ecid = PartResourceLibrary.Instance.GetDefinition ("ElectricCharge").id;
+                this.parentVessel.rootPart.GetConnectedResourceTotals(ecid, out amount, out max);
+                return;
             }
-        }
-
-        private double TotalElectricCharge
-        {
-            get { return this.ElectricChargeResources.Sum(x => x.amount); }
-        }
-
-        private double TotalElectricChargeCapacity
-        {
-            get { return this.ElectricChargeResources.Sum(x => x.maxAmount); }
+            amount = 0;
+            max = 0;
         }
 
         private double ElectricChargeFillLevel
         {
-            get { return this.TotalElectricChargeCapacity > 0.1f ? this.TotalElectricCharge / this.TotalElectricChargeCapacity : 0f; }
+            get
+            {
+                double amount, max;
+                this.ElectricCharge(out amount, out max);
+                return max > 0.1f ? amount / max : 0f;
+            }
         }
 
     }
@@ -1893,37 +1878,6 @@ namespace KPU.Processor
 
         public Dictionary<string, Instruction.Value> inputValues;
 
-        // For kapparay.  Radiation can trigger various kinds of glitches
-        public int OnRadiation(double energy, int count, System.Random random)
-        {
-            /* Chance to flip latches */
-            for (int i = 0; i < latches; i++)
-            {
-                if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
-                {
-                    Logging.Log(String.Format("SEU flipped latch {0}", i));
-                    latchState[i] = !latchState[i];
-                    count -= 1;
-                    if (count == 0) return 0;
-                }
-            }
-            if (isRunning)
-            {
-                /* Chance to produce spurious edges */
-                foreach (Instruction i in instructions)
-                {
-                    if (random.NextDouble() < count * Math.Log10(energy) / 4e3)
-                    {
-                        Logging.Log("SEU glitched " + i.ToString());
-                        i.glitch();
-                        count -= 1;
-                        if (count == 0) return 0;
-                    }
-                }
-            }
-            return count;
-        }
-
         public void OnUpdate ()
         {
             // Check we haven't been destroyed
@@ -2007,8 +1961,7 @@ namespace KPU.Processor
             {
                 Vector3d torque = SteeringHelper.GetTorque(parentVessel,
                     parentVessel.ctrlState != null ? parentVessel.ctrlState.mainThrottle : 0.0f);
-                var CoM = parentVessel.findWorldCenterOfMass();
-                var MoI = parentVessel.findLocalMOI(CoM);
+                var MoI = parentVessel.MOI;
 
                 Vector3d ratio = new Vector3d(
                                  torque.x != 0 ? MoI.x / torque.x : 0,

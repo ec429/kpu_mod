@@ -6,9 +6,6 @@ namespace KPU.Modules
 {
     [KSPModule("KPU Processor")]
     public class ModuleKpuProcessor : PartModule, IDisposable
-#if WITH_KAPPA_RAYS
-    , kapparay.IKappaRayHandler
-#endif
     {
         private Processor.Processor mProcessor = null;
 
@@ -172,14 +169,6 @@ namespace KPU.Modules
                 }
             }
             catch (Exception e) { Logging.Log(e.ToString()); };
-        }
-
-        // For kapparay.IKappaRayHandler
-        public int OnRadiation(double energy, int count, System.Random random)
-        {
-            if (mProcessor != null)
-                return mProcessor.OnRadiation(energy, count, random);
-            return count;
         }
 
         public override void OnUpdate()

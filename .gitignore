@@ -1,4 +1,5 @@
 src/*/obj
 src/*/bin
+src/lib
 GameData/*/Plugins
 *.userprefs
