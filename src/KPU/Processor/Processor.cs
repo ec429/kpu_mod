@@ -1832,7 +1832,7 @@ namespace KPU.Processor
             foreach (Modules.ModuleKpuProcessor mkp in parentVessel.FindPartModulesImplementing<Modules.ModuleKpuProcessor>())
             {
                 Processor p = mkp.mProcessor;
-                if (p.processorName != null)
+                if (p != null)
                     if (p.name.Equals(name))
                         return p;
             }
