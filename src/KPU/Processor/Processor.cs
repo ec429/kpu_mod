@@ -1704,16 +1704,24 @@ namespace KPU.Processor
             if (dest.typ != Instruction.Type.NAME)
                 return;
             Processor pDest = mProcessor.findByName(dest.n);
-            if (pDest != null)
-                pDest.wakeup();
+            if (pDest == null)
+            {
+                Logging.Log(String.Format("No processor \"{0}\" found", dest.n));
+                return;
+            }
+            pDest.wakeup();
         }
         public void hiber(Instruction.Value dest)
         {
             if (dest.typ != Instruction.Type.NAME)
                 return;
             Processor pDest = mProcessor.findByName(dest.n);
-            if (pDest != null)
-                pDest.hibernate(null);
+            if (pDest == null)
+            {
+                Logging.Log(String.Format("No processor \"{0}\" found", dest.n));
+                return;
+            }
+            pDest.hibernate(null);
         }
         public void irq(Instruction.Value value)
         {
@@ -1734,7 +1742,10 @@ namespace KPU.Processor
                 return;
             Processor pDest = mProcessor.findByName(dest.n);
             if (pDest == null)
+            {
+                Logging.Log(String.Format("No processor \"{0}\" found", dest.n));
                 return;
+            }
             int vect = (int)Math.Round(vector.d);
             pDest.setLatch(vect);
         }
