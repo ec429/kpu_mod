@@ -47,10 +47,28 @@ namespace KPU.Modules
             setRunning();
         }
 
+        [KSPAction("Run Program")]
+        public void ActionRun(KSPActionParam param)
+        {
+            isRunning = true;
+            setRunning();
+        }
+        [KSPAction("Halt Program")]
+        public void ActionHalt(KSPActionParam param)
+        {
+            isRunning = false;
+            setRunning();
+        }
+        [KSPAction("Toggle Program")]
+        public void ActionToggle(KSPActionParam param)
+        {
+            EventToggle();
+        }
+
         KPU.UI.CodeWindow mCodeWindow;
         KPU.UI.WatchWindow mWatchWindow;
 
-        [KSPEvent(name = "EventEdit", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true)]
+        [KSPEvent(name = "EventEdit", guiName = "Edit Program", guiActive = true, guiActiveUnfocused = true, guiActiveEditor = true)]
         public void EventEdit()
         {
             if (mProcessor == null)
@@ -65,7 +83,7 @@ namespace KPU.Modules
             }
         }
 
-        [KSPEvent(name = "EventUpload", guiName = "Upload Program", guiActive = true, guiActiveUnfocused = true)]
+        [KSPEvent(name = "EventUpload", guiName = "Upload Program", guiActive = true, guiActiveUnfocused = true, guiActiveEditor = true)]
         public void EventUpload()
         {
             if (mProcessor == null)
@@ -161,7 +179,7 @@ namespace KPU.Modules
 
             try
             {
-                if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)
+                if (HighLogic.fetch && (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedSceneIsEditor))
                 {
                     if (mProcessor == null)
                         mProcessor = new Processor.Processor(part, this);
@@ -173,6 +191,9 @@ namespace KPU.Modules
 
         public override void OnUpdate()
         {
+            if (!(HighLogic.fetch && HighLogic.LoadedSceneIsFlight))
+                return;
+
             if (mProcessor != null)
             {
                 mProcessor.OnUpdate();
@@ -197,6 +218,9 @@ namespace KPU.Modules
 
         public void FixedUpdate()
         {
+            if (!(HighLogic.fetch && HighLogic.LoadedSceneIsFlight))
+                return;
+
             if (vessel == null)
                 return;
 
