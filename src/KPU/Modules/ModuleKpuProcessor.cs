@@ -32,9 +32,6 @@ namespace KPU.Modules
         [KSPField(guiName = "IMEM free")]
         public int GUI_imemWords;
 
-        [KSPField()]
-        public string processorName;
-
         private void setRunning()
         {
             if (mProcessor != null)
@@ -133,8 +130,6 @@ namespace KPU.Modules
 
         public override void OnStart(StartState state)
         {
-            if (processorName == null)
-                processorName = part.partName;
             GameEvents.onVesselChange.Add(OnVesselChange);
             setRunning();
         }

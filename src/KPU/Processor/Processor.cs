@@ -1800,19 +1800,16 @@ namespace KPU.Processor
                 latchState[i] = b;
         }
 
+        private string processorName = null;
         public string name
         {
             get {
-                Modules.ModuleKpuProcessor mkp = mPart ? mPart.FindModuleImplementing<KPU.Modules.ModuleKpuProcessor>() : null;
-                if (mkp != null)
-                    if (mkp.processorName != null)
-                        return mkp.processorName;
-                return "KPU";
+                if (processorName == null)
+                    return mPart.partName;
+                return processorName;
             }
             set {
-                Modules.ModuleKpuProcessor mkp = mPart ? mPart.FindModuleImplementing<KPU.Modules.ModuleKpuProcessor>() : null;
-                if (mkp != null)
-                    mkp.processorName = value;
+                processorName = value;
             }
         }
 
@@ -1822,9 +1819,12 @@ namespace KPU.Processor
             if (name == null)
                 return null;
             foreach (Modules.ModuleKpuProcessor mkp in parentVessel.FindPartModulesImplementing<Modules.ModuleKpuProcessor>())
-                if (mkp.processorName != null)
-                    if (mkp.processorName.Equals(name))
-                        return mkp.mProcessor;
+            {
+                Processor p = mkp.mProcessor;
+                if (p.processorName != null)
+                    if (p.name.Equals(name))
+                        return p;
+            }
             return null;
         }
 
@@ -2099,6 +2099,7 @@ namespace KPU.Processor
             
             ConfigNode Proc = new ConfigNode("Processor");
 
+            Proc.AddValue("processorName", processorName);
             Proc.AddValue("isHibernating", isHibernating);
             if (isHibernating)
                 Proc.AddValue("hibernationLine", hibernationLine);
@@ -2143,6 +2144,8 @@ namespace KPU.Processor
             
             ConfigNode Proc = node.GetNode("Processor");
 
+            if (Proc.HasValue("processorName"))
+                processorName = Proc.GetValue("processorName");
             if (Proc.HasValue("isHibernating"))
                 bool.TryParse(Proc.GetValue("isHibernating"), out isHibernating);
             if (isHibernating && Proc.HasValue("hibernationLine"))
