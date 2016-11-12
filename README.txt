@@ -145,6 +145,24 @@ An action generally takes the form
  definition to be a single identifier.
 The .incr and .decr methods only make sense for IF/THEN; they won't do much if
  used in an ON/DO statement.
+There is one output that has a different set of methods: "ipi" (Inter-Processor
+ Interrupts).  These are used to allow multiple processors to co-operate, so
+ you can (for instance) have a launch guidance computer, an encounter science
+ platform, and a power management processor, all driven by a master control
+ program.  There are three ipi methods:
+	@ipi.hiber processorName # puts a processor into hibernation
+	@ipi.wake processorName  # wakes a processor up from hibernation
+	@ipi.irq , processorName index # sets latch number _index_ on a processor
+ You can also leave out the index; "@ipi.irq processorName" will default to
+ index 0.
+Note that a processor hibernated by an IPI can only be woken by another IPI, as
+ it has no HIBERNATE condition of its own to check for.  However, a processor
+ hibernated by an ON/HIBERNATE can still be woken by an IPI.
+A processor's name defaults to its part name (e.g. "Kelliot4040" or "KE7"), and
+ can be changed with the "Rename" button on the Code window.  If two processors
+ have the same name, it is undefined which one will respond to an IPI.  Since
+ the name argument to IPI methods must be an identifier, choose names which are
+ valid identifiers, else you won't be able to send IPIs.
 The full syntax of the language in Backus-Naur form is as follows:
 	stmt    ::= ( on-stmt | on-hiber | if-stmt | comment ) \n
 	comment ::= #.*
