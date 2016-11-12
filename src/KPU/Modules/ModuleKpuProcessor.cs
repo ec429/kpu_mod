@@ -133,6 +133,8 @@ namespace KPU.Modules
 
         public override void OnStart(StartState state)
         {
+            if (processorName == null)
+                processorName = part.partName;
             GameEvents.onVesselChange.Add(OnVesselChange);
             setRunning();
         }
