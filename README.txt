@@ -259,6 +259,8 @@ Yes!  The KPU Program Library allows you to save programs within your KSP save
  Program' to execute it.)
 Remember that the Program Library stores the programs in the KSP save game;
  consequently, if you start a new game, the Program Library will be empty.
+ This also means that if you quickload or revert, the state of the Program
+ Library will also be reverted.
 
 
 Where do I report bugs?
