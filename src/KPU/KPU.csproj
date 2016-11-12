@@ -74,5 +74,6 @@
     <Compile Include="Library\Library.cs" />
     <Compile Include="UI\LibraryWindow.cs" />
     <Compile Include="UI\LibraryRenameWindow.cs" />
+    <Compile Include="UI\ProcessorRenameWindow.cs" />
   </ItemGroup>
 </Project>

@@ -140,6 +140,11 @@ namespace KPU.UI
                     {
                         KPUCore.Instance.openLibraryWindow(this);
                     }
+                    if (GUILayout.Button("Rename", mProcessor != null ? mBtnStyle : mGreyBtnStyle, GUILayout.ExpandWidth(false)) && mProcessor != null)
+                    {
+                        UI.ProcessorRenameWindow prw = new UI.ProcessorRenameWindow(mProcessor);
+                        prw.Show();
+                    }
                 }
                 GUILayout.EndHorizontal();
             }
