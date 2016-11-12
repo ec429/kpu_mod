@@ -7,7 +7,7 @@ namespace KPU.Modules
     [KSPModule("KPU Processor")]
     public class ModuleKpuProcessor : PartModule, IDisposable
     {
-        private Processor.Processor mProcessor = null;
+        public Processor.Processor mProcessor = null;
 
         [KSPField()]
         public bool hasLevelTrigger;

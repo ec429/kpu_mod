@@ -468,7 +468,7 @@ namespace KPU.Processor
                 throw new EvalError(n + ": expected " + t.ToString() + ", " + s + " is " + v.typ.ToString() + " " + v.ToString());
         }
 
-        public Value exec(string name, Value arglist, Processor p)
+        public void exec(string name, Value arglist, Processor p)
         {
             List<Value> args = arglist.l;
             var match = System.Text.RegularExpressions.Regex.Match(name, "^(.+)\\.([^.]+)");
@@ -483,17 +483,37 @@ namespace KPU.Processor
                     if (method.Equals("set"))
                     {
                         output.setValue(arglist);
-                        return new Value();
+                        return;
                     }
                     if (method.Equals("incr") && arglist.typ == Type.DOUBLE)
                     {
                         output.slewValue(arglist);
-                        return new Value();
+                        return;
                     }
                     if (method.Equals("decr") && arglist.typ == Type.DOUBLE)
                     {
                         output.slewValue(new Value(-arglist.d));
-                        return new Value();
+                        return;
+                    }
+                    error = "no such method";
+                }
+                else if (mainName.Equals("ipi"))
+                {
+                    IPIHandler ipi = new IPIHandler(p);
+                    if (method.Equals("wake"))
+                    {
+                        ipi.wake(arglist);
+                        return;
+                    }
+                    if (method.Equals("hiber"))
+                    {
+                        ipi.hiber(arglist);
+                        return;
+                    }
+                    if (method.Equals("irq"))
+                    {
+                        ipi.irq(arglist);
+                        return;
                     }
                     error = "no such method";
                 }
@@ -556,7 +576,8 @@ namespace KPU.Processor
                 left = evalRecursive(n.mChildren[0], p);
                 right = evalRecursive(n.mChildren[1], p);
                 assertType(n, "left", Type.NAME, left);
-                return exec(left.n, right, p);
+                exec(left.n, right, p);
+                return new Value();
             case Tokens.TOK_COMMA:
                 left = evalRecursive(n.mChildren[0], p);
                 right = evalRecursive(n.mChildren[1], p);
@@ -1671,6 +1692,54 @@ namespace KPU.Processor
         }
     }
 
+    public class IPIHandler
+    {
+        private Processor mProcessor;
+        public IPIHandler(Processor p)
+        {
+            mProcessor = p;
+        }
+        public void wake(Instruction.Value dest)
+        {
+            if (dest.typ != Instruction.Type.NAME)
+                return;
+            Processor pDest = mProcessor.findByName(dest.n);
+            if (pDest != null)
+                pDest.wakeup();
+        }
+        public void hiber(Instruction.Value dest)
+        {
+            if (dest.typ != Instruction.Type.NAME)
+                return;
+            Processor pDest = mProcessor.findByName(dest.n);
+            if (pDest != null)
+                pDest.hibernate(null);
+        }
+        public void irq(Instruction.Value value)
+        {
+            Instruction.Value dest = null, vector = null;
+            if (value.typ == Instruction.Type.TUPLE && value.l.Count == 2)
+            {
+                dest = value.l[0];
+                vector = value.l[1];
+            }
+            else if (value.typ == Instruction.Type.NAME)
+            {
+                dest = value;
+                vector = new Instruction.Value(0.0);
+            }
+            if (dest.typ != Instruction.Type.NAME)
+                return;
+            if (vector.typ != Instruction.Type.DOUBLE)
+                return;
+            Processor pDest = mProcessor.findByName(dest.n);
+            if (pDest == null)
+                return;
+            int vect = (int)Math.Round(vector.d);
+            pDest.setLatch(vect);
+        }
+    }
+
     public class Processor
     {
         public bool hasLevelTrigger, hasLogicOps, hasArithOps;
@@ -1701,9 +1770,16 @@ namespace KPU.Processor
         public void hibernate(Instruction src)
         {
             if (isHibernating) return;
-            if (!instructions.Contains(src)) // can't happen
-                throw new Instruction.ExecError("hibernated instruction not in program");
-            hibernationLine = instructions.IndexOf(src);
+            if (src == null)
+            {
+                hibernationLine = -1;
+            }
+            else
+            {
+                if (!instructions.Contains(src)) // can't happen
+                    throw new Instruction.ExecError("hibernated instruction not in program");
+                hibernationLine = instructions.IndexOf(src);
+            }
             isHibernating = true;
             Logging.Log(string.Format("Hibernated from line {0:D}: {1}", hibernationLine, src.ToString()));
         }
@@ -1712,6 +1788,16 @@ namespace KPU.Processor
         {
             isHibernating = false;
             Logging.Log("Awoke from hibernation");
+        }
+
+        public void setLatch(int i)
+        {
+            setLatch(i, true);
+        }
+        public void setLatch(int i, bool b)
+        {
+            if (i < latchState.Count)
+                latchState[i] = b;
         }
 
         public string name
@@ -1728,6 +1814,18 @@ namespace KPU.Processor
                 if (mkp != null)
                     mkp.processorName = value;
             }
+        }
+
+        // Finds a processor on the vessel with the given name
+        public Processor findByName(string name)
+        {
+            if (name == null)
+                return null;
+            foreach (Modules.ModuleKpuProcessor mkp in parentVessel.FindPartModulesImplementing<Modules.ModuleKpuProcessor>())
+                if (mkp.processorName != null)
+                    if (mkp.processorName.Equals(name))
+                        return mkp.mProcessor;
+            return null;
         }
 
         // Warning, may be null
@@ -1919,8 +2017,12 @@ namespace KPU.Processor
             {
                 if (isHibernating)
                 {
-                    Instruction hi = instructions[hibernationLine];
-                    hi.considerWakeup(this);
+                    // hibernationLine will be -1 if hibernated by IPI
+                    if (hibernationLine >= 0)
+                    {
+                        Instruction hi = instructions[hibernationLine];
+                        hi.considerWakeup(this);
+                    }
                 }
                 else
                 {

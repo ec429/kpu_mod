@@ -18,6 +18,10 @@ Stock sensors.  Some of the science experiments in stock are also usable sensors
 
 OTHER IDEAS
 Inter-processor interrupts.  Each processor on a vessel has a 'name' and can use interrupts to hibernate/wake another processor, set (but not read!) another processor's latches.  So you can have a Master Control Program, a Critical Systems Computer, a Guidance Instrumentation Array, an Encounter Scientific Platform...
+	@ipi.wake foo  # Causes processor "foo" to awake from hibernation
+	@ipi.hiber foo # Causes processor "foo" to enter hibernation, only wakeable by ipi.wake
+	@ipi.irq , foo 3 # sets latch3 on processor "foo" (if it has one).  Can't clear latches, only set them!
+Because the processor name appears as a bareword, it has to be a legal identifier.
 
 MANUFACTURERS
 Kelliot Automation: The world leaders in industrial process automation, Kelliot consider even Rockomax engines to be "quaint, tiny machines".
