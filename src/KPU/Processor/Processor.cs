@@ -1714,6 +1714,22 @@ namespace KPU.Processor
             Logging.Log("Awoke from hibernation");
         }
 
+        public string name
+        {
+            get {
+                Modules.ModuleKpuProcessor mkp = mPart ? mPart.FindModuleImplementing<KPU.Modules.ModuleKpuProcessor>() : null;
+                if (mkp != null)
+                    if (mkp.processorName != null)
+                        return mkp.processorName;
+                return "KPU";
+            }
+            set {
+                Modules.ModuleKpuProcessor mkp = mPart ? mPart.FindModuleImplementing<KPU.Modules.ModuleKpuProcessor>() : null;
+                if (mkp != null)
+                    mkp.processorName = value;
+            }
+        }
+
         // Warning, may be null
         public Vessel parentVessel { get { return mPart.vessel; } }
 
