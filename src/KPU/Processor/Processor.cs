@@ -1781,7 +1781,7 @@ namespace KPU.Processor
                 hibernationLine = instructions.IndexOf(src);
             }
             isHibernating = true;
-            Logging.Log(string.Format("Hibernated from line {0:D}: {1}", hibernationLine, src.ToString()));
+            Logging.Log(string.Format("Hibernated from line {0:D}: {1}", hibernationLine, src == null ? "IPI" : src.ToString()));
         }
 
         public void wakeup()
