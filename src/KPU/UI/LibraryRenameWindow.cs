@@ -8,7 +8,7 @@ namespace KPU.UI
         private GUIStyle mBtnStyle, mGreyBtnStyle;
         private string mOldName, mNewName;
         public LibraryNameWindow (string oldName)
-            : base(Guid.NewGuid(), String.Format("Name Program"), new Rect(Screen.width / 2 - 100, Screen.height / 2 - 30, 200, 60), WindowAlign.Floating)
+            : base(Guid.NewGuid(), String.Format("Name Program"), new Rect(Screen.width / 2 - 100, Screen.height / 2 - 30, 208, 64), WindowAlign.Floating)
         {
             mOldName = oldName;
             mNewName = oldName;
@@ -44,7 +44,7 @@ namespace KPU.UI
         private GUIStyle mBtnStyle, mGreyBtnStyle;
         private string mOldName, mNewName;
         public LibraryRenameWindow (string oldName)
-            : base(Guid.NewGuid(), String.Format("Rename Program '{0}'", oldName), new Rect(Screen.width / 2 - 120, Screen.height / 2 - 30, 240, 60), WindowAlign.Floating)
+            : base(Guid.NewGuid(), String.Format("Rename Program '{0}'", oldName), new Rect(Screen.width / 2 - 120, Screen.height / 2 - 30, 240, 64), WindowAlign.Floating)
         {
             mOldName = oldName;
             mNewName = oldName;

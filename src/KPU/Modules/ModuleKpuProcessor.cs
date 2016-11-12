@@ -128,6 +128,7 @@ namespace KPU.Modules
                     mProcessor.ClearInstructions();
                     Logging.Message("IMEM has been cleared");
                 }
+                UpdateInfo();
             }
         }
 
@@ -179,20 +180,20 @@ namespace KPU.Modules
                 if (mProcessor == null)
                     mProcessor = new Processor.Processor(part, this);
                 mProcessor.Load(node);
+                UpdateInfo();
             }
             catch (Exception e) { Logging.Log(e.ToString()); };
         }
 
-        public override void OnUpdate()
+        public void UpdateInfo()
         {
             if (mProcessor != null)
             {
-                mProcessor.OnUpdate();
                 GUI_imemWords = mProcessor.imemWords;
                 Fields["GUI_imemWords"].guiActive = true;
                 Fields["GUI_imemWords"].guiActiveEditor = true;
                 GUI_status = mProcessor.isRunning ? mProcessor.isHibernating ? "Hibernating" : "Running" : "Inactive";
-                Fields["GUI_status"].guiActive = HighLogic.fetch && HighLogic.LoadedSceneIsFlight;
+                Fields["GUI_status"].guiActive = true;
             }
             else
             {
@@ -201,6 +202,13 @@ namespace KPU.Modules
                 Fields["GUI_imemWords"].guiActiveEditor = false;
                 Fields["GUI_status"].guiActive = false;
             }
+        }
+
+        public override void OnUpdate()
+        {
+            if (mProcessor != null)
+                mProcessor.OnUpdate();
+            UpdateInfo();
         }
 
         public void OnFlyByWirePost(FlightCtrlState fcs)

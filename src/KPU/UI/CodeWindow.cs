@@ -78,6 +78,37 @@ namespace KPU.UI
             return true;
         }
 
+        private void SaveProgram()
+        {
+            KPU.Library.Library library = KPUCore.Instance.library;
+            if (library == null)
+            {
+                Logging.Message("I have no library!");
+                return;
+            }
+            string name = library.chooseName();
+            if (name == null)
+            {
+                Logging.Message("Failed to generate a name!");
+                return;
+            }
+            string vesselName = null;
+            if (HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel != null)
+                vesselName = FlightGlobals.ActiveVessel.vesselName;
+            if (HighLogic.LoadedSceneIsEditor && EditorLogic.fetch.ship != null)
+                vesselName = EditorLogic.fetch.ship.shipName;
+            if (vesselName == null)
+                vesselName = "null";
+            KPU.Library.Program prog = new KPU.Library.Program();
+            prog.name = name;
+            prog.description = String.Format("Saved from {0} {1}", vesselName, mProcessor != null ? mProcessor.name : "null");
+            prog.addCode(instructions);
+            library.putProgram(prog);
+            Logging.Message(String.Format("Saved as {0}", name));
+            UI.LibraryNameWindow lnw = new UI.LibraryNameWindow(name);
+            lnw.Show();
+        }
+
         public override void Window(int id)
         {
             GUILayout.BeginVertical();
@@ -123,18 +154,7 @@ namespace KPU.UI
                     }
                     if (GUILayout.Button("Save", mCompiled ? mBtnStyle : mGreyBtnStyle, GUILayout.ExpandWidth(false)) && mCompiled)
                     {
-                        string name = KPUCore.Instance.library.chooseName();
-                        if (name != null)
-                        {
-                            KPU.Library.Program prog = new KPU.Library.Program();
-                            prog.name = name;
-                            prog.description = String.Format("Saved from {0}", FlightGlobals.ActiveVessel.vesselName);
-                            prog.addCode(instructions);
-                            KPUCore.Instance.library.putProgram(prog);
-                            Logging.Message(String.Format("Saved as {0}", name));
-                            UI.LibraryNameWindow lnw = new UI.LibraryNameWindow(name);
-                            lnw.Show();
-                        }
+                        SaveProgram();
                     }
                     if (GUILayout.Button("Load", mBtnStyle, GUILayout.ExpandWidth(false)))
                     {

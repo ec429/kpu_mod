@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace KPU
 {
-    public abstract class KPUCore : MonoBehaviour
+    [KSPAddon(KSPAddon.Startup.FlightAndEditor, false)]
+    public class KPUCore : MonoBehaviour
     {
         public static KPUCore Instance { get; protected set; }
 
@@ -14,7 +15,7 @@ namespace KPU
 
         public event Action OnGuiUpdate = delegate { };
 
-        public KPU.Library.Library library { get; protected set; }
+        public KPU.Library.Library library { get { return ScenarioKPU.Instance.library; } }
         public KPU.UI.LibraryWindow libraryWindow { get; protected set; }
 
         public void openLibraryWindow(KPU.UI.CodeWindow cw)
@@ -35,26 +36,11 @@ namespace KPU
 
             Instance = this;
 
-            library = new KPU.Library.Library();
             libraryWindow = null;
 
             ctrlLockAddon = new AddOns.ControlLockAddon();
 
             Logging.Log("KPUCore loaded successfully.");
-        }
-
-        public void Load(ConfigNode node)
-        {
-            if (node.HasNode("library"))
-            {
-                library.Load(node.GetNode("library"));
-            }
-        }
-
-        public void Save(ConfigNode node)
-        {
-            ConfigNode ln = node.AddNode("library");
-            library.Save(ln);
         }
 
         public void OnGUI()
@@ -76,32 +62,31 @@ namespace KPU
         }
     }
 
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.TRACKSTATION)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.EDITOR)]
     public class ScenarioKPU : ScenarioModule
     {
+        public static ScenarioKPU Instance {get; protected set; }
+        public KPU.Library.Library library { get; protected set; }
+
+        public override void OnAwake()
+        {
+            Instance = this;
+            library = new KPU.Library.Library();
+            base.OnAwake();
+        }
+
         public override void OnSave(ConfigNode node)
         {
-            KPUCore.Instance.Save(node);
+            ConfigNode ln = node.AddNode("library");
+            library.Save(ln);
         }
 
         public override void OnLoad(ConfigNode node)
         {
-            KPUCore.Instance.Load(node);
+            if (node.HasNode("library"))
+            {
+                library.Load(node.GetNode("library"));
+            }
         }
-    }
-
-    [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class KPUCoreFlight : KPUCore
-    {
-    }
-
-    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
-    public class KPUCoreEditor: KPUCore
-    {
-    }
-
-    [KSPAddon(KSPAddon.Startup.TrackingStation, false)]
-    public class KPUCoreTracking : KPUCore
-    {
     }
 }
