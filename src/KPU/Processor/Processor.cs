@@ -1804,8 +1804,8 @@ namespace KPU.Processor
         public string name
         {
             get {
-                if (processorName == null)
-                    return mPart.partName;
+                if (processorName == null || processorName.Length == 0)
+                    return mPart.partInfo.name;
                 return processorName;
             }
             set {
@@ -2099,7 +2099,8 @@ namespace KPU.Processor
             
             ConfigNode Proc = new ConfigNode("Processor");
 
-            Proc.AddValue("processorName", processorName);
+            if (processorName != null && processorName.Length != 0)
+                Proc.AddValue("processorName", processorName);
             Proc.AddValue("isHibernating", isHibernating);
             if (isHibernating)
                 Proc.AddValue("hibernationLine", hibernationLine);
