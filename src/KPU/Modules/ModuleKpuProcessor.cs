@@ -158,12 +158,9 @@ namespace KPU.Modules
             node.AddValue("isRunning", isRunning);
             try
             {
-                if (HighLogic.fetch && HighLogic.LoadedSceneIsFlight)
-                {
-                    if (mProcessor == null)
-                        mProcessor = new Processor.Processor(part, this);
-                    mProcessor.Save(node);
-                }
+                if (mProcessor == null)
+                    mProcessor = new Processor.Processor(part, this);
+                mProcessor.Save(node);
             }
             catch (Exception e) { Logging.Log(e.ToString()); }
         }
@@ -179,33 +176,29 @@ namespace KPU.Modules
 
             try
             {
-                if (HighLogic.fetch && (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedSceneIsEditor))
-                {
-                    if (mProcessor == null)
-                        mProcessor = new Processor.Processor(part, this);
-                    mProcessor.Load(node);
-                }
+                if (mProcessor == null)
+                    mProcessor = new Processor.Processor(part, this);
+                mProcessor.Load(node);
             }
             catch (Exception e) { Logging.Log(e.ToString()); };
         }
 
         public override void OnUpdate()
         {
-            if (!(HighLogic.fetch && HighLogic.LoadedSceneIsFlight))
-                return;
-
             if (mProcessor != null)
             {
                 mProcessor.OnUpdate();
                 GUI_imemWords = mProcessor.imemWords;
                 Fields["GUI_imemWords"].guiActive = true;
+                Fields["GUI_imemWords"].guiActiveEditor = true;
                 GUI_status = mProcessor.isRunning ? mProcessor.isHibernating ? "Hibernating" : "Running" : "Inactive";
-                Fields["GUI_status"].guiActive = true;
+                Fields["GUI_status"].guiActive = HighLogic.fetch && HighLogic.LoadedSceneIsFlight;
             }
             else
             {
                 GUI_imemWords = -1;
                 Fields["GUI_imemWords"].guiActive = false;
+                Fields["GUI_imemWords"].guiActiveEditor = false;
                 Fields["GUI_status"].guiActive = false;
             }
         }

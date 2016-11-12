@@ -76,7 +76,7 @@ namespace KPU
         }
     }
 
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.TRACKSTATION)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.FLIGHT, GameScenes.EDITOR, GameScenes.TRACKSTATION)]
     public class ScenarioKPU : ScenarioModule
     {
         public override void OnSave(ConfigNode node)
@@ -92,6 +92,11 @@ namespace KPU
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class KPUCoreFlight : KPUCore
+    {
+    }
+
+    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
+    public class KPUCoreEditor: KPUCore
     {
     }
 
